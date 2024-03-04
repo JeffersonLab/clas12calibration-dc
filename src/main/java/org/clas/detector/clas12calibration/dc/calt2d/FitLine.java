@@ -8,6 +8,7 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 import static org.clas.detector.clas12calibration.dc.calt2d.FitFunction.polyFcnMac;
 import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.groot.math.Func1D;
+import org.jlab.rec.dc.Constants;
 /**
  *
  * @author ziegler
@@ -38,6 +39,7 @@ public class FitLine extends Func1D{
         for(int p = 0; p< nPars; p++) {
             par[p] = pars.value(p);
         }
+        this.setRange(0, 2*Constants.getInstance().wpdist[this.i]);
     }
     @Override
     public double evaluate(double x) { 

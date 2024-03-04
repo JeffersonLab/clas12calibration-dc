@@ -124,6 +124,22 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         calVariation.setEditable(true);
         distBetaFCN = new JComboBox(distBetaFCNSelect);
         distBetaFCN.setEditable(true);
+        // done it before initializing the monitors to have access to wpdist for setting the histogram ranges
+        // init constants manager 
+        ccdb.init(Arrays.asList(new String[]{
+            "/geometry/dc/superlayer",
+            "/calibration/dc/time_to_distance/t2d_pressure", 
+            "/hall/weather/pressure",
+            "/calibration/dc/time_to_distance/ref_pressure",
+            "/calibration/dc/time_jitter"}));
+        //ccdb.setVariation("default");
+        ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
+        for(int l=0; l<6; l++) {
+            Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
+        }
+        Constants.getInstance().setT2D(1);
+        dcDetector = new DCGeant4Factory(provider, DCGeant4Factory.MINISTAGGERON, true);
+
         this.monitors = new AnalysisMonitor[]{new T2DCalib("Time to Distance",ccdb)};		
 	// create menu bar
         menuBar = new JMenuBar();
@@ -202,20 +218,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         this.processorPane.addEventListener(this);
         
         this.setCanvasUpdate(canvasUpdateTime);
-        // init constants manager
-        ccdb.init(Arrays.asList(new String[]{
-            "/geometry/dc/superlayer",
-            "/calibration/dc/time_to_distance/t2d_pressure", 
-            "/hall/weather/pressure",
-            "/calibration/dc/time_to_distance/ref_pressure",
-            "/calibration/dc/time_jitter"}));
-        //ccdb.setVariation("default");
-        ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
-        for(int l=0; l<6; l++) {
-            Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
-        }
-        Constants.getInstance().setT2D(1);
-        dcDetector = new DCGeant4Factory(provider, DCGeant4Factory.MINISTAGGERON, true);
 
         // set directory to local
         this.Dir = System.getProperty("user.dir");
@@ -522,7 +524,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         tgmPanel = new JPanel();
         trPanel.add(new JLabel("alpha > "),c);
         for(int i = 0; i < 6; i++) {
-            alphaCuts1[i].setText("-60");
+            alphaCuts1[i].setText("-30");
             alphaCuts1[i].addActionListener(this);
             tgmPanel.add(alphaCuts1[i]);
         }
@@ -539,7 +541,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         tgmPanel = new JPanel();
         trPanel.add(new JLabel("alpha < "),c);
         for(int i = 0; i < 6; i++) {
-            alphaCuts2[i].setText("60");
+            alphaCuts2[i].setText("30");
             alphaCuts2[i].addActionListener(this);
             tgmPanel.add(alphaCuts2[i]);
         }
@@ -594,7 +596,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 	c.gridy = y;
         trPanel.add(new JLabel("fitResi (um) < "),c);
         tgmPanel = new JPanel();
-        fitresiCut.setText("1000");
+        fitresiCut.setText("5000");
         fitresiCut.addActionListener(this);
         tgmPanel.add(fitresiCut);
         c.gridx = 1;
