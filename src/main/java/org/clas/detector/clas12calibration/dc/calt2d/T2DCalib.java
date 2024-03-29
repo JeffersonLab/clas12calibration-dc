@@ -1438,7 +1438,7 @@ public class T2DCalib extends AnalysisMonitor{
         return pid;
     } 
     // to be used for alignment runs since pid is bogus
-    private boolean isElectronZeroField(DataEvent event, int trackId) {
+    private boolean isElectronZeroField(DataEvent event, int trackId, double alpha) {
        
         if(!event.hasBank("REC::Particle") ||
            !event.hasBank("REC::Calorimeter") ||
@@ -1461,8 +1461,14 @@ public class T2DCalib extends AnalysisMonitor{
         
         if(pindex>=0) {
             double beta    = particleBank.getFloat("beta", pindex);
-            double vtx     = particleBank.getFloat("vz", pindex);
-
+            double vx      = particleBank.getFloat("vx", pindex);
+            double vy      = particleBank.getFloat("vy", pindex);
+            double vz      = particleBank.getFloat("vz", pindex);
+            double px      = particleBank.getFloat("px", pindex);
+            double py      = particleBank.getFloat("py", pindex);
+            double pz      = particleBank.getFloat("pz", pindex);
+            double theta   = Math.toDegrees(Math.acos(pz/Math.sqrt(px*px+py*py+pz*pz)));
+            
             double nphe = 0;
             for(int i=0; i<cherenkovBank.rows(); i++) {
                 if(cherenkovBank.getShort("pindex", i)==pindex) {
@@ -1478,7 +1484,7 @@ public class T2DCalib extends AnalysisMonitor{
                 }
             }
 
-            if(beta>0 && nphe>2 && energy>0.5) { 
+            if(beta>0 && nphe>2 && energy>0.2 && Math.abs(theta-alpha-25)<5 && Math.abs(vx)<2 && Math.abs(vy)<2) { 
                 return true;
             }
         }    
@@ -1626,7 +1632,8 @@ public class T2DCalib extends AnalysisMonitor{
     private boolean passPID(DataEvent event, DataBank bnkHits, int rowIdxinTrkBank) {
         boolean pass = false;
         int trkID = bnkHits.getByte("trkID", rowIdxinTrkBank);
-        if(polarity==0) return this.isElectronZeroField(event, trkID);
+        double alpha = bnkHits.getFloat("Alpha", rowIdxinTrkBank);
+        if(polarity==0) return this.isElectronZeroField(event, trkID, alpha);
         int pid = this.readPID(event, trkID);
         //pass if the track is identified as an electron or as a hadron
         //if(pid==11 || Math.abs(pid)==211 || Math.abs(pid)==2212 || Math.abs(pid)==321) {
