@@ -334,13 +334,15 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         return rNum;
     }
     
+    public static String theFile;
     @Override
     public void dataEventAction(DataEvent event) {
     	
        // EvioDataEvent decodedEvent = deco.DecodeEvent(event, decoder, table);
         //decodedEvent.show();
-        		
+        theFile = this.processorPane.getDataFile().toString();		
 	if(event!=null ){
+            
 //            event.show();
             if (event.getType() == DataEventType.EVENT_START) {
                 this.runNumber = this.getRunNumber(event);

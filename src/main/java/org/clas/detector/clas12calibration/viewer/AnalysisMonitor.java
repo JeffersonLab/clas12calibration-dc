@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.jlab.detector.calib.tasks.CalibrationEngine;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.CalibrationConstantsListener;
@@ -76,7 +75,6 @@ public class AnalysisMonitor extends CalibrationEngine implements IDataEventList
     
     @Override
     public void dataEventAction(DataEvent event) {
-        
         this.setNumberOfEvents(this.getNumberOfEvents()+1);
         if (event.getType() == DataEventType.EVENT_START) {
 //            resetEventListener();
