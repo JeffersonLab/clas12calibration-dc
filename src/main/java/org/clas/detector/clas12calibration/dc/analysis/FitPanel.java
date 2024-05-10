@@ -72,7 +72,16 @@ public class FitPanel {
     public void refit(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) throws FileNotFoundException{
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
-       
+        if(!this._pM.useBProf) {
+            for(int j = 2; j<4; j++) {
+                for(int i=5; i<10; i++){ 
+                    if(panel.fixFit[i][j].isSelected()==false) {
+                        panel.fixFit[i][j].setSelected(true);
+                        System.out.println("REDO THE SEGMENT FITS BEFORE RELEASING THE B-field DEPENDENT PARAMETERS!");
+                    }
+                }
+            }
+        }
         boolean[][] fixedPars = new boolean[10][6];
         for(int j = 0; j<6; j++) {
             pars.get(j).clear();
@@ -105,6 +114,8 @@ public class FitPanel {
                     fixedPars[i][j] = true;
             }
         }
+        //Don't allow to fit the B>0 profile if they are not filled
+        
         this._pM.runFit(fixedPars);
          
             //this._pM.runParamScan(j, fixedPars);
@@ -127,7 +138,7 @@ public class FitPanel {
     
     public void parscan(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) throws FileNotFoundException{
         if(this._pM.eventProcessingDone==false) {
-            System.out.println("PATIENCE ... WAIT UNDER THE EVENT PROCESSING IS DONE....");
+            System.out.println("PATIENCE ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
             return;
         }
         boolean[][] fixedPars = new boolean[10][6];
@@ -268,7 +279,7 @@ public class FitPanel {
             panel.add(new JLabel("    Fit range max"));
             maxRange.setText(Double.toString(2.0));
             panel.add(maxRange);
-            useBprof = new JCheckBox(" Fit using B>0 profiles");
+            useBprof = new JCheckBox(" Use B>0 profiles");
             useBprof.setSelected(false);
             panel.add(useBprof);
                 

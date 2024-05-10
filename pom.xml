@@ -17,6 +17,24 @@
             <artifactId>coat-libs</artifactId>
             <version>10.0.7-SNAPSHOT</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.aha.compression</groupId>
+                    <artifactId>AHACompressionAPI</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.jpountz.lz4</groupId>
+                    <artifactId>lz4-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.lmax</groupId>
+                    <artifactId>disruptor</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>proguard</groupId>
+                    <artifactId>proguard</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
           <groupId>org.jlab.coda</groupId>
@@ -27,6 +45,12 @@
             <groupId>org.jlab</groupId>
             <artifactId>groot</artifactId>
             <version>4.0.4-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.jpountz</groupId>
+                    <artifactId>lz4</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies> 
     <repositories>
@@ -39,8 +63,6 @@
        <url>https://clasweb.jlab.org/clas12maven</url>
      </repository>
    </repositories>
-   
-   
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>

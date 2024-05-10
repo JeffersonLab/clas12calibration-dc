@@ -38,6 +38,7 @@ import org.jlab.groot.math.F1D;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent; 
 import org.jlab.detector.calib.utils.ConstantsManager;
+import org.jlab.groot.base.TColorPalette;
 import org.jlab.groot.data.DataLine;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.graphics.EmbeddedCanvas;
@@ -288,6 +289,7 @@ public class T2DCalib extends AnalysisMonitor{
         this.getAnalysisCanvas().getCanvas(Names[6]).divide(4, 3);
         
         this.getAnalysisCanvas().getCanvas( "TrackDoca vs T Fit Resi").getPad().getAxisY().setRange(-150, 150);
+        this.getAnalysisCanvas().getCanvas( "TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
         this.getAnalysisCanvas().getCanvas("TrackDoca vs T").update();
         this.getAnalysisCanvas().getCanvas("TrackDoca vs T Graphs").update();
         this.getAnalysisCanvas().getCanvas( "TrackDoca vs T Fit Resi").update();
@@ -1316,7 +1318,9 @@ public class T2DCalib extends AnalysisMonitor{
                         draw(TvstrkdocasFits.get(new Coordinate(i, j, BBins)), "same");
                 this.getAnalysisCanvas().getCanvas("CalcDoca vs T").
                         draw(TvstrkdocasFits.get(new Coordinate(i, j, BBins)), "same");
-                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").cd(0);
+                //Resi canvas
+                //this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").cd(0);
+                
                 GraphErrors g1 = new GraphErrors();
                 GraphErrors g2 = new GraphErrors();
                 g2.setTitle(TvstrkdocasInit.get(new Coordinate(i, j, BBins)).getTitle());
@@ -1332,6 +1336,8 @@ public class T2DCalib extends AnalysisMonitor{
                     }       
                 }
                 this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").clear();
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").cd(0);
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
                 this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(i, j, BBins)));
                 this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
                 this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, BBins)), "Esame");                   
@@ -1346,9 +1352,10 @@ public class T2DCalib extends AnalysisMonitor{
             this.getAnalysisCanvas().getCanvas("TrackDoca vs T Graphs").draw(Tvstrkdocas.get(new Coordinate(i, j, BBins)));
             this.getAnalysisCanvas().getCanvas("CalcDoca vs T").cd(0);
             this.getAnalysisCanvas().getCanvas("CalcDoca vs T").draw(Tvscalcdocas.get(new Coordinate(i, j, BBins)));    
-            
+            int maxBbin=0;
             for(int k = 0; k < this.BBins; k++) {
                 if(TvstrkdocasProf.get(new Coordinate(i, j, k)).getVectorX().size()>0){
+                    maxBbin++;
                     this.getAnalysisCanvas().getCanvas("TrackDoca vs T Graphs").
                             draw(TvstrkdocasProf.get(new Coordinate(i, j, k)), "same");
                     //TvstrkdocasFits.get(new Coordinate(i, j, k)).setRange(0, maxx[i]);
@@ -1358,35 +1365,58 @@ public class T2DCalib extends AnalysisMonitor{
                     draw(TvstrkdocasFits.get(new Coordinate(i, j, k)), "same");
                 }
             }
-            GraphErrors g0 = new GraphErrors();
-            g0.addPoint(0, 0, 0, 400);
-            g0.setMarkerColor(0);
-            g0.setLineColor(0);
-            g0.setTitle(TvstrkdocasInit.get(new Coordinate(i, j, 1)).getTitle());
-            this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").cd(0);
-            this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(g0, "E");
-            for(int k = 0; k < this.BBins; k++) {
-                if(TvstrkdocasProf.get(new Coordinate(i, j, k)).getVectorX().size()>0){
-                    GraphErrors g1 = new GraphErrors();
-                    GraphErrors g2 = new GraphErrors();
-                    g2.setMarkerColor(k+1);
-                    g1.copy(TvstrkdocasProf.get(new Coordinate(i, j, k)));
-                    for(int ip =0; ip<g1.getVectorX().getSize(); ip++) {
-                        if(g1.getDataEY(ip)!=0) {
-                            double yf = TvstrkdocasFits.get(new Coordinate(i, j, k)).evaluate(g1.getDataX(ip));
-                            double y = g1.getDataY(ip);
-                            g2.addPoint(g1.getDataX(ip), y-yf, 0, g1.getDataEY(ip));
-                            if(iterationNum==0) {
-                                TvstrkdocasInit.get(new Coordinate(i, j, k)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
-                            }
-                        } 
-                    }
-                    
-                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
-                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, k)), "Esame");
-                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(l);
+           
+            
+            if(TvstrkdocasProf.get(new Coordinate(i, j, 0)).getVectorX().size()>0) {
+            //Resi canvas
+                GraphErrors g1 = new GraphErrors();
+                GraphErrors g2 = new GraphErrors();
+                g2.setTitle(TvstrkdocasInit.get(new Coordinate(i, j, 0)).getTitle());
+                g1.copy(TvstrkdocasProf.get(new Coordinate(i, j, 0)));
+                for(int ip =0; ip<g1.getVectorX().getSize(); ip++) {
+                    if(g1.getDataEY(ip)!=0) {
+                        double yf = TvstrkdocasFits.get(new Coordinate(i, j, 0)).evaluate(g1.getDataX(ip));
+                        double y = g1.getDataY(ip);
+                        g2.addPoint(g1.getDataX(ip), y-yf, 0, g1.getDataEY(ip));
+                        if(iterationNum==0) {
+                            TvstrkdocasInit.get(new Coordinate(i, j, 0)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
+                        }
+                    }       
                 }
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").clear();
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").cd(0);
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(i, j, 0)));
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, 0)), "Esame");                   
+                this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(l);
             }
+//            for(int k = 0; k < maxBbin; k++) {
+//                if(TvstrkdocasProf.get(new Coordinate(i, j, k)).getVectorX().size()>0 && 
+//                        Tresvstrkdocas.get(new Coordinate(i, j, k)).getDataSize(0)>0){
+//                    GraphErrors g1 = new GraphErrors();
+//                    GraphErrors g2 = new GraphErrors();
+//                    g2.setMarkerColor(k+1);
+//                    g1.copy(TvstrkdocasProf.get(new Coordinate(i, j, k)));
+//                    for(int ip =0; ip<g1.getVectorX().getSize(); ip++) {
+//                        if(g1.getDataEY(ip)!=0 && TvstrkdocasFits.get(new Coordinate(i, j, k))!=null) {
+//                            double yf = TvstrkdocasFits.get(new Coordinate(i, j, k)).evaluate(g1.getDataX(ip));
+//                            if(Double.isNaN(yf)) continue;
+//                            double y = g1.getDataY(ip);
+//                            g2.addPoint(g1.getDataX(ip), y-yf, 0, g1.getDataEY(ip));
+//                            
+//                            if(iterationNum==0) {
+//                                TvstrkdocasInit.get(new Coordinate(i, j, k)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
+//                            }
+//                        } 
+//                    }
+//                    
+//                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(i, j, k)));
+//                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
+//                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, k)), "Esame");
+//                    this.getAnalysisCanvas().getCanvas("TrackDoca vs T Fit Resi").draw(l);
+//                }
+//            }
         }
     }
     
