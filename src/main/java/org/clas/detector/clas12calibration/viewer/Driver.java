@@ -32,13 +32,22 @@ import org.jlab.rec.dc.Constants;
 public class Driver {
    
     public static void init() {
-
-        Constants.getInstance().initialize("DCCAL");
-        Constants.getInstance().setENDPLATESBOWING(true);
-        Constants.getInstance().setBETACUT(true);
-        Constants.getInstance().setGEOVARIATION("default");
-        Constants.getInstance().setUSETIMETBETA(true);
-        Constants.getInstance().setT2D(1);
+        double[][] shifts         = new double[Constants.NREG][6];
+        Constants.getInstance().initialize("DCCAL", 
+                "default", 
+                "ON", 
+                "ON", 
+                false, 
+                true, 
+                false, 
+                1, 
+                true, 
+                false, 
+                false, 
+                5, 
+                0, 
+                shifts);
+                
     }
     public static void main(String[] args) throws FileNotFoundException {
         File file

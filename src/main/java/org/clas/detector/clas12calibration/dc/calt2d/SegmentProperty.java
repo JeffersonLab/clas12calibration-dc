@@ -17,6 +17,7 @@ public class SegmentProperty {
     public int id;
     private ArrayList<Integer> _wires;
     private int _size; 
+    private int _sumLR;
     private float _aveWire;
     private int _maxDeltaW  ;
     private int _numWireWithinDW;
@@ -59,6 +60,22 @@ public class SegmentProperty {
     public void setAveWire(float _aveWire) {
         this._aveWire = _aveWire;
     }
+    
+    /**
+     * 
+     * @return sum LR
+     */
+    public int getSumLR() {
+        return _sumLR;
+    }
+
+    /**
+     * 
+     * @param _sumLR 
+     */
+    public void setSumLR(int _sumLR) {
+        this._sumLR = _sumLR;
+    }
 
     /**
      * @return the _maxDeltaW
@@ -93,19 +110,21 @@ public class SegmentProperty {
             return;
         int avgWire = 0;
         for(int i = 0; i < this._wires.size(); i++) {
-            avgWire+=this._wires.get(i);
+            avgWire+=Math.abs(this._wires.get(i));
         }
         avgWire = avgWire/this._wires.size();
         
         int countWithinAveWirNum =0;
+        int sumLR=0;
         for(int i = 0; i < this._wires.size(); i++) {
-            if(Math.abs(this._wires.get(i)-avgWire)<=maxDeltaW)
+            sumLR+=(int)Math.signum(this._wires.get(i));
+            if(Math.abs(Math.abs(this._wires.get(i))-avgWire)<=maxDeltaW)
                 countWithinAveWirNum++;
         }
         this.setAveWire(avgWire);
         this.setMaxDeltaW(maxDeltaW);
         this.setNumWireWithinDW(countWithinAveWirNum);
-        
+        this.setSumLR(sumLR);
     }
    
 }

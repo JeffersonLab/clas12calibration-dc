@@ -75,11 +75,12 @@ public class Refit {
     public void reFit(List<FittedHit> hits, boolean useOT) {
         List<FittedCluster> clusters = this.recomposeClusters(hits, useOT);
         for(FittedCluster clus : clusters) {
+            if(clus==null) continue;
             FittedCluster LRresolvClus = this.LRAmbiguityResolver(clus, cf);
+            if(LRresolvClus==null) continue;
+            
             clus = LRresolvClus;
-            if (clus == null) {
-                continue;
-            }
+            
             cf.SetFitArray(clus, "TSC");
             cf.Fit(clus, true);
             cf.SetResidualDerivedParams(clus, false, false, T2DViewer.dcDetector); //calcTimeResidual=false, resetLRAmbig=false 
@@ -96,7 +97,6 @@ public class Refit {
                 h.setAlpha(alpha);
                 double cosTkAng = 1./Math.sqrt(trkAngle*trkAngle + 1.);
                 h.set_X(h.get_XWire() + h.get_LeftRightAmb() * (h.get_Doca() / cosTkAng) );
-                
             }
             //refit after updating alpha
             cf.SetFitArray(clus, "TSC");
@@ -372,7 +372,13 @@ public class Refit {
 
     }
 
-    
+    private int getLRAve(FittedCluster clus) {
+        int LRAve = 0;
+        for(FittedHit h : clus) {
+            LRAve+=h.get_LeftRightAmb();
+        }
+        return LRAve;
+    }
     
     
 }

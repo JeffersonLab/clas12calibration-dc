@@ -10,18 +10,19 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.clas.detector.clas12calibration.dc.analysis.FitPanel;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
-import static org.clas.detector.clas12calibration.dc.t2d.TableLoader.calc_Time;
-import org.clas.detector.clas12calibration.dc.t2d.TimeToDistanceEstimator;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
 import org.clas.detector.clas12calibration.viewer.Driver;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
@@ -50,6 +51,7 @@ import org.jlab.jnp.hipo4.data.SchemaFactory;
 import org.jlab.jnp.hipo4.io.HipoReader;
 import org.jlab.rec.dc.Constants;
 import org.jlab.rec.dc.hit.FittedHit;
+import org.jlab.rec.dc.timetodistance.TimeToDistanceEstimator;
 import org.jlab.utils.groups.IndexedList;
 import org.jlab.utils.system.ClasUtilsFile;
 /**
@@ -77,7 +79,7 @@ public class T2DCalib extends AnalysisMonitor{
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
         this.setAnalysisTabNames("TrackDoca vs T","TrackDoca vs T Graphs","TrackDoca vs T Fit Resi", 
-                "CalcDoca vs T","Time Residuals","Parameters", "Fit Function");
+                "CalcDoca vs T","Time Residuals", "Parameters", "Fit Function");
         this.init(false, "v0:vmid:R:tmax:distbeta:delBf:b1:b2:b3:b4");
         
         String dir = ClasUtilsFile.getResourceDir("CLAS12DIR", "etc/bankdefs/hipo4");
@@ -112,6 +114,7 @@ public class T2DCalib extends AnalysisMonitor{
     private Map<Coordinate, H1F> timeResi                       = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> timeResiFromFile               = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> timeResiNew                    = new HashMap<Coordinate, H1F>();
+    private Map<Coordinate, H1F> timeResiB                      = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> fitResi                        = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> B                              = new HashMap<Coordinate, H1F>(); //histogram to get B values centroids
     private Map<Coordinate, H1F> A                              = new HashMap<Coordinate, H1F>(); //histogram to get Alpha values centroids
@@ -142,6 +145,7 @@ public class T2DCalib extends AnalysisMonitor{
         DataGroup tdp2 = new DataGroup(14,8);
         DataGroup cd = new DataGroup(7,2);
         DataGroup tr = new DataGroup(6,1);
+        DataGroup trb = new DataGroup(6,1);
         DataGroup fr = new DataGroup(6,1);
         
         for(int l=0; l<6; l++) {
@@ -216,11 +220,20 @@ public class T2DCalib extends AnalysisMonitor{
                 }
             }
         }
+        int ik=0;
+        for (int i = 2; i < 4; i++) {
+            for (int k = 0; k < this.BBins; k++) {
+                timeResiB.put(new Coordinate(i,k), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
+                trb.addDataSet(timeResiB.get(new Coordinate(i,k)), ik++);
+                timeResiB.get(new Coordinate(i,k)).setLineColor(k+1);
+            }
+        }
         this.getDataGroup().add(td, 0,0,0);
         this.getDataGroup().add(tdp,1,0,0);
         this.getDataGroup().add(cd, 2,0,0);
         this.getDataGroup().add(tr, 3,0,0);
-        this.getDataGroup().add(fr, 4,0,0);
+        this.getDataGroup().add(trb, 4,0,0);
+        this.getDataGroup().add(fr, 5,0,0);
         
         for (int i = 0; i < nsl; i++) {
             for (int j = 0; j < alphaBins; j++) {
@@ -587,6 +600,11 @@ public class T2DCalib extends AnalysisMonitor{
         for (int i = 0; i < this.nsl; i++) {
             timeResi.get(new Coordinate(i)).reset();
             timeResiNew.get(new Coordinate(i)).reset();
+            if(i==2 || i==3) {
+                for (int k = 0; k < BBins; k++) {
+                     timeResiB.get(new Coordinate(i,k)).reset();
+                }
+            }
             for (int j = 0; j < alphaBins; j++) {
                 for (int k = 0; k < BBins+1; k++) {
                     Tvstrkdocas.get(new Coordinate(i,j,k)).reset();
@@ -625,9 +643,10 @@ public class T2DCalib extends AnalysisMonitor{
                 }
                 //refit with new constants
                 Refit rf = new Refit();
-                rf.reFit(hits, false);    //refit to get the parameters
+                rf.reFit(hits, true);    //refit to get the parameters
                 
                 for(FittedHit hit : hits) {
+                    if(hit.get_OutOfTimeFlag()==true) continue;
                     //filling the timeResi for the previously calibrated hits
                     timeResi.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
                 }
@@ -665,18 +684,20 @@ public class T2DCalib extends AnalysisMonitor{
                 }
                 //refit with new constants
                 Refit rf = new Refit();
-                rf.reFit(calhits, true);    //uaw only not out of time hits to get the calib cst
+                rf.reFit(calhits, true);    //use only not out of time hits to get the calib cst
                 for(FittedHit hit : calhits) {
-                    if(hit.get_OutOfTimeFlag()) continue;
+                    //if(hit.get_OutOfTimeFlag()) continue;
                     double theta0 = Math.toDegrees(Math.acos(1-0.02*hit.getB()));
                     double alphaUncor = hit.getAlpha()+(double)T2DCalib.polarity*theta0;
                     int alphaBin = this.getAlphaBin(alphaUncor);
                     double bFieldVal = (double) hit.getB();
                     
                     if(alphaBin!=-1 && !hit.get_OutOfTimeFlag()) {
+                       
                         double calibTime = (double) (hit.get_TDC() - hit.getTProp()
                                             - hit.getTFlight() - hit.getTStart()
                                             - hit.getT0()); 
+                        
                         double yf = TvstrkdocasFits.get(new Coordinate(hit.get_Superlayer() - 1, alphaBin, this.BBins)).evaluate(hit.get_ClusFitDoca());
                         
                             Tvstrkdocas.get(new Coordinate(hit.get_Superlayer() - 1, alphaBin, this.BBins))
@@ -723,8 +744,12 @@ public class T2DCalib extends AnalysisMonitor{
                 rf.reFit(calhits, false);    //use all hits
                 for(FittedHit hit : calhits) {
                     //filling the timeResi for the newly calibrated hits
-                        timeResiNew.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
-                    
+                    timeResiNew.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    if(hit.get_Superlayer() ==3 || hit.get_Superlayer() ==4) {
+                        double bFieldVal = (double) hit.getB();
+                        int bBin = this.getBBin(bFieldVal);
+                        timeResiB.get(new Coordinate(hit.get_Superlayer()-1, bBin)).fill(hit.get_TimeResidual());
+                    }
                 }
             }
         }
@@ -760,6 +785,13 @@ public class T2DCalib extends AnalysisMonitor{
             //this.getAnalysisCanvas().getCanvas("Time Residuals").draw(timeResiNew.get(new Coordinate(i)));
             this.fitTimeResPlot(timeResiNew.get(new Coordinate(i)), 
                     this.getAnalysisCanvas().getCanvas("Time Residuals"));
+            //if(i==2 || i==3) {
+            //    for (int k = 0; k < BBins; k++) {
+            //         this.plotsameTimeResPlot(timeResiB.get(new Coordinate(i,k)), 
+            //        this.getAnalysisCanvas().getCanvas("Time Residuals"));
+            //    }
+            //}
+            
         }
         //for(int i = 0; i<this.nsl; i++) {
         //    this.getAnalysisCanvas().getCanvas("Fit Residuals").cd(i);
@@ -825,9 +857,17 @@ public class T2DCalib extends AnalysisMonitor{
         h1.setTitle(t);
         canvasRes.draw(h1, "E1");
         //canvasRes.draw(gausFunc, "same");
-        
-        
     }
+    
+    private void plotTimeResPlot(H1F h1, EmbeddedCanvas canvasRes) {
+        if (h1==null) return;
+        canvasRes.draw(h1, "E1");
+    }
+    private void plotsameTimeResPlot(H1F h1, EmbeddedCanvas canvasRes) {
+        if (h1==null) return;
+        canvasRes.draw(h1, "E1");
+    }
+    
     public int getAlphaBin(double alpha) {
         int v = -1;
         for(int i = 0; i<T2DCalib.AlphaValues.length; i++) {
@@ -949,7 +989,7 @@ public class T2DCalib extends AnalysisMonitor{
             double mu = f3.getParameter(1);
             double emu = f3.parameter(1).error();
             if(x<0.05) emu = Math.max(mu, emu);
-            if(x/dmax>0.9) emu = sigma;
+            if(x/dmax>0.99) emu = sigma;
             ge.addPoint(x,  mu, 0, emu);
             cnt++;
         } else {
@@ -964,7 +1004,7 @@ public class T2DCalib extends AnalysisMonitor{
                 double mu = f3.getParameter(1);
                 double emu = f3.parameter(1).error();
                 if(x<0.05) emu = Math.max(mu, emu);
-                if(x/dmax>0.9) emu = sigma;
+                if(x/dmax>0.99) emu = sigma;
                 ge.addPoint(x,  mu, 0, emu);
                 cnt++;
             } else {
@@ -1024,6 +1064,8 @@ public class T2DCalib extends AnalysisMonitor{
     public List<FittedHit> calhits = new ArrayList<>();
     public List<FittedHit> hits = new ArrayList<>();
     Map<Integer, ArrayList<Integer>> segMapTBHits = new HashMap<Integer, ArrayList<Integer>>();
+    Map<Integer, ArrayList<CalHit>> segMap2TBHits = new HashMap<Integer, ArrayList<CalHit>>();
+    Map<Integer, ArrayList<FittedHit>> segMap = new HashMap<Integer, ArrayList<FittedHit>>();
     Map<Integer, SegmentProperty> segPropMap = new HashMap<Integer, SegmentProperty>();
     Map<Integer, FittedHit> calhitmap = new HashMap<>();
     List<FittedHit> calhitlist = new ArrayList<>();
@@ -1073,18 +1115,20 @@ public class T2DCalib extends AnalysisMonitor{
             calwriter.writeEvent(calhipoEvent);
             writer.open("TestOutPut.hipo");
             writer.writeEvent(hipoEvent);
+            System.out.println("FILES READY......");
             //Constants.getInstance().initialize("DCCAL");
             Driver.init();
+            System.out.println("Driver initialized");
             String newVar = String.valueOf(T2DViewer.calVariation.getSelectedItem());
-            System.out.println("* VARIATION *"+newVar);
+            System.out.println("***************************************************************** VARIATION *"+newVar);
             ccdb.setVariation(newVar);
             TableLoader.t2dc=this;
             TableLoader.FillT0Tables(newRun, newVar);
             
             TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/t2d_pressure"),
                     T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"),
-                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"));  
-            
+                    T2DViewer.ccdb.getConstants(newRun, "/hall/weather/pressure"));  
+           
             try { 
                 this.loadFitPars();
             } catch (FileNotFoundException ex) {
@@ -1114,34 +1158,34 @@ public class T2DCalib extends AnalysisMonitor{
         
         // get segment property     
         DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
-        this.getSegProperty(bnkHits);
+        bnkHits=this.FixDoubleHitsTFlight(event, bnkHits);
         
+        this.getSegProperty(bnkHits);
+       
         for (int i = 0; i < bnkHits.rows(); i++) {
             double bFieldVal = (double) bnkHits.getFloat("B", i);
             int superlayer = bnkHits.getInt("superlayer", i);
             // alpha in the bank is corrected for B field.  To fill the alpha bin use the uncorrected value
             double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
             double alphaUncor = bnkHits.getFloat("Alpha", i)+(double)T2DCalib.polarity*theta0;
-            
             int alphaBin = this.getAlphaBin(alphaUncor); 
             if(alphaBin==-1) 
                 continue;
-            
             FittedHit theHit = this.getHit(bnkHits, i);
-            if(this.passResiCuts(event, bnkHits, i)){//no previous entries
+            if(this.passCalibCuts(event, bnkHits, i)){//no previous entries
                 if(hitmap.get(theHit.get_Id())==null) {
                     hitmap.put(theHit.get_Id(), theHit);
                 }
             }
             
-            if(this.passCalibCuts(event,bnkHits, i) && calhitmap.get(theHit.get_Id())==null){ 
+            if(this.passCuts(event,bnkHits, i) && calhitmap.get(theHit.get_Id())==null){ 
                 calhitmap.put(theHit.get_Id(), theHit);
                 if(!this.refitSegs) {
                     
                     double calibTime = (double) (bnkHits.getInt("TDC", i) - bnkHits.getFloat("TProp", i)
                                             - bnkHits.getFloat("TFlight", i) - bnkHits.getFloat("TStart", i) 
                                             - bnkHits.getFloat("T0", i));
-                    
+                   
                     Tvstrkdocas.get(new Coordinate(bnkHits.getInt("superlayer", i) - 1, alphaBin, this.BBins))
                                     .fill(bnkHits.getFloat("trkDoca", i), calibTime);
                     
@@ -1187,16 +1231,41 @@ public class T2DCalib extends AnalysisMonitor{
                 }
             }
         }
-        hitmap.forEach((k,v) -> hitlist.add(v));
-        calhitmap.forEach((k,v) -> calhitlist.add(v));
-        calhipoEvent = (HipoDataEvent) calwriter.createEvent();
-        hipoEvent = (HipoDataEvent) writer.createEvent();
-        //selected.show();
-        calhipoEvent.appendBank(this.fillTBHitsBank(event, calhitlist));
-        calhipoEvent.appendBank(event.getBank("RUN::config"));
-        hipoEvent.appendBank(this.fillTBHitsBank(event, hitlist));
-        calwriter.writeEvent(calhipoEvent);
-        writer.writeEvent(hipoEvent);
+        //hitmap.forEach((k,v) -> hitlist.add(v));
+        //calhitmap.forEach((k,v) -> calhitlist.add(v));
+        
+        List<FittedHit> hits = new ArrayList<>();
+        List<FittedHit> calhits = new ArrayList<>();
+        hitmap.forEach((k,v) -> hits.add(v));
+        calhitmap.forEach((k,v) -> calhits.add(v));
+        Set<Integer> hitBankRows=this.getSegNumLayer(hits);
+        for(FittedHit h : hits) {
+            if(hitBankRows.contains(h.get_Id())) {
+                hitlist.add(h);
+            }
+        }
+        Set<Integer> calhitBankRows=this.getSegNumLayer(calhits);
+        for(FittedHit h : calhits) {
+            if(calhitBankRows.contains(h.get_Id())) {
+                calhitlist.add(h);
+            }
+        }
+        
+        
+        
+        
+        if(calhitlist.size()>0) {
+            calhipoEvent = (HipoDataEvent) calwriter.createEvent();
+            calhipoEvent.appendBank(this.fillTBHitsBank(event, calhitlist));
+            calhipoEvent.appendBank(event.getBank("RUN::config"));
+            calwriter.writeEvent(calhipoEvent);
+        }
+        if(hitlist.size()>0) {
+            hipoEvent = (HipoDataEvent) writer.createEvent();
+            hipoEvent.appendBank(this.fillTBHitsBank(event, hitlist));
+            hipoEvent.appendBank(event.getBank("RUN::config"));
+            writer.writeEvent(hipoEvent);
+        }
         if(betacnt!=0) {
             setBetaAve(avebeta/(double)betacnt);
             avebeta=0;
@@ -1244,16 +1313,16 @@ public class T2DCalib extends AnalysisMonitor{
             //T2DFunctions.polyFcnMac(x, alpha, bfield, v0[s][r], vmid[s][r], FracDmaxAtMinVel[s][r], 
             //tmax, dmax, delBf, Bb1, Bb2, Bb3, Bb4, superlayer) ;
             
-            pars[0] = TableLoader.v0[0][i];
-            pars[1] = TableLoader.vmid[0][i];
-            pars[2] = TableLoader.FracDmaxAtMinVel[0][i];
-            pars[3] = TableLoader.Tmax[0][i];
-            pars[4] = TableLoader.distbeta[0][i];
-            pars[5] = TableLoader.delta_bfield_coefficient[0][i];
-            pars[6] = TableLoader.b1[0][i];
-            pars[7] = TableLoader.b2[0][i];
-            pars[8] = TableLoader.b3[0][i];
-            pars[9] = TableLoader.b4[0][i];
+            pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[0][i];
+            pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[0][i];
+            pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[0][i];
+            pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i];
+            pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[0][i];
+            pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[0][i];
+            pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[0][i];
+            pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[0][i];
+            pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[0][i];
+            pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[0][i];
             pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
             
             resetPars[i] = pars;
@@ -1273,18 +1342,18 @@ public class T2DCalib extends AnalysisMonitor{
     private void reLoadFitPars() {
         for (int s =0; s < 6; s++) {
             for (int i = 0; i < this.nsl; i++) {
-                TableLoader.v0[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(0);
-                TableLoader.vmid[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(1);
-                TableLoader.FracDmaxAtMinVel[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(2);
-                System.out.println("TMAX "+TableLoader.Tmax[s][i]+" ==> ");
-                TableLoader.Tmax[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(3);
-                System.out.println(".................... "+TableLoader.Tmax[s][i]+"");
-                TableLoader.distbeta[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(4);
-                TableLoader.delta_bfield_coefficient[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(5);
-                TableLoader.b1[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(6);
-                TableLoader.b2[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(7);
-                TableLoader.b3[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(8);
-                TableLoader.b4[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(9);
+                org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(0);
+                org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(1);
+                org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(2);
+                System.out.println("TMAX "+org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i]+" ==> ");
+                org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(3);
+                System.out.println(".................... "+org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i]+"");
+                org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(4);
+                org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(5);
+                org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(6);
+                org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(7);
+                org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(8);
+                org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(9);
                 
             }
         }
@@ -1612,6 +1681,7 @@ public class T2DCalib extends AnalysisMonitor{
         return bank;
 
     }
+    double chi2OvNDF=5;
     private int readPID(DataEvent event, int trkId) {
         int pid = 0;
         //fetch the track associated pid from the REC tracking bank
@@ -1623,6 +1693,9 @@ public class T2DCalib extends AnalysisMonitor{
         for (int i = 0; i < rows; i++) {
             if (bank.getByte("detector", i) == 6 &&
                     bank.getShort("index", i) == trkId - 1) {
+                double chi2 = bank.getFloat("chi2", i);
+                int NDF = bank.getShort("NDF", i);
+                if(chi2/(double)NDF>chi2OvNDF) return pid;
                 DataBank bank2 = event.getBank("REC::Particle");
                 if(bank2.getByte("charge", bank.getShort("pindex", i))!=0) {
                     pid = bank2.getInt("pid", bank.getShort("pindex", i));
@@ -1685,6 +1758,7 @@ public class T2DCalib extends AnalysisMonitor{
     private void updateHit(FittedHit hit, boolean flagOT) { 
         double distbeta = TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer()-1)).value(4);
         double v0 = TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer()-1)).value(0);
+        double dmax = TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer()-1)).value(10);
         double d = hit.get_ClusFitDoca();
         double beta = hit.get_Beta();
         if(beta>1.0) {
@@ -1703,7 +1777,8 @@ public class T2DCalib extends AnalysisMonitor{
                     hit.getAlpha(), hit.get_Beta(), hit.getB(), calibTime, 0));
         double ralpha = (double) util.getReducedAngle(hit.getAlpha());
         if(flagOT) {
-            double calctime = calc_Time( hit.get_Doca(),  ralpha, hit.getB(), hit.get_Sector(), hit.get_Superlayer()) ;
+            
+            double calctime = org.jlab.rec.dc.timetodistance.TableLoader.calc_Time( hit.get_Doca(),  ralpha, hit.getB(), hit.get_Sector(), hit.get_Superlayer()) ;
             double deltatimebeta = util.getDeltaTimeBeta(hit.get_Doca(),beta,distbeta, v0);
             calctime+=deltatimebeta;
             if(calibTime-calctime>T2DCalib.DeltaTimeCut) {
@@ -1824,7 +1899,7 @@ public class T2DCalib extends AnalysisMonitor{
                 segMapTBHits.put(cID, new ArrayList<Integer>());
             }
             
-            segMapTBHits.get(cID).add((int)bnkHits.getShort("wire", j));
+            segMapTBHits.get(cID).add((int)(bnkHits.getShort("wire", j)*bnkHits.getByte("LR", j)));
             
         }
         
@@ -1838,6 +1913,7 @@ public class T2DCalib extends AnalysisMonitor{
 
     }
 
+    
     
 
     private boolean passPID(DataEvent event, DataBank bnkHits, int rowIdxinTrkBank) {
@@ -1857,11 +1933,12 @@ public class T2DCalib extends AnalysisMonitor{
         return pass;
     }
     
-    private boolean passResiCuts(DataEvent event, DataBank bnkHits, int i) {
+    private boolean passCuts(DataEvent event, DataBank bnkHits, int i) {
         boolean pass = false;
         
         if (bnkHits.getByte("trkID", i) >0 
                     && bnkHits.getFloat("TFlight", i)>0 
+                    //&& segPropMap.get(bnkHits.getInt("clusterID", i)).getSize()!=Math.abs(segPropMap.get(bnkHits.getInt("clusterID", i)).getSumLR())
                     && Math.abs(bnkHits.getFloat("fitResidual", i))<0.0001*Double.parseDouble(T2DViewer.fitresiCut.getText()) 
                     && this.passPID(event, bnkHits, i)==true)
             {
@@ -1875,10 +1952,6 @@ public class T2DCalib extends AnalysisMonitor{
     private boolean passCalibCuts(DataEvent event, DataBank bnkHits, int i) {
         boolean pass = false;
         if(betaLoaded==false) {
-            double betaLow  = Double.parseDouble(T2DViewer.betaCut.getText());
-            double betaHigh = Double.parseDouble(T2DViewer.betaCut2.getText());   
-            //setBetaAve(0.99);
-           // System.out.println("AVERAGE BETA = "+getBetaAve());
             betaLoaded = true;
         }
         double bFieldVal = (double) bnkHits.getFloat("B", i);
@@ -1887,18 +1960,19 @@ public class T2DCalib extends AnalysisMonitor{
         double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
         double alphaRadUncor = bnkHits.getFloat("Alpha", i)+(double)T2DCalib.polarity*theta0;
         double beta = (double) bnkHits.getFloat("beta", i);
-        
+        //if(beta>1) beta=1;
         if (bnkHits.getByte("trkID", i) >0 
-                    && beta> Double.parseDouble(T2DViewer.betaCut.getText()) 
-                    && beta< Double.parseDouble(T2DViewer.betaCut2.getText()) 
+                    && beta>= Double.parseDouble(T2DViewer.betaCut.getText()) 
+                    && beta<= Double.parseDouble(T2DViewer.betaCut2.getText()) 
                     && this.selectOnAlpha(superlayer, alphaRadUncor)==true
                     && bnkHits.getFloat("TFlight", i)>0 
+                    //&& segPropMap.get(bnkHits.getInt("clusterID", i)).getSize()!=Math.abs(segPropMap.get(bnkHits.getInt("clusterID", i)).getSumLR())
                     && segPropMap.get(bnkHits.getInt("clusterID", i)).getNumWireWithinDW()<=Integer.parseInt(T2DViewer.npassWires.getText())
                     && segPropMap.get(bnkHits.getInt("clusterID", i)).getSize()>Integer.parseInt(T2DViewer.nWires.getText())
                     && Math.abs(bnkHits.getFloat("fitResidual", i))<0.0001*Double.parseDouble(T2DViewer.fitresiCut.getText()) 
                     && this.passPID(event, bnkHits, i)==true
                 )
-            {
+            {   
                 avebeta+=beta;
                 betacnt++;
                 pass = true;
@@ -1944,6 +2018,98 @@ public class T2DCalib extends AnalysisMonitor{
             }
         }
     }
+    private DataBank FixDoubleHitsTFlight(DataEvent event, DataBank HitsBank) {
+        
+        List<FittedHit> bnkHits = new ArrayList<>();
+        for (int i = 0; i < HitsBank.rows(); i++) {
+            bnkHits.add(this.getHit(HitsBank, i));
+        }
+
+        segMap.clear();
+               
+        for (int j = 0; j < bnkHits.size(); j++){
+            Integer cID = bnkHits.get(j).get_AssociatedClusterID();
+            if(cID<0) continue;
+            if(segMap.containsKey(cID)==false) {
+                segMap.put(cID, new ArrayList<FittedHit>()); 
+            }
+            segMap.get(cID).add(bnkHits.get(j));
+        }
+        Iterator<Map.Entry<Integer, ArrayList<FittedHit>>> itr = segMap.entrySet().iterator(); 
+        bnkHits.clear();  
+        while(itr.hasNext()) { 
+            Map.Entry<Integer, ArrayList<FittedHit>> entry = itr.next(); 
+            Collections.sort(entry.getValue());
+            for(int j = 0; j<entry.getValue().size()-1; j++) {
+                if(entry.getValue().get(j).get_Layer()==entry.getValue().get(j+1).get_Layer()) {
+                    if(entry.getValue().get(j).getTFlight()==0) {
+                        entry.getValue().get(j).setTFlight(entry.getValue().get(j+1).getTFlight());
+                    }
+                    if(entry.getValue().get(j+1).getTFlight()==0) {
+                        entry.getValue().get(j+1).setTFlight(entry.getValue().get(j).getTFlight());
+                    }
+                }
+                bnkHits.add(entry.getValue().get(j));
+            }
+            bnkHits.add(entry.getValue().get(entry.getValue().size()-1));
+        }
+        
+        DataBank newHitsBank=fillTBHitsBank( event, bnkHits);
+        
+        return newHitsBank;
+    }
+    private Set<Integer> getSegNumLayer(List<FittedHit> bnkHits) {
+        Set<Integer> hitBankRows = new HashSet<>();
+        segMap2TBHits.clear();
+               
+        for (int j = 0; j < bnkHits.size(); j++){
+            Integer cID = bnkHits.get(j).get_AssociatedClusterID();
+            if(cID<0) continue;
+            if(segMap2TBHits.containsKey(cID)==false) {
+                segMap2TBHits.put(cID, new ArrayList<CalHit>()); 
+            }
+            CalHit ch = new CalHit();
+            int wire = bnkHits.get(j).get_Wire();
+            ch.idx=bnkHits.get(j).get_Id();
+            ch.wire = wire;
+            ch.layer = bnkHits.get(j).get_Layer();
+            segMap2TBHits.get(cID).add(ch);
+            
+        }
+        
+        Iterator<Map.Entry<Integer, ArrayList<CalHit>>> itr = segMap2TBHits.entrySet().iterator(); 
+          
+        while(itr.hasNext()) { 
+            Map.Entry<Integer, ArrayList<CalHit>> entry = itr.next(); 
+            List<Integer> lys = new ArrayList<>();
+            for(CalHit ch : entry.getValue()) {
+                lys.add(ch.layer);
+            }
+            Collections.sort(lys);
+            int size=0;
+            int l =0;
+            for(int i = 0; i<lys.size(); i++) {
+                if(lys.get(i)!=l)
+                    size++;
+                l = lys.get(i); 
+            }
+            if(size>=Integer.parseInt(T2DViewer.numLayers.getText())) {
+                for(CalHit ch : entry.getValue()) {
+                    hitBankRows.add(ch.idx);
+                }
+            } 
+        }
+        return hitBankRows;
+    }   
     
+    private static class CalHit {
+
+        private int wire;
+        private int layer;
+        private int idx;
+
+        public CalHit() {
+        }
+    }
 }
 

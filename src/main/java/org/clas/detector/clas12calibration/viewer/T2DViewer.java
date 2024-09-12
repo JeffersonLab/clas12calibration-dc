@@ -102,6 +102,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     public static JTextField npassWires = new JTextField(3);
     public static JTextField nWires = new JTextField(3);
     public static JTextField deltaWire = new JTextField(3);
+    public static JTextField numLayers = new JTextField(3);
     public static JTextField pid = new JTextField(3);
     public static JTextField usePressureTerm = new JTextField(3);
     public static JTextField enternofevents = new JTextField(3); 
@@ -216,7 +217,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
             Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
         }
         Constants.getInstance().setT2D(1);
-        dcDetector = new DCGeant4Factory(provider, DCGeant4Factory.MINISTAGGERON, true);
+        dcDetector = new DCGeant4Factory(provider, true, true);
 
         // set directory to local
         this.Dir = System.getProperty("user.dir");
@@ -655,6 +656,18 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         y++;
         c.gridx = 0;
         c.gridy = y;
+        trPanel.add(new JLabel("number of layers in segment = ", JLabel.LEADING),c);
+        tgmPanel = new JPanel();
+        numLayers.setText("5");
+        numLayers.addActionListener(this);
+        tgmPanel.add(numLayers);
+        c.gridx = 1;
+	c.gridy = y;
+        trPanel.add(tgmPanel,c);
+        
+        y++;
+        c.gridx = 0;
+        c.gridy = y;
         trPanel.add(new JLabel("usePressureTerm = ", JLabel.LEADING),c);
         tgmPanel = new JPanel();
         usePressureTerm.setText("false");
@@ -725,7 +738,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         c.gridy = y;
         trPanel.add(new JLabel("Load updated B1,B3 constants = ", JLabel.LEADING),c);
         tgmPanel = new JPanel();
-        updatedBConstants.setText("false");
+        updatedBConstants.setText("true");
         updatedBConstants.addActionListener(this);
         tgmPanel.add(updatedBConstants);
         c.gridx = 1;

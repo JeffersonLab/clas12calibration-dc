@@ -17,7 +17,6 @@ import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.clas.detector.clas12calibration.dc.calt2d.SegmentProperty;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
-import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
 import org.clas.detector.clas12calibration.viewer.Driver;
 import org.clas.detector.clas12calibration.viewer.T0Viewer;
@@ -244,7 +243,7 @@ public class T00Calib extends AnalysisMonitor{
             TableLoader.FillT0Tables(newRun, "default");
             TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/t2d_pressure"),
                     T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"),
-                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"));  
+                    T2DViewer.ccdb.getConstants(newRun, "/hall/weather/pressure")); 
             ReadTT.Load(newRun, "default"); 
             runNumber = newRun; 
         }

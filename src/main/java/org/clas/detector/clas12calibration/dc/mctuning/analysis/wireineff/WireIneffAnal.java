@@ -375,7 +375,7 @@ public class WireIneffAnal extends AnalysisMonitor{
             Driver.init();
             TableLoader.FillT0Tables(newRun, "default");TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/t2d_pressure"),
                     T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"),
-                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"));  
+                    T2DViewer.ccdb.getConstants(newRun, "/hall/weather/pressure"));  
             runNumber = newRun;
         }
         if(!event.hasBank("TimeBasedTrkg::TBHits")) {

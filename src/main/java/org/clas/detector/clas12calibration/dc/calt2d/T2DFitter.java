@@ -4,13 +4,10 @@
  */
 package org.clas.detector.clas12calibration.dc.calt2d;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.freehep.math.minuit.FunctionMinimum;
 import org.freehep.math.minuit.MnMigrad;
-import org.jlab.detector.calib.utils.ConstantsManager;
-
 /**
  *
  * @author ziegler
@@ -155,8 +152,9 @@ public class T2DFitter  {
             scanner.setLimits(pi, T2DCalib.limits[pi-1][i][0], T2DCalib.limits[pi-1][i][1]);
             fitter.setLimits(pi, T2DCalib.limits[pi-1][i][0], T2DCalib.limits[pi-1][i][1]);
         }
-        scanner.setLimits(3, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(3)-50, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(3)+50);
-        fitter.setLimits(3, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(3)-50, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(3)+50);
+        System.out.println("tmax"+i+" = "+org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]);
+        scanner.setLimits(3, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]-50, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]+50);
+        fitter.setLimits(3, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]-50, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]+50);
         
         
         try {
