@@ -373,7 +373,7 @@ public class T2DCalib extends AnalysisMonitor{
             
             
             pw = new PrintWriter(fileName);
-            pw.printf("#& sector superlayer component v0 deltanm tmax distbeta delta_bfield_coefficient b1 b2 b3 b4 delta_T0 c1 c2 c3\n");
+            pw.printf("#& sector superlayer component v0_a0 v0_a1 v0_a2 vmid_a0 vmid_a1 vmid_a2 tmax_a0 tmax_a1 tmax_a2 distbeta_a0 distbeta_a1 distbeta_a2 delta_bfield_a0 delta_bfield_a1 delta_bfield_a2 b1_a0 b1_a1 b1_a2 b2_a0 b2_a1 b2_a2 b3_a0 b3_a1 b3_a2 b4_a0 b4_a1 b4_a2 c1_a0 c1_a1\n");
             pw2 = new PrintWriter(fileName2);
             pw2.printf("#& sector superlayer component v0 +/-v0 tmax +/-tmax vmid +/-vmid delta_bf +/-delta_bf distbeta +/-distbeta \n");
             
@@ -440,21 +440,38 @@ public class T2DCalib extends AnalysisMonitor{
             this.getCalib().fireTableDataChanged();    
             for(int isec = 0; isec < 6; isec++) {
                 for(int i = 0; i<6; i++) {
-                    pw.printf("%d\t %d\t %d\t %.6f\t %d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %d\t %.6f\t %.6f\t %d\n",
+                    pw.printf("%d\t %d\t %d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\n",
                     (isec+1), (i+1), 0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(0),
-                    0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(3),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(4),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(5),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(6),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(7),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(8),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(9),
-                    0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(2),
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(1),
-                    0);
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(0), //vo
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(1), //vmid
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(3), //tmax
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(4), //distbeta
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(5), //delta_bfield
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(6), //b1
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(7), //b2
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(8), //b3
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(9), //b4
+                    0.0,
+                    0.0,
+                    TvstrkdocasFitPars.get(new Coordinate(i)).value(2), //R
+                    0.0,
+                    0.0);
                     
                     pw2.printf("%d\t %d\t %d\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\n",
                             (isec+1), (i+1), 0,
@@ -787,7 +804,7 @@ public class T2DCalib extends AnalysisMonitor{
                     this.getAnalysisCanvas().getCanvas("Time Residuals"));
             //if(i==2 || i==3) {
             //    for (int k = 0; k < BBins; k++) {
-            //         this.plotsameTimeResPlot(timeResiB.get(new Coordinate(i,k)), 
+            //         this.fitTimeResPlot(timeResiB.get(new Coordinate(i,k)), 
             //        this.getAnalysisCanvas().getCanvas("Time Residuals"));
             //    }
             //}
@@ -865,7 +882,7 @@ public class T2DCalib extends AnalysisMonitor{
     }
     private void plotsameTimeResPlot(H1F h1, EmbeddedCanvas canvasRes) {
         if (h1==null) return;
-        canvasRes.draw(h1, "E1");
+        canvasRes.draw(h1, "E1same");
     }
     
     public int getAlphaBin(double alpha) {
