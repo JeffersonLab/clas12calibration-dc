@@ -217,8 +217,17 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
             Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
         }
         Constants.getInstance().setT2D(1);
-        dcDetector = new DCGeant4Factory(provider, true, true);
-
+	//all ON
+	//dcDetector = new DCGeant4Factory(provider, DCGeant4Factory.MinistaggerStatus.ON, DCGeant4Factory.FeedthroughsStatus.SHIFT, true, null);
+	//ministagger ON + feedthrough shift but endplate bow off
+	dcDetector = new DCGeant4Factory(provider, DCGeant4Factory.MinistaggerStatus.ON, DCGeant4Factory.FeedthroughsStatus.SHIFT, false, null);
+	//dcDetector = new DCGeant4Factory(provider, true, true);
+ 	 System.out.println(dcDetector.getWireMidpoint(1, 4, 10) + " " +
+                                   dcDetector.getWireDirection(1, 4, 10));
+	 System.out.println(dcDetector.getWireMidpoint(3, 4, 10) + " " +
+                                   dcDetector.getWireDirection(3, 4, 10));
+	 System.out.println(dcDetector.getWireMidpoint(5, 4, 10) + " " +
+                                   dcDetector.getWireDirection(5, 4, 10));
         // set directory to local
         this.Dir = System.getProperty("user.dir");
         System.out.println("Work directory set to " + this.Dir);
