@@ -16,7 +16,7 @@ public class FitLine extends Func1D{
     public int j;
     public int k;
     private FitFunction fc ;
-    private Utilities util = new Utilities();
+    private FcnUtility util = new FcnUtility();
     public boolean useMidBfieldBin=false;
     public boolean useMidAlphaBin=false;
     public FitLine() {
@@ -26,8 +26,8 @@ public class FitLine extends Func1D{
     public static final int nPars = 11;
     private double[] par = new double[nPars];
     public FitLine(String name, int i, int j, int k, MnUserParameters pars) {
-        super(name, 0.0, pars.value(10));
-        this.i = i;
+        super(name, 0.0, pars.value(10));;
+        this.i = i-6*((int) (i/6));
         this.j = j;
         this.k = k;
         fc = new FitFunction();

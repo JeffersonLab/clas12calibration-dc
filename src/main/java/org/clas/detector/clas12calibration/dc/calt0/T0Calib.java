@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.clas.detector.clas12calibration.dc.calt2d.SegmentProperty;
-import org.clas.detector.clas12calibration.dc.calt2d.Utilities;
+import org.clas.detector.clas12calibration.dc.calt2d.FcnUtility;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.groot.data.H1F;
@@ -57,7 +57,7 @@ public class T0Calib extends AnalysisMonitor{
     File outfile3 = null;
     private int runNumber;
     private String analTabs = "Corrected Time + T0";
-    private Utilities util = new Utilities();
+    private FcnUtility util = new FcnUtility();
     public T0Calib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
         this.setAnalysisTabNames(analTabs);

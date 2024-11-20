@@ -1,15 +1,12 @@
 package org.clas.detector.clas12calibration.dc.t2d;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map; 
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
-import org.clas.detector.clas12calibration.dc.calt2d.FitFunction;
 import org.clas.detector.clas12calibration.dc.calt2d.FitLine;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
-import org.clas.detector.clas12calibration.dc.calt2d.Utilities;
+import org.clas.detector.clas12calibration.dc.calt2d.FcnUtility;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
@@ -141,35 +138,37 @@ public class TableLoader {
     }
     private static synchronized void reset(){
         TvsDBr.clear();
-        
-        for (int i = 0; i < 6; i++) {
-            double[] pars = new double[11];
-            pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[0][i];
-            pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[0][i];
-            pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[0][i];
-            pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i];
-            pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[0][i];
-            pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[0][i];
-            pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[0][i];
-            pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[0][i];
-            pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[0][i];
-            pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[0][i];
-            pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
-            MnUserParameters mnp = new MnUserParameters();
-            
-            for(int p = 0; p < 10; p++) {
-                mnp.add(parNames[p], pars[p], errs[p]);
-            }
-            mnp.add(parNames[10], pars[10], errs[10]);
-            for (int j = 0; j < T2DCalib.alphaBins; j++) {
-                for (int k = 0; k < BBins+1; k++) {
-                    TvsDBr.put(new Coordinate(i,j,k), new FitLine("f_"+"i"+i+"j"+j+"k"+k, i, j, k, 
-                               mnp));
-                    TvsDBr.get(new Coordinate(i, j, k)).useMidBfieldBin=true;
-                    TvsDBr.get(new Coordinate(i, j, k)).useMidAlphaBin=true;
-                    TvsDBr.get(new Coordinate(i, j, k)).setRange(0, pars[10]);
-                    TvsDBr.get(new Coordinate(i, j, k)).setLineWidth(2);
-                    TvsDBr.get(new Coordinate(i, j, k)).setLineColor(k+1);
+        for (int s = 0; s < 6; s++) {
+            for (int i0 = 0; i0 < 6; i0++) {
+                int i = i0+s*6;
+                double[] pars = new double[11];
+                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i0];
+                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i0];
+                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i0];
+                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i0];
+                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i0];
+                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i0];
+                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i0];
+                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i0];
+                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i0];
+                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i0];
+                pars[10] = 2.*Constants.getInstance().wpdist[i0];//fix dmax
+                MnUserParameters mnp = new MnUserParameters();
+
+                for(int p = 0; p < 10; p++) {
+                    mnp.add(parNames[p], pars[p], errs[p]);
+                }
+                mnp.add(parNames[10], pars[10], errs[10]);
+                for (int j = 0; j < T2DCalib.alphaBins; j++) {
+                    for (int k = 0; k < BBins+1; k++) {
+                        TvsDBr.put(new Coordinate(i,j,k), new FitLine("f_"+"i"+i+"j"+j+"k"+k, i, j, k, 
+                                   mnp));
+                        TvsDBr.get(new Coordinate(i, j, k)).useMidBfieldBin=true;
+                        TvsDBr.get(new Coordinate(i, j, k)).useMidAlphaBin=true;
+                        TvsDBr.get(new Coordinate(i, j, k)).setRange(0, pars[10]);
+                        TvsDBr.get(new Coordinate(i, j, k)).setLineWidth(2);
+                        TvsDBr.get(new Coordinate(i, j, k)).setLineColor(k+1);
+                    }
                 }
             }
         }
@@ -205,9 +204,9 @@ public class TableLoader {
     public static synchronized void ReFill() {
         //reset
         reset();
-        
+        System.out.println("RESET DONE....");
         org.jlab.rec.dc.timetodistance.TableLoader.DISTFROMTIME = new double[6][6][org.jlab.rec.dc.timetodistance.TableLoader.maxBinIdxB+1][org.jlab.rec.dc.timetodistance.TableLoader.maxBinIdxAlpha+1][org.jlab.rec.dc.timetodistance.TableLoader.betaValues.length][nBinsT]; // sector slyr alpha Bfield time bins [s][r][ibfield][icosalpha][tbin]
-        
+        System.out.println(" T2D TABLE FILLED....");
         org.jlab.rec.dc.timetodistance.TableLoader.FillTable();
         
         if(t2dc.NbRunFit>0) {
@@ -356,7 +355,7 @@ public class TableLoader {
      * @param superlayer superlayer 
      * @return returns time (ns) when given inputs of distance x (cm), local angle alpha (degrees) and magnitude of bfield (Tesla).  
      */
-    private static Utilities util = new Utilities();
+    private static FcnUtility util = new FcnUtility();
     
     private static int getAlphaBinT2DC(double alpha) {
         int v = -1;

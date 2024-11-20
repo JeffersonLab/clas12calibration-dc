@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import javax.swing.JFrame;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.plaf.metal.MetalButtonUI;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
@@ -33,16 +35,21 @@ public class FitPanel {
     
     
     private Map<Integer, ArrayList<Double>> pars     = new HashMap<Integer, ArrayList<Double>>();
-    private double[]          range    = new double[2];
-    private JFrame            frame    = new JFrame();
-    private CustomPanel2      panel    = null;
+    private double[]          range     = new double[2];
+    private JFrame            frame     = new JFrame();
+    private CustomPanel2      panel     = null;            
     private T2DCalib _pM;
 
+    private int getSectorLayer(int i, int s) {
+        return s*6+i;
+    }
     public FitPanel(T2DCalib pM) {
         this._pM = pM;
         //init pars container
-        for(int j = 0; j<6; j++) {
-            pars.put(j, new ArrayList<Double>());
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                pars.put(getSectorLayer(j,s), new ArrayList<Double>());
+            }
         }
     }
     
@@ -73,27 +80,33 @@ public class FitPanel {
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
         if(!this._pM.useBProf) {
-            for(int j = 2; j<4; j++) {
-                for(int i=5; i<10; i++){ 
-                    if(panel.fixFit[i][j].isSelected()==false) {
-                        panel.fixFit[i][j].setSelected(true);
-                        System.out.println("REDO THE SEGMENT FITS BEFORE RELEASING THE B-field DEPENDENT PARAMETERS!");
+            for(int s=0; s<6; s++) {
+                for(int j = 2; j<4; j++) {
+                    for(int i=5; i<10; i++){ 
+                        if(panel.fixFit[i][j][s].isSelected()==false) {
+                            panel.fixFit[i][j][s].setSelected(true);
+                            System.out.println("REDO THE SEGMENT FITS BEFORE RELEASING THE B-field DEPENDENT PARAMETERS!");
+                        }
                     }
                 }
             }
         }
-        boolean[][] fixedPars = new boolean[10][6];
-        for(int j = 0; j<6; j++) {
-            pars.get(j).clear();
+        boolean[][][] fixedPars = new boolean[10][6][6];
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                pars.get(this.getSectorLayer(j, s)).clear();
+            }
         }
         int npar = 10;
-        for(int j = 0; j<6; j++) {
-            for(int i=0; i<npar; i++){   
-                if(panel.params[i][j].getText().isEmpty()){
-                    this.pars.get(j).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
-                }
-                else { 
-                    this.pars.get(j).add(Double.parseDouble(panel.params[i][j].getText()));
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                for(int i=0; i<npar; i++){   
+                    if(panel.params[i][j][s].getText().isEmpty()){
+                        this.pars.get(this.getSectorLayer(j, s)).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
+                    }
+                    else { 
+                        this.pars.get(this.getSectorLayer(j, s)).add(Double.parseDouble(panel.params[i][j][s].getText()));
+                    }
                 }
             }
         }
@@ -101,17 +114,21 @@ public class FitPanel {
         else this.range[0] = 0.0;
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
         else this.range[1] = 2.0;
-        for(int j = 0; j<6; j++) {    
-            for(int i=0; i<npar; i++){
-                TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(j).get(i));
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {    
+                for(int i=0; i<npar; i++){
+                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(this.getSectorLayer(j, s)).get(i));
+                }
             }
         }
         this._pM.initFitParsToFile();
-       
-        for(int j = 0; j<6; j++) {
-            for(int i=0; i<npar; i++){ 
-                if(panel.fixFit[i][j].isSelected()==true)
-                    fixedPars[i][j] = true;
+        
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                for(int i=0; i<npar; i++){ 
+                    if(panel.fixFit[i][j][s].isSelected()==true)
+                        fixedPars[i][j][s] = true;
+                }
             }
         }
         //Don't allow to fit the B>0 profile if they are not filled
@@ -119,17 +136,20 @@ public class FitPanel {
         this._pM.runFit(fixedPars);
          
             //this._pM.runParamScan(j, fixedPars);
-        for(int j = 0; j<6; j++) {    
-            for(int p = 0; p<10; p++) {
-                panel.pars[p][j] = TvstrkdocasFitPars.get(new Coordinate(j)).value(p);
-                if(p!=3) {
-                    panel.params[p][j].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
-                } else {
-                    panel.params[p][j].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+        for(int s = 0; s<6; s++) {        
+            for(int j0 = 0; j0<6; j0++) { 
+                int j = j0+6*s;
+                for(int p = 0; p<10; p++) {
+                    panel.pars[p][j0][s] = TvstrkdocasFitPars.get(new Coordinate(j)).value(p);
+                    if(p!=3) {
+                        panel.params[p][j0][s].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+                    } else {
+                        panel.params[p][j0][s].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+                    }
                 }
+                panel.fixFit[2][j0][s].setSelected(true);
+                panel.fixFit[4][j0][s].setSelected(true);
             }
-            panel.fixFit[2][j].setSelected(true);
-            panel.fixFit[4][j].setSelected(true);
         }
         fitted = true;
         this._pM.plotFits(fitted);
@@ -141,18 +161,20 @@ public class FitPanel {
             System.out.println("PATIENCE ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
             return;
         }
-        boolean[][] fixedPars = new boolean[10][6];
-        for(int j = 0; j<6; j++) {
-            pars.get(j).clear();
-        }
+        boolean[][][] fixedPars = new boolean[10][6][6];
+        
         int npar = 10;
-        for(int j = 0; j<6; j++) {
-            for(int i=0; i<npar; i++){   
-                if(panel.params[i][j].getText().isEmpty()){
-                    this.pars.get(j).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
-                }
-                else { 
-                    this.pars.get(j).add(Double.parseDouble(panel.params[i][j].getText()));
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {
+                int j = j0+6*s;
+                pars.get(j).clear();
+                for(int i=0; i<npar; i++){   
+                    if(panel.params[i][j0][s].getText().isEmpty()){
+                        this.pars.get(j).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
+                    }
+                    else { 
+                        this.pars.get(j).add(Double.parseDouble(panel.params[i][j0][s].getText()));
+                    }
                 }
             }
         }
@@ -160,31 +182,40 @@ public class FitPanel {
         else this.range[0] = 0.0;
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
         else this.range[1] = 2.0;
-        for(int j = 0; j<6; j++) {    
-            for(int i=0; i<npar; i++){
-                TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(j).get(i));
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {
+                int j = j0+6*s;    
+                for(int i=0; i<npar; i++){
+                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(j).get(i));
+                
+                    if(panel.fixFit[i][j0][s].isSelected()==true)
+                        fixedPars[i][j0][s] = true;
+                }
             }
         }
-        
-        for(int j = 0; j<6; j++) {
-            for(int i=0; i<npar; i++){ 
-                if(panel.fixFit[i][j].isSelected()==true)
-                    fixedPars[i][j] = true;
-            }
+        if(panel.runIndivSectors.isSelected()==true) {
+            T2DCalib.minSec=0;
+            T2DCalib.maxSec=6;
+        } else {
+            T2DCalib.minSec=6;
+            T2DCalib.maxSec=7;
         }
         this._pM.runParamScan(fixedPars);
         initscan=true;
-        for(int j = 0; j<6; j++) {    
-            for(int p = 0; p<10; p++) {
-                panel.pars[p][j] = TvstrkdocasFitPars.get(new Coordinate(j)).value(p);
-                if(p!=3) {
-                    panel.params[p][j].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
-                } else {
-                    panel.params[p][j].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {    
+                int j = j0+6*s;
+                for(int p = 0; p<10; p++) {
+                    panel.pars[p][j0][s] = TvstrkdocasFitPars.get(new Coordinate(j)).value(p);
+                    if(p!=3) {
+                        panel.params[p][j0][s].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+                    } else {
+                        panel.params[p][j0][s].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+                    }
                 }
+                panel.fixFit[2][j0][s].setSelected(true);
+                panel.fixFit[4][j0][s].setSelected(true);
             }
-            panel.fixFit[2][j].setSelected(true);
-            panel.fixFit[4][j].setSelected(true);
         }
         fitted = true;
         this._pM.plotFits(fitted);
@@ -211,11 +242,15 @@ public class FitPanel {
     private final class CustomPanel2 extends JPanel {
         JLabel label;
         JPanel panel;
+        
+        JTabbedPane tpane;
         JCheckBox useBprof;
+        JCheckBox runIndivSectors;
     	JTextField minRange = new JTextField(5);
 	JTextField maxRange = new JTextField(5);
-	JTextField[][] params = new JTextField[10][6];
-        JCheckBox[][]    fixFit ;
+	JTextField[][][] params = new JTextField[10][6][6];
+        JCheckBox[][][]  fixFit = new JCheckBox[10][6][6];;
+        JPanel[] secpanels = new JPanel[6];   
         
         JButton   scanButton = null;
         JButton   fitButton = null;
@@ -225,30 +260,26 @@ public class FitPanel {
         JButton   reCookButton = null;
         
         String[] parNames = new String[] {"v0", "vmid", "R", "tmax", "distbeta", "delBf", "b1", "b2", "b3", "b4"};
-        double[][] pars = new double[10][6];
+        double[][][] pars = new double[10][6][6];
         
-        public CustomPanel2(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) { 
-            
-            super(new BorderLayout());
-            for(int i = 0; i < 6; i++) {
-                for(int p = 0; p<10; p++) {
-                    pars[p][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(p);
-                }
-            }
+        private void addSectorPanel(int s) {
+            secpanels[s] = addPanel(s);
+        }
+        private JPanel addPanel(int s) {
             int npar = 10;
-            panel = new JPanel(new GridLayout(npar+2, 6));            
+            JPanel spanel;            
+            spanel = new JPanel(new GridLayout(npar+1, 6));
             for (int i = 0; i < 6; i++) {
                 String SuperLayer = Integer.toString(i + 1);
-                panel.add(new JLabel(""));
-                panel.add(new JLabel("Super Layer " + SuperLayer));
+                spanel.add(new JLabel(""));
+                spanel.add(new JLabel("Superlayer " + SuperLayer));
             }
-            panel.add(new JLabel(""));
-            fixFit = new JCheckBox[10][6];
+            spanel.add(new JLabel(""));
             for (int i = 0; i < npar; i++) {  
                 JLabel l = new JLabel("      "+parNames[i], JLabel.LEADING);
-                panel.add(l);
+                spanel.add(l);
                 for (int j = 0; j < 6; j++) {
-                    fixFit[i][j] = new JCheckBox("Fix");
+                    fixFit[i][j][s] = new JCheckBox("Fix");
                     // aa is true for parameters "R", "distbeta", "b1", "b2", "b3", and "b4"
                     //boolean aa = i==2 || i==4 || i>5;
                     // aa is true for parameters "b1", "b2", "b3", and "b4"
@@ -258,31 +289,57 @@ public class FitPanel {
                     // cc is true for parameter "delBf" on superlayers 1, 2, 5, and 6 only
                     boolean cc = i==5; // && (j==0 || j==1 || j==4 || j==5);
                     if(aa || bb || cc) {
-                        fixFit[i][j].setSelected(true);
+                        fixFit[i][j][s].setSelected(true);
                     } else {
-                        fixFit[i][j].setSelected(false);
+                        fixFit[i][j][s].setSelected(false);
                     }
                     
-                    params[i][j] = new JTextField(3);
+                    params[i][j][s] = new JTextField(3);
                     if(i!=3) {
-                        params[i][j].setText(String.format("%.5f", pars[i][j]));
+                        params[i][j][s].setText(String.format("%.5f", pars[i][j][s]));
                     } else {
-                        params[i][j].setText(String.format("%.3f", pars[i][j]));
+                        params[i][j][s].setText(String.format("%.3f", pars[i][j][s]));
                     }
-                    panel.add(params[i][j]);
-                    panel.add(fixFit[i][j]);
+                    spanel.add(params[i][j][s]);
+                    spanel.add(fixFit[i][j][s]);
                 }
             }
-            panel.add(new JLabel("    Fit range min"));
+            spanel.setVisible(true);
+            return spanel;
+        }
+        
+        public CustomPanel2(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) { 
+            super(new BorderLayout());
+            for(int s =0; s<6; s++) {
+                for(int i = 0; i < 6; i++) {
+                    for(int p = 0; p<10; p++) {
+                        pars[p][i][s] = TvstrkdocasFitPars.get(new Coordinate(i+6*s)).value(p);
+                    }
+                }
+            }
+            panel = new JPanel(new GridLayout(1, 1));
+            panel.setBackground(Color.white);
+            tpane = new JTabbedPane();
+            for(int s=0; s<6; s++) {
+                this.addSectorPanel(s);
+                tpane.addTab("Sector "+(s+1), secpanels[s]);
+            }
+            panel.add(tpane);
+            JPanel settings = new JPanel(new GridLayout(1, 6));
+            settings.add(new JLabel("    Fit range min"));
             minRange.setText(Double.toString(0));
-            panel.add(minRange);
-            panel.add(new JLabel("    Fit range max"));
+            settings.add(minRange);
+            settings.add(new JLabel("    Fit range max"));
             maxRange.setText(Double.toString(2.0));
-            panel.add(maxRange);
+            settings.add(maxRange);
+            settings.add(new JLabel("                  "));
             useBprof = new JCheckBox(" Use B>0 profiles");
             useBprof.setSelected(false);
-            panel.add(useBprof);
-                
+            settings.add(useBprof);
+            settings.add(new JLabel("                  "));
+            runIndivSectors = new JCheckBox(" Fit by sector");
+            settings.add(runIndivSectors);
+            
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new GridLayout(1, 4));
 
@@ -400,8 +457,10 @@ public class FitPanel {
             buttonsPanel.add(resButton);
             buttonsPanel.add(resetButton);
             buttonsPanel.add(saveToFileButton);
-
-            this.add(panel, BorderLayout.CENTER);
+            
+            
+            this.add(panel, BorderLayout.PAGE_START);
+            this.add(settings, BorderLayout.CENTER);
             this.add(buttonsPanel, BorderLayout.PAGE_END);
             
             label = new JLabel("Click the \"Show it!\" button"

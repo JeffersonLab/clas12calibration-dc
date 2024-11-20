@@ -113,8 +113,8 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     String[] calVars = {"default", "dc_team_rga_fall2018", ""};
     public static JComboBox  calVariation ;
     
-    String[] distBetaFCNSelect = {"new", "old"};
-    public static JComboBox  distBetaFCN ;
+    //String[] distBetaFCNSelect = {"new", "old"};
+    //public static JComboBox  distBetaFCN ;
     
 
     
@@ -124,8 +124,8 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     public T2DViewer() throws FileNotFoundException {    
         calVariation = new JComboBox(calVars);
         calVariation.setEditable(true);
-        distBetaFCN = new JComboBox(distBetaFCNSelect);
-        distBetaFCN.setEditable(true);
+        //distBetaFCN = new JComboBox(distBetaFCNSelect);
+        //distBetaFCN.setEditable(true);
         this.monitors = new AnalysisMonitor[]{new T2DCalib("Time to Distance",ccdb)};		
 	// create menu bar
         menuBar = new JMenuBar();
@@ -216,7 +216,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         for(int l=0; l<6; l++) {
             Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
         }
-        Constants.getInstance().setT2D(1);
+        //Constants.getInstance().setT2D(1);
         dcDetector = new DCGeant4Factory(provider, true, true);
 
         // set directory to local
