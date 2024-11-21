@@ -79,6 +79,7 @@ public class T2DFitter  {
         for(int k =0; k<3; k++) {
             result[0][k] = bestR[k];
             result[1][k] = bestDistbeta[k];
+            System.out.println("Best results for R "+bestR[k]+" istbeta "+bestDistbeta[k]);
         }
         return result;
     }
@@ -234,8 +235,8 @@ public class T2DFitter  {
        
         if(reset) {
             for (int p = 0; p < 10; p++) {
-                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(p));
-                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i)).value(p));
+                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
+                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
             }
         }
         System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2);
@@ -253,18 +254,17 @@ public class T2DFitter  {
        
         
         for(int i0 =2*ridx; i0<2*ridx+2; i0++) {
-            int i = i0+6*sec;
             String s2="";
             s2+=(" ******************************************");
-            s2+=("   RUNNING THE PARAMETER FIT FOR SUPERLAYER "+(i+1));
+            s2+=("   RUNNING THE PARAMETER FIT FOR SUPERLAYER "+(i0+1));
             s2+=(" ******************************************");
-            fMin fm2 = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], pars[0], pars[1], false, s2);
+            fMin fm2 = getfMinFixedRDPars(sec, i0, fixFit, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
             if(fm2.getFcnMin().isValid()) {
                 results[i0] = fm2;
                 fmin = fm2.getFcnMin();
                 System.out.println("UPDATED "+fmin.toString());
-                T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i),fmin.userParameters()); 
+                T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i0+6*sec),fmin.userParameters()); 
                 if(sec==6) {
                     for(int s = 0; s<6; s++) {
                         T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i0+6*s),fmin.userParameters()); 

@@ -280,7 +280,7 @@ public class CalUtility {
     static boolean filledBspectra = false;
     public static void UpdateBBinCenters(Map<Coordinate, H1F> B, Map<Coordinate, H1F> BAlphaBins) {
         if(field==0) return;
-         if(filledBspectra) return;
+        if(filledBspectra) return;
         TCanvas can1 = new TCanvas("superlayer3 B", 800, 800);
         TCanvas can2 = new TCanvas("superlayer4 B", 800, 800);
         

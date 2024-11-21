@@ -24,8 +24,6 @@ import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
 import org.clas.detector.clas12calibration.viewer.Driver;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.ccdb;
-import org.freehep.math.minuit.FCNBase;
-import org.freehep.math.minuit.MnMigrad;
 import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.groot.data.H1F;
@@ -36,7 +34,6 @@ import org.jlab.io.base.DataEvent;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.groot.base.TColorPalette;
 import org.jlab.groot.data.GraphErrors;
-import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.io.hipo.HipoDataEvent;
 import org.jlab.io.hipo.HipoDataSource;
 import org.jlab.io.hipo.HipoDataSync;
@@ -145,8 +142,8 @@ public class T2DCalib extends AnalysisMonitor{
     public static int getSuperlayerIdx(int i) {
         return i-6*getSectorIdx(i);
     }
-    public static int getSectorIdx(int i) {
-        return (int) i/6;
+    public static int getSectorIdx(int i) { 
+        return (int) (i/6);
     }
 
     

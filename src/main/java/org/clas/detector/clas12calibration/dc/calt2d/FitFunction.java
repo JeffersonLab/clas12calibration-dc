@@ -17,7 +17,6 @@ import org.jlab.groot.data.GraphErrors;
 public class FitFunction implements FCNBase{
 
     public double beta = 1.0;
-    private FcnUtility util = new FcnUtility();
     
     private Map<Coordinate, GraphErrors> _tvstrkdocasProf;
     private int i;
@@ -45,7 +44,7 @@ public class FitFunction implements FCNBase{
         double Bb4 = par[9]; 
         double R = par[2];
         double dmax = par[10];
-        double deltatime_beta = util.getDeltaTimeBeta(x,beta,distbeta,v_0);
+        double deltatime_beta = FcnUtility.getDeltaTimeBeta(x,beta,distbeta,v_0);
 
         
         double calcTime = polyFcnMac(x,  ralpha,  B,  v_0,  vm,  R, 
@@ -118,7 +117,7 @@ public class FitFunction implements FCNBase{
                      3*Bb3*Math.pow(ihatalpha, 3)*x*x+4*Bb4*Math.pow(ihatalpha, 4)*x*x*x);
         return deltatime_bfield_der;
     } 
-    public static double chi2=0;
+    public static double chi2=Double.POSITIVE_INFINITY;
     @Override
     public double valueOf(double[] par) {
         for(int ii =0; ii<par.length; ii++) {
@@ -131,7 +130,6 @@ public class FitFunction implements FCNBase{
         double delta = 0;
         for (int j = 0; j < T2DCalib.alphaBins; j++) {
             if(this.i>1 && this.i<4) {
-                //for(int k = 0; k < 1; k++) {
                 for(int k = 0; k < T2DCalib.BBins; k++) {
                     if(_tvstrkdocasProf.get(new Coordinate(this.si, j, k)).getVectorX().size()>0){ 
                         //local angle correction
@@ -141,7 +139,7 @@ public class FitFunction implements FCNBase{
                         // correct alpha with theta0, the angle corresponding to the isochrone lines twist due to the electric field
                         alpha-=(double)T2DCalib.polarity*theta0;
                         //reduce the corrected angle
-                        double ralpha = (double) util.getReducedAngle(alpha);
+                        double ralpha = (double) FcnUtility.getReducedAngle(alpha);
                         GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.si, j, k));
                             
                         for (int ix =0; ix< gr.getDataSize(0); ix++) {
@@ -161,7 +159,7 @@ public class FitFunction implements FCNBase{
                     //local angle correction
                     double alpha = T2DCalib.AlphaValuesUpd[i][j][T2DCalib.BBins];
                     //reduce the corrected angle
-                    double ralpha = (double) util.getReducedAngle(alpha);
+                    double ralpha = (double) FcnUtility.getReducedAngle(alpha);
                     GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.si, j, T2DCalib.BBins));
 
                     for (int ix =0; ix< gr.getDataSize(0); ix++) {

@@ -32,7 +32,7 @@ import org.jlab.utils.groups.IndexedList;
  * @author ziegler
  */
 public class HistoUtility {
-    public static int selectedSector = 0;
+   // public static int selectedSectorIdx = 0;
     public static void fill(DataEvent event, DataBank bnkHits, Map<Integer, FittedHit> hitmap, Map<Integer, FittedHit> calhitmap, 
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, FitLine> TvstrkdocasFits, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H1F> timeResiFromFile, 
@@ -45,6 +45,7 @@ public class HistoUtility {
             //if(!T2DCalib.fitBySector) sector=1;
             int slyrIdx = (superlayer-1)+(sector-1)*6;
             int allSlyrIdx = 35+superlayer;
+            //int selectedSlyrIdx = (superlayer-1)+selectedSectorIdx*6;
             // alpha in the bank is corrected for B field.  To fill the alpha bin use the uncorrected value
             double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
             double alphaUncor = bnkHits.getFloat("Alpha", i)+(double)T2DCalib.polarity*theta0;
@@ -72,7 +73,7 @@ public class HistoUtility {
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
                     Tvscalcdocas.get(new Coordinate(allSlyrIdx, alphaBin, BBins))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                    double yf = TvstrkdocasFits.get(new Coordinate(selectedSector, alphaBin, BBins)).evaluate(bnkHits.getFloat("trkDoca", i));
+                    double yf = TvstrkdocasFits.get(new Coordinate(slyrIdx, alphaBin, BBins)).evaluate(bnkHits.getFloat("trkDoca", i));
                     if(!Double.isNaN(yf)) {
                         Tresvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, BBins))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-yf);
@@ -90,7 +91,7 @@ public class HistoUtility {
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
                         Tvscalcdocas.get(new Coordinate(allSlyrIdx, alphaBin, bBin))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                        double r2yf = TvstrkdocasFits.get(new Coordinate(selectedSector, alphaBin, bBin)).evaluate(bnkHits.getFloat("trkDoca", i));
+                        double r2yf = TvstrkdocasFits.get(new Coordinate(slyrIdx, alphaBin, bBin)).evaluate(bnkHits.getFloat("trkDoca", i));
                         if(!Double.isNaN(r2yf)) {
                             Tresvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, bBin))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-r2yf);
