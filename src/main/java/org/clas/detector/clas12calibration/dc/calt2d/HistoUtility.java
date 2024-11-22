@@ -6,10 +6,10 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.AlphaBinHalfWidth;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.AlphaValues;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
-import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.TvstrkdocasFitPars;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.docaBinWidth;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.maxx;
@@ -17,7 +17,6 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.maxy;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.nbinx;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.nbiny;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.timeBinWidth;
-import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
@@ -125,7 +124,7 @@ public class HistoUtility {
 
     public static void createHistos(Map<Coordinate, H1F> timeResi, Map<Coordinate, H1F> timeResiFromFile, 
             Map<Coordinate, H1F> timeResiNew, Map<Coordinate, H1F> fitResi, 
-            Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, Map<Coordinate, GraphErrors> TvstrkdocasProf, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, Map<Coordinate, GraphErrors> TvstrkdocasProf, 
             Map<Coordinate, GraphErrors> TvstrkdocasInit, Map<Coordinate, H2F> Tvstrkdocas, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, 
             Map<Coordinate, FitLine> TvstrkdocasFits, 
@@ -160,7 +159,7 @@ public class HistoUtility {
             for (int i0 = 0; i0 < 6; i0++) {    
                 int i = i0+s*6;
                 DataGroup prfdvst = new DataGroup(1,1);
-                TvstrkdocasFitPars.put(new Coordinate(i), new MnUserParameters());
+                TvstrkdocasFitPars.put(new Coordinate(i), new MinuitPar());
                 for (int j = 0; j < alphaBins; j++) {
                     //DataGroup trkdvst = new DataGroup(1,1);
                     //DataGroup dvst = new DataGroup(1,1);

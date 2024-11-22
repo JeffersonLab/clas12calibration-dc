@@ -8,11 +8,11 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
-import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.TvstrkdocasFitPars;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.errs;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.getSectorIdx;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.getSuperlayerIdx;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.parNames;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.freehep.math.minuit.FCNBase;
 import org.freehep.math.minuit.MnMigrad;
@@ -28,34 +28,60 @@ import org.jlab.rec.dc.Constants;
  * @author ziegler
  */
 public class FitUtility {
+
+    private static void fixPar(int i, MinuitPar mp) {
+        if(mp.fixed[i]==true) {
+        } else {
+            mp.fix(i);
+            mp.fixed[i]=true;
+        }
+    }
+    public static void releasePar(int i, MinuitPar mp) {
+        if(mp.fixed[i]==true) {
+            mp.release(i);
+            mp.fixed[i]=false;
+        } else {
+        }
+    }
+
+    public static void updatePar(MinuitPar mp, MnUserParameters userParameters) {
+        for(int p =0; p<11; p++) {
+            mp.setValue(p, userParameters.value(p));
+            mp.setError(p, userParameters.error(p));
+        }
+    }
+    
     int maxNfits = 10;
-    public void loadFitPars(Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, 
+    public void loadFitPars(Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
                             Map<Coordinate, H1F> ParsVsIter, 
                             double[][] resetPars, String[] parNames,
                             CalibrationConstants calib) throws FileNotFoundException {
         System.out.println("UPDATING TABLE.....");
-        for (int s = 0; s<6; s++) {
+        for (int s = 0; s<7; s++) {
             for (int i0 = 0; i0 < 6; i0++) {
                 double[] pars = new double[11];
                 int i = i0+s*6;
+                int si = s;
+                if(s==6) si = 0; //for all sectors use sector 1
                 //T2DFunctions.polyFcnMac(x, alpha, bfield, v0[s][r], vmid[s][r], FracDmaxAtMinVel[s][r], 
                 //tmax, dmax, delBf, Bb1, Bb2, Bb3, Bb4, superlayer) ;
-                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i0];
-                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i0];
-                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i0];
-                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i0];
-                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i0];
-                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i0];
-                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i0];
-                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i0];
-                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i0];
-                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i0];
+                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[si][i0];
+                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[si][i0];
+                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[si][i0];
+                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[si][i0];
+                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[si][i0];
+                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[si][i0];
+                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[si][i0];
+                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[si][i0];
+                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[si][i0];
+                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[si][i0];
                 pars[10] = 2.*Constants.getInstance().wpdist[i0];//fix dmax
 
                 resetPars[i] = pars;
-                TvstrkdocasFitPars.put(new Coordinate(i), new MnUserParameters());
+                TvstrkdocasFitPars.put(new Coordinate(i), new MinuitPar());
                 for(int p = 0; p < 10; p++) {
                     TvstrkdocasFitPars.get(new Coordinate(i)).add(parNames[p], pars[p], errs[p]);
+                    TvstrkdocasFitPars.get(new Coordinate(i)).fixed[p]=false;
                     //create graphs of parameters for various iterations
                     ParsVsIter.put(new Coordinate(i,p), new H1F("h"+p, "superlayer "+(i+1)+" par "+p,maxNfits+1, 0.5,maxNfits+1.5));
                 }
@@ -83,7 +109,7 @@ public class FitUtility {
         
     }
         
-    public static void updateTable(int i, int j, CalibrationConstants calib, Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) {
+    public static void updateTable(int i, int j, CalibrationConstants calib, Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         int slidx = getSuperlayerIdx(i);
         int secidx = getSectorIdx(i);
         calib.setDoubleValue(TvstrkdocasFitPars.get(new Coordinate(i)).value(0), "v0", secidx+1, slidx+1, j+1);
@@ -100,7 +126,7 @@ public class FitUtility {
     
     }  
 
-    public static void reLoadFitPars(Map<Coordinate, H1F> ParsVsIter) {
+    public static void reLoadFitPars(Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         for (int s =0; s < 6; s++) {
             for (int i0 = 0; i0 < 6; i0++) {
                 int i = i0+s*6;
@@ -127,14 +153,14 @@ public class FitUtility {
         TableLoader.ReFill();
     }
 
-    void resetPars(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, Map<Coordinate, H1F> ParsVsIter, String[] parNames, 
+    void resetPars(Map<Coordinate, MinuitPar> TvstrkdocasFitPars, Map<Coordinate, H1F> ParsVsIter, String[] parNames, 
                    double[][]resetPars) {
         TvstrkdocasFitPars.clear();
         for(int s = 0; s<7; s++) {
             for (int i0 = 0; i0 < 6; i0++) {
                 int i = i0+s*6;
                 double[] pars = resetPars[i];
-                TvstrkdocasFitPars.put(new Coordinate(i), new MnUserParameters());
+                TvstrkdocasFitPars.put(new Coordinate(i), new MinuitPar());
                 for(int p = 0; p < 10; p++) {
                     //TvstrkdocasFitPars.get(new Coordinate(i)).add(parNames[p], pars[p], errs[p]);
                     TvstrkdocasFitPars.get(new Coordinate(i)).add(parNames[p], pars[p]);
@@ -147,14 +173,14 @@ public class FitUtility {
         } }
 
     public void runParamScan(boolean fixFit[][][], 
-            Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             this.runParamScan(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
     }
     private void runParamScan(boolean fixFit[][][], int s, 
-            Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
         int fitFitS =s;
         if(s==6) fitFitS=0;
@@ -162,19 +188,22 @@ public class FitUtility {
         MnMigrad fitter[] = new MnMigrad[6];
         
         for(int i0 =0; i0<6; i0++) {
-            int i =i0+s*6;
-            TvstrkdocasFitPars.get(new Coordinate(i)).fix(10);
+            int i =i0+s*6; System.out.println("******************************************FIXING PAR10 FOR i = "+i+ " s = "+s+" "
+            +TvstrkdocasFitPars.get(new Coordinate(i)).toString());
+            MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(i)).clone();
+            FitUtility.fixPar(10, TvstrkdocasFitParsClon);
+            
             for (int p = 0; p < 10; p++) {
                 if(fixFit[p][i0][fitFitS]==true) {
-                    TvstrkdocasFitPars.get(new Coordinate(i)).fix(p);
+                    FitUtility.fixPar(p, TvstrkdocasFitParsClon);
                 }
             }
             TvstrkdocasFit.put(new Coordinate(i), 
                                          new FitFunction(i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
             scanner[i0] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
-                                                TvstrkdocasFitPars.get(new Coordinate(i)),0);
+                                                TvstrkdocasFitParsClon,0);
             fitter[i0] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
-                                                TvstrkdocasFitPars.get(new Coordinate(i)),1);
+                                                TvstrkdocasFitParsClon,1);
         }
         
         
@@ -188,22 +217,14 @@ public class FitUtility {
             System.out.println(i+"] PARAMETERS R "+pars2[0][i]+" distbeta "+pars2[1][i]);
             T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter);
         }
-        for(int i0 =0; i0<6; i0++) {
-            int i =i0+s*6;
-            TvstrkdocasFitPars.get(new Coordinate(i)).release(10);
-            for (int p = 0; p < 10; p++) {
-                if(fixFit[p][i0][fitFitS]==true) {
-                    TvstrkdocasFitPars.get(new Coordinate(i)).release(p);
-                }
-            }
-        }
+        
     }
 
-    void runFit(boolean[][][] fixFit, Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, 
+    void runFit(boolean[][][] fixFit, Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
             Map<Coordinate, GraphErrors> TvstrkdocasProf) {
-        MnMigrad scanner[] = new MnMigrad[36];
-        MnMigrad fitter[] = new MnMigrad[36];
+        MnMigrad scanner[] = new MnMigrad[6*7];
+        MnMigrad fitter[] = new MnMigrad[6*7];
         double[] pars = new double[2];
         pars[0] = TvstrkdocasFitPars.get(new Coordinate(0)).value(2);
         pars[1] = TvstrkdocasFitPars.get(new Coordinate(0)).value(4);
@@ -214,10 +235,12 @@ public class FitUtility {
             for(int i0 =0; i0<6; i0++) {
                 int i =i0+s*6;
                 if(T2DCalib.maxSec<6) fixFitS=s;
-                TvstrkdocasFitPars.get(new Coordinate(i)).fix(10);
+                FitUtility.fixPar(10, TvstrkdocasFitPars.get(new Coordinate(i)));
+            
                 for (int p = 0; p < 10; p++) {
                     if(fixFit[p][i0][fixFitS]==true) {
-                        TvstrkdocasFitPars.get(new Coordinate(i)).fix(p);
+                        FitUtility.fixPar(p, TvstrkdocasFitPars.get(new Coordinate(i)));
+            
                     }
                 }
                 TvstrkdocasFit.put(new Coordinate(i), 
@@ -234,13 +257,34 @@ public class FitUtility {
             T2DFitter.fitWithFixedPars(fixFit, pars, scanner, fitter, s);
             for(int i0 =0; i0<6; i0++) {
                 int i =i0+s*6;
-                TvstrkdocasFitPars.get(new Coordinate(i)).release(10);
+                FitUtility.releasePar(10, TvstrkdocasFitPars.get(new Coordinate(i)));
                 for (int p = 0; p < 10; p++) {
                     if(fixFit[p][i0][fixFitS]==true) {
-                        TvstrkdocasFitPars.get(new Coordinate(i)).release(p);
+                        FitUtility.releasePar(p, TvstrkdocasFitPars.get(new Coordinate(i)));
                     }
                 }
             }
         }
     }
+    
+    public static class MinuitPar extends MnUserParameters implements Cloneable {
+
+        public boolean[] fixed ;
+
+        public MinuitPar() {
+            fixed= new boolean[11];
+        }
+        
+        protected MinuitPar clone() {
+            MinuitPar cloned = new MinuitPar();
+            for(int p = 0; p<11; p++) {
+                cloned.add(parNames[p], this.value(p), this.error(p));
+                cloned.fixed=this.fixed;
+            }
+            return cloned;
+        }
+
+    }
+
+    
 }

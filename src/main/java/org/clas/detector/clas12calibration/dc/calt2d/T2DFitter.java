@@ -131,6 +131,12 @@ public class T2DFitter  {
     private static fMin getfMinFixedRDPars(int sec, int i, boolean fixFit[][][], MnMigrad scanner, MnMigrad fitter, 
             double R, double distbeta, boolean reset, String s) {
         
+        if(reset) {
+            for (int p = 0; p < 10; p++) {
+                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
+                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
+            }
+        }
         double edm = Double.POSITIVE_INFINITY;
         double edm2 = Double.POSITIVE_INFINITY;
         double bestchi2 = Double.POSITIVE_INFINITY;
@@ -232,24 +238,21 @@ public class T2DFitter  {
             scanner.release(4);
             fitter.release(4);
         }
-       
-        if(reset) {
-            for (int p = 0; p < 10; p++) {
-                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
-                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
-            }
-        }
-        System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2);
-        System.out.println(itercnt2+"] MIGRAD CHI2 "+bestMchi2);
+        System.out.println("R "+R+" db "+distbeta);
+        System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2+" "+min.toString());
+        System.out.println(itercnt2+"] MIGRAD CHI2 "+bestMchi2+" "+min2.toString()+" comp "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).toString());
+        
+        
         
         System.gc();
-        
+        System.out.println(itercnt2+"] OUTPUT  "+min2.toString());
         return new fMin(min2, bestMchi2);
     }
     
     
     
-    public static void fitWithFixedParsPerRegion(int sec, int ridx,boolean fixFit[][][], double pars[], MnMigrad scanner[], MnMigrad fitter[]) { 
+    public static void fitWithFixedParsPerRegion(int sec, int ridx,boolean fixFit[][][], double pars[], 
+            MnMigrad scanner[], MnMigrad fitter[]) { 
         fMin results [] = new fMin[6];
        
         
@@ -263,13 +266,17 @@ public class T2DFitter  {
             if(fm2.getFcnMin().isValid()) {
                 results[i0] = fm2;
                 fmin = fm2.getFcnMin();
-                System.out.println("UPDATED "+fmin.toString());
-                T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i0+6*sec),fmin.userParameters()); 
+                
+                FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)),
+                        fmin.userParameters());
+               
                 if(sec==6) {
                     for(int s = 0; s<6; s++) {
-                        T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i0+6*s),fmin.userParameters()); 
+                        FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*s)),
+                        fmin.userParameters());
                     }
                 }
+                System.out.println("UPDATED "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)).toString());
             } 
         }
     
@@ -289,10 +296,12 @@ public class T2DFitter  {
                 results[i] = fm2;
                 fmin = fm2.getFcnMin();
                 System.out.println("UPDATED "+fmin.toString());
-                T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i+6*sec),fmin.userParameters()); 
+                FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)),
+                        fmin.userParameters());
                 if(sec==6) {
                     for(int s = 0; s<6; s++) {
-                        T2DCalib.TvstrkdocasFitPars.put(new Coordinate(i+6*s),fmin.userParameters()); 
+                        FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)),
+                        fmin.userParameters()); 
                     }
                 }
             } 

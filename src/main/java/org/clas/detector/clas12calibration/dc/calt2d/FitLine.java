@@ -5,7 +5,7 @@
  */
 package org.clas.detector.clas12calibration.dc.calt2d;
 
-import org.freehep.math.minuit.MnUserParameters;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.jlab.groot.math.Func1D;
 /**
  *
@@ -25,7 +25,7 @@ public class FitLine extends Func1D{
     }
     public static final int nPars = 11;
     private double[] par = new double[nPars];
-    public FitLine(String name, int i, int j, int k, MnUserParameters pars) {
+    public FitLine(String name, int i, int j, int k, MinuitPar pars) {
         super(name, 0.0, pars.value(10));;
         this.i = i-6*((int) (i/6));
         this.j = j;
@@ -34,7 +34,7 @@ public class FitLine extends Func1D{
         this.initParameters(pars);
     }
 
-    private void initParameters(MnUserParameters pars) {
+    private void initParameters(MinuitPar pars) {
         for(int p = 0; p< nPars; p++) {
             par[p] = pars.value(p);
         }

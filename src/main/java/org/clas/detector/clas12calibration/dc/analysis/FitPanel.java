@@ -26,8 +26,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.plaf.metal.MetalButtonUI;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
-import org.freehep.math.minuit.MnUserParameters;
 
 
 public class FitPanel {
@@ -52,7 +52,7 @@ public class FitPanel {
         }
     }
     
-    public void openFitPanel(String title, Map<Coordinate, MnUserParameters> TvstrkdocasFitPars){
+    public void openFitPanel(String title, Map<Coordinate, MinuitPar> TvstrkdocasFitPars){
         frame    = new JFrame();
         panel = new CustomPanel2(TvstrkdocasFitPars);
         frame.setSize(350, 300); 
@@ -75,7 +75,7 @@ public class FitPanel {
     }
     public boolean fitted = false;
     public boolean initscan = false;
-    public void refit(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) throws FileNotFoundException{
+    public void refit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
         if(!this._pM.useBProf) {
@@ -114,12 +114,14 @@ public class FitPanel {
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
         else this.range[1] = 2.0;
         for(int s = 0; s<6; s++) {
-            for(int j = 0; j<6; j++) {    
+            for(int j0 = 0; j0<6; j0++) {  
+                int j = j0+6*s;
                 for(int i=0; i<npar; i++){
                     TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(this.getSectorLayer(j, s)).get(i));
                 }
             }
         }
+        
         this._pM.initFitParsToFile();
         
         for(int s = 0; s<6; s++) {
@@ -155,13 +157,19 @@ public class FitPanel {
         this._pM.pw3.close();
     }
     
-    public void parscan(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) throws FileNotFoundException{
+    public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         if(this._pM.eventProcessingDone==false) {
             System.out.println("PATIENCE ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
             return;
         }
         boolean[][][] fixedPars = new boolean[10][6][6];
-        
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {    
+                int j = j0+6*s;
+                panel.fixFit[2][j0][s].setSelected(false);
+                panel.fixFit[4][j0][s].setSelected(false);
+            }
+        }
         int npar = 10;
         for(int s = 0; s<6; s++) {
             for(int j0 = 0; j0<6; j0++) {
@@ -181,13 +189,26 @@ public class FitPanel {
         else this.range[0] = 0.0;
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
         else this.range[1] = 2.0;
-        for(int s = 0; s<6; s++) {
+        for(int s = 0; s<7; s++) {
             for(int j0 = 0; j0<6; j0++) {
                 int j = j0+6*s;    
-                for(int i=0; i<npar; i++){
-                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(j).get(i));
+                int jp = j;
                 
-                    if(panel.fixFit[i][j0][s].isSelected()==true)
+                    System.out.println("PARS NULL............................... "+j+" "
+                            +TvstrkdocasFitPars.get(new Coordinate(j)).toString());
+                if(s==6) {
+                    jp = j0;
+                }
+                for(int i=0; i<npar; i++){
+                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(jp).get(i));
+                }
+            }
+        }
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {
+                int j = j0+6*s;   
+                for(int i=0; i<npar; i++){
+                    if(panel.fixFit[i][j0][s].isSelected()==true) 
                         fixedPars[i][j0][s] = true;
                 }
             }
@@ -199,6 +220,7 @@ public class FitPanel {
             T2DCalib.minSec=6;
             T2DCalib.maxSec=7;
         }
+        panel.setVisible(true);
         this._pM.runParamScan(fixedPars);
         initscan=true;
         for(int s = 0; s<6; s++) {
@@ -245,6 +267,7 @@ public class FitPanel {
         JTabbedPane tpane;
         JCheckBox useBprof;
         JCheckBox runIndivSectors;
+        JCheckBox debug;
     	JTextField minRange = new JTextField(5);
 	JTextField maxRange = new JTextField(5);
 	JTextField[][][] params = new JTextField[10][6][6];
@@ -307,7 +330,7 @@ public class FitPanel {
             return spanel;
         }
         
-        public CustomPanel2(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) { 
+        public CustomPanel2(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) { 
             super(new BorderLayout());
             for(int s =0; s<6; s++) {
                 for(int i = 0; i < 6; i++) {
@@ -331,13 +354,16 @@ public class FitPanel {
             settings.add(new JLabel("    Fit range max"));
             maxRange.setText(Double.toString(2.0));
             settings.add(maxRange);
-            settings.add(new JLabel("                  "));
+            settings.add(new JLabel("             "));
             useBprof = new JCheckBox(" Use B>0 profiles");
             useBprof.setSelected(false);
             settings.add(useBprof);
-            settings.add(new JLabel("                  "));
+            settings.add(new JLabel("              "));
             runIndivSectors = new JCheckBox(" Fit by sector");
+            settings.add(new JLabel("              "));
             settings.add(runIndivSectors);
+            debug = new JCheckBox(" Debug mode");
+            settings.add(debug);
             
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new GridLayout(1, 4));

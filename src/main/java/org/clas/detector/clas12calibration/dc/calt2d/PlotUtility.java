@@ -7,9 +7,9 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 import java.io.PrintWriter;
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
-import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.groot.base.TColorPalette;
 import org.jlab.groot.data.DataLine;
@@ -204,7 +204,7 @@ public class PlotUtility {
     }
 
     public static void plotFits(PrintWriter pw, PrintWriter pw2, int NbRunFit, Map<Coordinate, H1F> ParsVsIter, 
-            Map<Coordinate, MnUserParameters> TvstrkdocasFitPars, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasProf, CalibrationConstants calib,
             EmbeddedCanvas canvas) {
         int ij=0;

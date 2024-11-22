@@ -36,6 +36,7 @@ public class CalUtility {
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, H2F> Tresvstrkdocas, 
             HipoDataSource calreader, List<FittedHit> hits, List<FittedHit> calhits, 
             Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasProf,
+            Map<Coordinate, FitUtility.MinuitPar> TvstrkdocasFitPars,
             boolean useBProf) {
         for (int i = 0; i < 6; i++) {
             timeResi.get(new Coordinate(i)).reset();
@@ -113,7 +114,7 @@ public class CalUtility {
         System.out.println("*************************************************");
         
         
-        FitUtility.reLoadFitPars(ParsVsIter);
+        FitUtility.reLoadFitPars(ParsVsIter,TvstrkdocasFitPars);
         //Parameters are now fit values
         System.out.println("************  Fit Parameters Reloaded! ************");
         calreader.gotoEvent(0);

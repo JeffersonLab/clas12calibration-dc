@@ -19,12 +19,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.clas.detector.clas12calibration.dc.analysis.FitPanel;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
 import org.clas.detector.clas12calibration.viewer.Driver;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.ccdb;
-import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
@@ -99,7 +99,7 @@ public class T2DCalib extends AnalysisMonitor{
     private Map<Coordinate, GraphErrors> TvstrkdocasProf        = new HashMap<Coordinate, GraphErrors>();
     private final Map<Coordinate, GraphErrors> TvstrkdocasInit  = new HashMap<Coordinate, GraphErrors>();
     private Map<Coordinate, FitFunction> TvstrkdocasFit         = new HashMap<Coordinate, FitFunction>();
-    public static Map<Coordinate, MnUserParameters> TvstrkdocasFitPars = new HashMap<Coordinate, MnUserParameters>();
+    public static Map<Coordinate, MinuitPar> TvstrkdocasFitPars = new HashMap<Coordinate, MinuitPar>();
     public  Map<Coordinate, FitLine> TvstrkdocasFits            = new HashMap<Coordinate, FitLine>();
     private Map<Coordinate, H1F> timeResi                       = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> timeResiFromFile               = new HashMap<Coordinate, H1F>();
@@ -364,7 +364,7 @@ public class T2DCalib extends AnalysisMonitor{
         fp.setRedFitButton();
         //reset histos to refill
         CalUtility.reCook(timeResi, timeResiNew, timeResiB, A, B, BAlphaBins, Tvstrkdocas, Tvscalcdocas, Tresvstrkdocas, 
-                calreader, hits, calhits, ParsVsIter, TvstrkdocasFits, TvstrkdocasProf, useBProf);
+                calreader, hits, calhits, ParsVsIter, TvstrkdocasFits, TvstrkdocasProf, TvstrkdocasFitPars, useBProf);
         fp.setGreenFitButton();
         
     }
@@ -523,8 +523,8 @@ public class T2DCalib extends AnalysisMonitor{
         
     }
     
-    private double[][] resetPars = new double[36][11];
-    private String[] parNames = {"v0", "vmid", "R", "tmax", "distbeta", "delBf", 
+    private double[][] resetPars = new double[6*7][11];
+    public static String[] parNames = {"v0", "vmid", "R", "tmax", "distbeta", "delBf", 
         "b1", "b2", "b3", "b4", "dmax"};
     
     public static double[] errs = {0.00001,0.00001,0.01,0.1,0.01,0.001,0.00001,0.00001,0.00001,0.00001,0.0000001};
@@ -549,7 +549,7 @@ public class T2DCalib extends AnalysisMonitor{
         
     }
     private void reLoadFitPars() {
-        fitUtil.reLoadFitPars(ParsVsIter);
+        fitUtil.reLoadFitPars(ParsVsIter,TvstrkdocasFitPars);
     }
     
     public void Plot(int i , int j) {
@@ -595,10 +595,10 @@ public class T2DCalib extends AnalysisMonitor{
     
     public void resetPars(int i, boolean[][] fixFit) {
         // reset
-        TvstrkdocasFitPars.get(new Coordinate(i)).release(10);
+        FitUtility.releasePar(10, TvstrkdocasFitPars.get(new Coordinate(i)));
         for (int p = 0; p < 10; p++) {
             if(fixFit[p][i]==true) {
-                TvstrkdocasFitPars.get(new Coordinate(i)).release(p);
+                FitUtility.releasePar(p, TvstrkdocasFitPars.get(new Coordinate(i)));
             }
         }
     }

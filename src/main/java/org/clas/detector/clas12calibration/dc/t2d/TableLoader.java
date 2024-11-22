@@ -7,6 +7,7 @@ import org.clas.detector.clas12calibration.dc.calt2d.FitLine;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
 import org.clas.detector.clas12calibration.dc.calt2d.FcnUtility;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
@@ -109,7 +110,7 @@ public class TableLoader {
             pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[0][i];
             pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[0][i];
             pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
-            MnUserParameters mnp = new MnUserParameters();
+            MinuitPar mnp = new MinuitPar();
             
             for(int p = 0; p < 10; p++) {
                 mnp.add(parNames[p], pars[p], errs[p]);
@@ -153,7 +154,7 @@ public class TableLoader {
                 pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i0];
                 pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i0];
                 pars[10] = 2.*Constants.getInstance().wpdist[i0];//fix dmax
-                MnUserParameters mnp = new MnUserParameters();
+                MinuitPar mnp = new MinuitPar();
 
                 for(int p = 0; p < 10; p++) {
                     mnp.add(parNames[p], pars[p], errs[p]);
