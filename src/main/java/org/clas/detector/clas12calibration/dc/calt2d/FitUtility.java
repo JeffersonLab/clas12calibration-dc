@@ -4,6 +4,7 @@
  */
 package org.clas.detector.clas12calibration.dc.calt2d;
 
+
 import java.io.FileNotFoundException;
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
@@ -29,7 +30,7 @@ import org.jlab.rec.dc.Constants;
  */
 public class FitUtility {
 
-    private static void fixPar(int i, MinuitPar mp) {
+    public static void fixPar(int i, MinuitPar mp) {
         if(mp.fixed[i]==true) {
         } else {
             mp.fix(i);
@@ -49,6 +50,44 @@ public class FitUtility {
             mp.setValue(p, userParameters.value(p));
             mp.setError(p, userParameters.error(p));
         }
+    }
+    
+    public static void initParsForFit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            boolean[][][] fixFit) {
+        for(int s =0; s<7; s++) {
+            int fitFitS =s;
+             if(s==6) fitFitS=0;
+            for(int i0 =0; i0<6; i0++) {
+                int i =i0+s*6; 
+                MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(i));
+                
+                for (int p = 0; p < 10; p++) {
+                    TvstrkdocasFitParsClon.fixed[p]=false; 
+                    if(fixFit[p][i0][fitFitS]==true) {
+                        FitUtility.fixPar(p, TvstrkdocasFitParsClon);
+                    }
+                }
+                TvstrkdocasFitParsClon.fixed[10]=false; 
+                FitUtility.fixPar(10, TvstrkdocasFitParsClon);
+                //Fix r, distbeta//
+                FitUtility.fixPar(2, TvstrkdocasFitParsClon);
+                FitUtility.fixPar(4, TvstrkdocasFitParsClon);
+
+                
+            }
+        }    
+    }
+    public static void releaseParsAfterFit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
+        for(int s =0; s<7; s++) {
+            for(int i0 =0; i0<6; i0++) {
+                int i =i0+s*6; 
+                MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(i));
+                
+                for (int p = 0; p < 11; p++) {
+                    FitUtility.releasePar(p, TvstrkdocasFitParsClon);
+                }
+            }
+        }    
     }
     
     int maxNfits = 10;
@@ -170,7 +209,8 @@ public class FitUtility {
                 //TvstrkdocasFitPars.get(new Coordinate(i)).add(parNames[10], pars[10], errs[10]);
                 TvstrkdocasFitPars.get(new Coordinate(i)).add(parNames[10], pars[10]);
             }
-        } }
+        } 
+    }
 
     public void runParamScan(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
@@ -182,8 +222,7 @@ public class FitUtility {
     private void runParamScan(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
-        int fitFitS =s;
-        if(s==6) fitFitS=0;
+       
         MnMigrad scanner[] = new MnMigrad[6];
         MnMigrad fitter[] = new MnMigrad[6];
         
@@ -191,24 +230,23 @@ public class FitUtility {
             int i =i0+s*6; System.out.println("******************************************FIXING PAR10 FOR i = "+i+ " s = "+s+" "
             +TvstrkdocasFitPars.get(new Coordinate(i)).toString());
             MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(i)).clone();
-            FitUtility.fixPar(10, TvstrkdocasFitParsClon);
             
-            for (int p = 0; p < 10; p++) {
-                if(fixFit[p][i0][fitFitS]==true) {
-                    FitUtility.fixPar(p, TvstrkdocasFitParsClon);
-                }
-            }
             TvstrkdocasFit.put(new Coordinate(i), 
                                          new FitFunction(i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
             scanner[i0] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
                                                 TvstrkdocasFitParsClon,0);
             fitter[i0] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
                                                 TvstrkdocasFitParsClon,1);
+            for(int p =0; p<11; p++) {
+                if(TvstrkdocasFitPars.get(new Coordinate(i)).fixed[p]) {
+                    scanner[i0].fix(p);
+                    System.out.println("spars "+scanner[i0].parameters().toString());
+                    System.out.println("fpars "+fitter[i0].parameters().toString());
+                    //fitter[i0].fix(p);
+                }
+            }
         }
         
-        
-        //double[] pars = this.estimateFixedPars(fixFit, scanner, fitter);
-        //System.out.println("PARAMETERS R "+pars[0]+" distbeta "+pars[1]);
         double[][] pars2 = T2DFitter.estimateFixedParsPerRegion(fixFit, scanner, fitter, s);
         for(int i = 0; i<3; i++) {
             double[] pars = new double[2];
@@ -229,43 +267,33 @@ public class FitUtility {
         pars[0] = TvstrkdocasFitPars.get(new Coordinate(0)).value(2);
         pars[1] = TvstrkdocasFitPars.get(new Coordinate(0)).value(4);
         
-        int fixFitS = 0;
-        
-        for(int s =T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
+        for(int s =0; s<7; s++) {
             for(int i0 =0; i0<6; i0++) {
                 int i =i0+s*6;
-                if(T2DCalib.maxSec<6) fixFitS=s;
-                FitUtility.fixPar(10, TvstrkdocasFitPars.get(new Coordinate(i)));
-            
-                for (int p = 0; p < 10; p++) {
-                    if(fixFit[p][i0][fixFitS]==true) {
-                        FitUtility.fixPar(p, TvstrkdocasFitPars.get(new Coordinate(i)));
-            
-                    }
-                }
+                
                 TvstrkdocasFit.put(new Coordinate(i), 
                                              new FitFunction(i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
                 scanner[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
                                                     TvstrkdocasFitPars.get(new Coordinate(i)),0);
                 fitter[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(i)), 
                                                     TvstrkdocasFitPars.get(new Coordinate(i)),1);
-
+                for(int p =0; p<11; p++) {
+                if(TvstrkdocasFitPars.get(new Coordinate(i)).fixed[p]) {
+                        scanner[i0].fix(p);
+                        System.out.println("spars "+scanner[i0].parameters().toString());
+                        System.out.println("fpars "+fitter[i0].parameters().toString());
+                        //fitter[i0].fix(p);
+                    }
+                }
             }
         }
         
         for(int s =T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             T2DFitter.fitWithFixedPars(fixFit, pars, scanner, fitter, s);
-            for(int i0 =0; i0<6; i0++) {
-                int i =i0+s*6;
-                FitUtility.releasePar(10, TvstrkdocasFitPars.get(new Coordinate(i)));
-                for (int p = 0; p < 10; p++) {
-                    if(fixFit[p][i0][fixFitS]==true) {
-                        FitUtility.releasePar(p, TvstrkdocasFitPars.get(new Coordinate(i)));
-                    }
-                }
-            }
         }
     }
+    
+
     
     public static class MinuitPar extends MnUserParameters implements Cloneable {
 

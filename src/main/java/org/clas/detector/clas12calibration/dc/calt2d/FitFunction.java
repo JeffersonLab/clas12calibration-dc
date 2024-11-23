@@ -126,7 +126,7 @@ public class FitFunction implements FCNBase{
             }
         }
         double chisq = 0;
-        chi2 = 0;
+        chi2 = Double.POSITIVE_INFINITY;
         double delta = 0;
         for (int j = 0; j < T2DCalib.alphaBins; j++) {
             if(this.i>1 && this.i<4) {

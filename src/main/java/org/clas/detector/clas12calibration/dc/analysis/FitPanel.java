@@ -5,6 +5,7 @@
  */
 package org.clas.detector.clas12calibration.dc.analysis;
 
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -76,6 +77,7 @@ public class FitPanel {
     public boolean fitted = false;
     public boolean initscan = false;
     public void refit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
+        if(TvstrkdocasFitPars==null)  TvstrkdocasFitPars=this._pM.TvstrkdocasFitPars;
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
         if(!this._pM.useBProf) {
@@ -113,15 +115,38 @@ public class FitPanel {
         else this.range[0] = 0.0;
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
         else this.range[1] = 2.0;
-        for(int s = 0; s<6; s++) {
-            for(int j0 = 0; j0<6; j0++) {  
-                int j = j0+6*s;
+        
+        //
+        for(int s = 0; s<7; s++) {
+            for(int j0 = 0; j0<6; j0++) {
+                int j = j0+6*s;    
+                int jp = j;
+                
+                if(s==6) {
+                    jp = j0;
+                }
                 for(int i=0; i<npar; i++){
-                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(this.getSectorLayer(j, s)).get(i));
+                    TvstrkdocasFitPars.get(new Coordinate(j)).setValue(i,this.pars.get(jp).get(i));
                 }
             }
         }
-        
+        for(int s = 0; s<6; s++) {
+            for(int j0 = 0; j0<6; j0++) {
+                int j = j0+6*s;   
+                for(int i=0; i<npar; i++){
+                    if(panel.fixFit[i][j0][s].isSelected()==true) 
+                        fixedPars[i][j0][s] = true;
+                }
+            }
+        }
+        if(panel.runIndivSectors.isSelected()==true) {
+            T2DCalib.minSec=0;
+            T2DCalib.maxSec=6;
+        } else {
+            T2DCalib.minSec=6;
+            T2DCalib.maxSec=7;
+        }
+        //
         this._pM.initFitParsToFile();
         
         for(int s = 0; s<6; s++) {
@@ -194,8 +219,6 @@ public class FitPanel {
                 int j = j0+6*s;    
                 int jp = j;
                 
-                    System.out.println("PARS NULL............................... "+j+" "
-                            +TvstrkdocasFitPars.get(new Coordinate(j)).toString());
                 if(s==6) {
                     jp = j0;
                 }
@@ -220,7 +243,6 @@ public class FitPanel {
             T2DCalib.minSec=6;
             T2DCalib.maxSec=7;
         }
-        panel.setVisible(true);
         this._pM.runParamScan(fixedPars);
         initscan=true;
         for(int s = 0; s<6; s++) {

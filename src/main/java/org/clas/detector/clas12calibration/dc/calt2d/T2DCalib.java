@@ -345,11 +345,15 @@ public class T2DCalib extends AnalysisMonitor{
     
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][]) {
+        fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
     }
     
     public void runFit(boolean fixFit[][][]) {
+        fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
     }
     
     

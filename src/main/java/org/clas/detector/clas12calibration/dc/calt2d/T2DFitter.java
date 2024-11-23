@@ -4,6 +4,7 @@
  */
 package org.clas.detector.clas12calibration.dc.calt2d;
 
+
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.freehep.math.minuit.FunctionMinimum;
 import org.freehep.math.minuit.MnMigrad;
@@ -142,9 +143,6 @@ public class T2DFitter  {
         double bestchi2 = Double.POSITIVE_INFINITY;
         double bestMchi2 = Double.POSITIVE_INFINITY;
         
-        int fitFitS =sec;
-        if(sec==6) fitFitS=0;
-        
         System.out.println(s); 
         FunctionMinimum min = null ;
         FunctionMinimum bestmin = null ;
@@ -161,29 +159,16 @@ public class T2DFitter  {
             scanner.setLimits(pi, T2DCalib.limits[pi-1][i][0], T2DCalib.limits[pi-1][i][1]);
             fitter.setLimits(pi, T2DCalib.limits[pi-1][i][0], T2DCalib.limits[pi-1][i][1]);
         }
-        System.out.println("tmax"+i+" = "+org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]);
+        
         scanner.setLimits(3, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]-50, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]+50);
         fitter.setLimits(3, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]-50, org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i]+50);
         
+        //fix scan parameters
+        scanner.setValue(2,R);
+        fitter.setValue(2,R);
+        scanner.setValue(4,distbeta);
+        fitter.setValue(4,distbeta);
         
-        try {
-            min = scanner.minimize();
-        } catch (Exception e) {
-            // Handle the exception appropriately
-            System.err.println("An error occurred during minimization: " + e.getMessage());
-            // You may want to log the exception or take other actions depending on your application
-        }
-        if(fixFit[2][i][fitFitS]==false) {
-            min.userParameters().setValue(2,R);
-            scanner.fix(2);
-            fitter.fix(2);
-        }
-        
-        if(fixFit[4][i][fitFitS]==false) {
-            min.userParameters().setValue(4,distbeta);
-            scanner.fix(4);
-            fitter.fix(4);
-        }
         int itercnt=0;
         for(int it = 0; it<maxIter; it++) {
                 try {
@@ -202,8 +187,10 @@ public class T2DFitter  {
                 if(edm-FitFunction.chi2<0.1 || FitFunction.chi2+10>edm) break;
                 edm = FitFunction.chi2;
         } 
-        for (int p = 0; p < 10; p++) {
-            fitter.setValue(p, bestmin.userParameters().value(p));
+        if(bestmin!=null) {
+            for (int p = 0; p < 10; p++) {
+                fitter.setValue(p, bestmin.userParameters().value(p));
+            }
         }
         
         int itercnt2=0;
@@ -230,23 +217,16 @@ public class T2DFitter  {
             bestmin2 = bestmin;
         }
         
-        if(fixFit[2][i][fitFitS]==false) {
-            scanner.release(2);
-            fitter.release(2);
-        }
-        if(fixFit[4][i][fitFitS]==false) {
-            scanner.release(4);
-            fitter.release(4);
-        }
-        System.out.println("R "+R+" db "+distbeta);
-        System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2+" "+min.toString());
-        System.out.println(itercnt2+"] MIGRAD CHI2 "+bestMchi2+" "+min2.toString()+" comp "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).toString());
+        
+        //System.out.println("R "+R+" db "+distbeta);
+        //System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2+" "+min.toString());
+        //System.out.println(itercnt2+"] MIGRAD CHI2 "+bestMchi2+" "+min2.toString()+" comp "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).toString());
         
         
         
         System.gc();
-        System.out.println(itercnt2+"] OUTPUT  "+min2.toString());
-        return new fMin(min2, bestMchi2);
+        System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
+        return new fMin(bestmin2, bestMchi2);
     }
     
     
@@ -263,21 +243,23 @@ public class T2DFitter  {
             s2+=(" ******************************************");
             fMin fm2 = getfMinFixedRDPars(sec, i0, fixFit, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
-            if(fm2.getFcnMin().isValid()) {
-                results[i0] = fm2;
-                fmin = fm2.getFcnMin();
-                
-                FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)),
-                        fmin.userParameters());
-               
-                if(sec==6) {
-                    for(int s = 0; s<6; s++) {
-                        FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*s)),
-                        fmin.userParameters());
-                    }
+            if(!fm2.getFcnMin().isValid()) {
+                System.out.println("FIT NOT VALID!!!");
+            }
+            results[i0] = fm2;
+            fmin = fm2.getFcnMin();
+
+            FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)),
+                    fmin.userParameters());
+
+            if(sec==6) {
+                for(int s = 0; s<6; s++) {
+                    FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*s)),
+                    fmin.userParameters());
                 }
-                System.out.println("UPDATED "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)).toString());
-            } 
+            }
+            System.out.println("UPDATED "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)).toString());
+            
         }
     
     }
@@ -287,9 +269,9 @@ public class T2DFitter  {
         for(int i =0; i<6; i++) {
             
             String s2="";
-            s2+=(" ******************************************");
-            s2+=("   RUNNING THE PARAMETER FIT FOR SUPERLAYER "+(i+1));
-            s2+=(" ******************************************");
+            s2+=(" ************************************************************************");
+            s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[0]+"]["+pars[0]+"]");
+            s2+=(" ************************************************************************");
             fMin fm2 = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
             if(fm2.getFcnMin().isValid()) {
