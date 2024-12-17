@@ -236,7 +236,8 @@ public class CalUtility {
         }
         System.out.println("RECOOKING DONE WITH THE NEW CONSTANTS!");
         System.out.println("CHECK THE RESIDUALS!");
-        calreader.close();    
+        calreader.close();  
+       // System.gc();
     }
     
     public static int getAlphaBin(double alpha) {

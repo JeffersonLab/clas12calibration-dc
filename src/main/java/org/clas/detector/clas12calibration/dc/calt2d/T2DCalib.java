@@ -333,16 +333,26 @@ public class T2DCalib extends AnalysisMonitor{
     double[][] chi2FitNum = new double[100][6];
     int[] fitNum =new int[6];
     
+    public static boolean runParallel = true;
+    
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][],Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
-        fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        if(runParallel) {
+            fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        } else {
+            fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
     }
     
     public void runFit(boolean fixFit[][][], Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
-        fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        if(runParallel) {
+            fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        } else {
+            fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
     }
     
@@ -530,10 +540,8 @@ public class T2DCalib extends AnalysisMonitor{
         fitUtil.resetPars(TvstrkdocasFitPars, ParsVsIter, parNames,resetPars);
         fp.openFitPanel("fit panel", TvstrkdocasFitPars);
         reLoadFitPars();
-        
-        
-        
     }
+    
     public void loadFitPars() throws FileNotFoundException {
         
         fitUtil.loadFitPars(Tvstrkdocas, TvstrkdocasFitPars, TvstrkdocasFits, ParsVsIter, resetPars, parNames, this.getCalib());

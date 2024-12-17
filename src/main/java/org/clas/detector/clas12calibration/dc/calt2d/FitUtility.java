@@ -6,7 +6,13 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
@@ -229,6 +235,40 @@ public class FitUtility {
             T2DViewer.voice.speak("Parameter Scan done for Sector "+(s+1));
         }
     }
+    public void runParamScanParallel(boolean fixFit[][][], 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, 
+            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+    
+        // Create a FixedThreadPool (number of threads can be adjusted as needed)
+        int numThreads = 4;  // Adjust the number of threads based on your system capabilities
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Create a list to keep track of futures (optional, for waiting for task completion)
+        List<Future<?>> futures = new ArrayList<>();
+
+        // Submit tasks for each sector to be executed in parallel
+        for (int s = T2DCalib.minSec; s < T2DCalib.maxSec; s++) {
+            // Submit a task to the executor for each sector
+            final int sector = s;
+            futures.add(executor.submit(() -> {
+                this.runParamScan(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                T2DViewer.voice.speak("Parameter Scan done for Sector " + (sector + 1));
+            }));
+        }
+
+        // Wait for all tasks to finish 
+        try {
+            for (Future<?> future : futures) {
+                future.get();  // Waits for each task to complete
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            // Shut down the executor to release resources
+            executor.shutdown();
+        }
+    }
     private void runParamScan(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
@@ -237,8 +277,6 @@ public class FitUtility {
         MnMigrad fitter[] = new MnMigrad[6];
         
         for(int i =0; i<6; i++) {
-            System.out.println("******************************************FIXING PAR10 FOR i = "+i+ " s = "+s+" "
-            +TvstrkdocasFitPars.get(new Coordinate(s,i)).toString());
             MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)).clone();
             
             TvstrkdocasFit.put(new Coordinate(s,i), 
@@ -269,8 +307,8 @@ public class FitUtility {
     void runFit(boolean[][][] fixFit, Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
             Map<Coordinate, GraphErrors> TvstrkdocasProf) {
-        MnMigrad scanner[] = new MnMigrad[6*7];
-        MnMigrad fitter[] = new MnMigrad[6*7];
+        MnMigrad scanner[][] = new MnMigrad[7][6];
+        MnMigrad fitter[][] = new MnMigrad[7][6];
         double[][][] pars = new double[7][6][2];
         
         
@@ -280,18 +318,71 @@ public class FitUtility {
                 pars[s][i][1] = TvstrkdocasFitPars.get(new Coordinate(s,i)).value(4);
                 TvstrkdocasFit.put(new Coordinate(s,i), 
                                              new FitFunction(s,i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
-                scanner[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
+                scanner[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
                                                     TvstrkdocasFitPars.get(new Coordinate(s,i)),0);
-                fitter[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
+                fitter[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
                                                     TvstrkdocasFitPars.get(new Coordinate(s,i)),1);
             }
         }
         
         for(int s =T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
-            T2DFitter.fitWithFixedPars(pars, scanner, fitter, s);
+            T2DFitter.fitWithFixedPars(pars, scanner[s], fitter[s], s);
         }
     }
-    
+
+    public void runFitParallel(boolean[][][] fixFit, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, 
+            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+
+        // Create a FixedThreadPool with a specified number of threads
+        int numThreads = 4;  // Adjust the number of threads based on your system's capabilities
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Prepare the necessary data structures
+        MnMigrad[][] scanner = new MnMigrad[7][6];
+        MnMigrad[][] fitter = new MnMigrad[7][6];
+        double[][][] pars = new double[7][6][2];
+
+        // Prepare parameters and set up fitting functions
+        for (int s = 0; s < 7; s++) {
+            for (int i = 0; i < 6; i++) {
+                pars[s][i][0] = TvstrkdocasFitPars.get(new Coordinate(s, i)).value(2);
+                pars[s][i][1] = TvstrkdocasFitPars.get(new Coordinate(s, i)).value(4);
+                TvstrkdocasFit.put(new Coordinate(s, i), new FitFunction(s, i, TvstrkdocasProf));
+                scanner[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                        TvstrkdocasFitPars.get(new Coordinate(s, i)), 0);
+                fitter[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                        TvstrkdocasFitPars.get(new Coordinate(s, i)), 1);
+            }
+        }
+
+        // List to hold futures for tracking task completion
+        List<Future<?>> futures = new ArrayList<>();
+
+        // Submit tasks for each sector (parallelize this part)
+        for (int s = T2DCalib.minSec; s < T2DCalib.maxSec; s++) {
+            final int sector = s;
+            futures.add(executor.submit(() -> {
+                // Perform the fitting for this sector
+                T2DFitter.fitWithFixedPars(pars, scanner[sector], fitter[sector], sector);
+                // Optionally, you can provide feedback here if needed
+                T2DViewer.voice.speak("Fitting done for Sector " + (sector + 1));
+            }));
+        }
+
+        // Wait for all tasks to finish (optional, can be skipped if you don't need to block until all tasks complete)
+        try {
+            for (Future<?> future : futures) {
+                future.get();  // Wait for each task to finish
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            // Shut down the executor service
+            executor.shutdown();
+        }
+    }
 
     
     public static class MinuitPar extends MnUserParameters implements Cloneable {

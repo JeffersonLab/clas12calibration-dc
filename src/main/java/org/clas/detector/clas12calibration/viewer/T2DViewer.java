@@ -4,14 +4,11 @@
  * and open the template in the editor.
  */
 package org.clas.detector.clas12calibration.viewer;
-import com.sun.speech.freetts.Age;
-import com.sun.speech.freetts.Gender;
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
-import com.sun.speech.freetts.en.us.CMUDiphoneVoice;
-import com.sun.speech.freetts.en.us.CMULexicon;
 import org.jlab.logging.DefaultLogger;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -101,8 +98,8 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     
     
     private JLabel[] superlayer = {new JLabel("", JLabel.CENTER),new JLabel("", JLabel.CENTER),new JLabel("", JLabel.CENTER),new JLabel("", JLabel.CENTER),new JLabel("", JLabel.CENTER),new JLabel("", JLabel.CENTER)};
-    public static JTextField[] alphaCuts1 = {new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9)};
-    public static JTextField[] alphaCuts2 = {new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9),new JTextField(9)};
+    public static JTextField[] alphaCuts1 = {new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3)};
+    public static JTextField[] alphaCuts2 = {new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3),new JTextField(3)};
     public static JTextField betaCut = new JTextField(3);
     public static JTextField betaCut2 = new JTextField(3);
     public static JTextField fitresiCut = new JTextField(3);
@@ -494,7 +491,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     
     public void configure() {
 
-        configFrame.setSize(900, 830);
+        configFrame.setSize(700, 850);
         //configFrame.setSize(1000, 600); // vnc size
         configFrame.setLocationRelativeTo(mainPanel);
         configFrame.setDefaultCloseOperation(configFrame.DO_NOTHING_ON_CLOSE);
@@ -504,16 +501,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         JPanel stepPanel = new JPanel(new GridBagLayout());
         stepOuterPanel.add(stepPanel, BorderLayout.NORTH);
         GridBagConstraints c = new GridBagConstraints();
-
-//        for (int i=0; i< engines.length; i++) {
-//                c.gridx = 0; c.gridy = i;
-//                c.anchor = c.WEST;
-//                stepChecks[i].setName(engines[i].stepName);
-//                stepChecks[i].setText(engines[i].stepName);
-//                stepChecks[i].setSelected(true);
-//                stepChecks[i].addActionListener(this);
-//                stepPanel.add(stepChecks[i],c);
-//        }
         JPanel butPage1 = new configButtonPanel(this, false, "Next");
         stepOuterPanel.add(butPage1, BorderLayout.SOUTH);
 
@@ -522,9 +509,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         // Previous calibration values
         JPanel confOuterPanel = new JPanel(new BorderLayout());
         Box confPanel = new Box(BoxLayout.Y_AXIS);
-        
-        
-
         JPanel butPage2 = new configButtonPanel(this, false, "Next");
         confOuterPanel.add(confPanel, BorderLayout.NORTH);
         confOuterPanel.add(butPage2, BorderLayout.SOUTH);
@@ -535,6 +519,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         // Tracking options
         JPanel trOuterPanel = new JPanel(new BorderLayout());
         JPanel trPanel = new JPanel(new GridBagLayout());
+        trPanel.setBackground(Color.white);
         trOuterPanel.add(trPanel, BorderLayout.NORTH);
         c.weighty = 1;
         c.anchor = c.NORTHWEST;
@@ -549,7 +534,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         JPanel tgmPanel = new JPanel();
         for(int i = 0; i < 6; i++) {
             //superlayer[i].setText("Superlayer "+(i+1)+"    ");
-            superlayer[i].setText("Superlayer "+(i+1)+"   ");
+            superlayer[i].setText(" Slyr "+(i+1)+"  ");
             tgmPanel.add(superlayer[i]);
         }
         trPanel.add(tgmPanel,c);
@@ -744,7 +729,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 //        c.gridx = 1;
 //	c.gridy = y;
 //        trPanel.add(tgmPanel,c);
-        
+    
         y++;
         c.gridx = 0;
         c.gridy = y;
@@ -756,7 +741,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         c.gridx = 1;
         c.gridy = y;
         trPanel.add(tgmPanel,c);
-
+    
         y++;
         c.gridx = 0;
         c.gridy = y;

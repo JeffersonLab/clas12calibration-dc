@@ -133,7 +133,7 @@ public class FitPanel {
             for(int j = 0; j<6; j++) {
                 for(int i=0; i<npar; i++){   
                     if(panel.params[i][j][s].getText().isEmpty()){
-                        this.pars.get(new Coordinate(s, j)).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
+                        this.pars.get(new Coordinate(s, j)).add(TvstrkdocasFitPars.get(new Coordinate(s, j)).value(i));
                     }
                     else { 
                         this.pars.get(new Coordinate(s, j)).add(Double.parseDouble(panel.params[i][j][s].getText()));
@@ -150,13 +150,13 @@ public class FitPanel {
         for(int s = 0; s<6; s++) {
             for(int j = 0; j<6; j++) {
                 for(int i=0; i<npar; i++){
-                    TvstrkdocasFitPars.get(new Coordinate(s,j)).setValue(i,this.pars.get(j).get(i));
+                    TvstrkdocasFitPars.get(new Coordinate(s,j)).setValue(i,this.pars.get(new Coordinate(s, j)).get(i));
                 }
             }
         }
         for(int j = 0; j<6; j++) {
             for(int i=0; i<npar; i++){
-                TvstrkdocasFitPars.get(new Coordinate(6,j)).setValue(i,this.pars.get(j).get(i));
+                TvstrkdocasFitPars.get(new Coordinate(6,j)).setValue(i,this.pars.get(new Coordinate(6, j)).get(i));
             }
         }
         if(panel.runIndivSectors.isSelected()==true) {
@@ -220,7 +220,7 @@ public class FitPanel {
                 pars.get(new Coordinate(s,j)).clear();
                 for(int i=0; i<npar; i++){   
                     if(panel.params[i][j][s].getText().isEmpty()){
-                        this.pars.get(new Coordinate(s,j)).add(TvstrkdocasFitPars.get(new Coordinate(j)).value(i));
+                        this.pars.get(new Coordinate(s,j)).add(TvstrkdocasFitPars.get(new Coordinate(s,j)).value(i));
                     }
                     else { 
                         this.pars.get(new Coordinate(s,j)).add(Double.parseDouble(panel.params[i][j][s].getText()));

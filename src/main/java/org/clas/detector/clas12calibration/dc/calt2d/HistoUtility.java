@@ -31,98 +31,103 @@ import org.jlab.utils.groups.IndexedList;
  * @author ziegler
  */
 public class HistoUtility {
-   // public static int selectedSectorIdx = 0;
+   
     public static void fill(DataEvent event, DataBank bnkHits, Map<Integer, FittedHit> hitmap, Map<Integer, FittedHit> calhitmap, 
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, FitLine> TvstrkdocasFits, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H1F> timeResiFromFile, 
             Map<Coordinate, H1F> A, Map<Coordinate, H1F> B,
             Map<Integer, SegmentProperty> segPropMap) {
+        
         int allSecIdx = 6;
+
         for (int i = 0; i < bnkHits.rows(); i++) {
-            double bFieldVal = (double) bnkHits.getFloat("B", i);
+            // Pre-compute commonly used values
+            double bFieldVal = bnkHits.getFloat("B", i);
             int superlayer = bnkHits.getInt("superlayer", i);
             int sector = bnkHits.getInt("sector", i);
-            int slyrIdx = superlayer-1;
-            int secIdx = sector-1;
-            
-            // alpha in the bank is corrected for B field.  To fill the alpha bin use the uncorrected value
-            double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
-            double alphaUncor = bnkHits.getFloat("Alpha", i)+(double)T2DCalib.polarity*theta0;
-            int alphaBin = CalUtility.getAlphaBin(alphaUncor); 
-            if(alphaBin==-1) 
-                continue;
+            int slyrIdx = superlayer - 1;
+            int secIdx = sector - 1;
+            double theta0 = Math.toDegrees(Math.acos(1 - 0.02 * bFieldVal));
+            double alphaUncor = bnkHits.getFloat("Alpha", i) + (double) T2DCalib.polarity * theta0;
+            int alphaBin = CalUtility.getAlphaBin(alphaUncor);
+
+            if (alphaBin == -1) continue;  // Skip if alphaBin is invalid
+
+            // Create the current FittedHit
             FittedHit theHit = HitUtility.getHit(bnkHits, i);
-            if(HitUtility.passCalibCuts(event, bnkHits, i,segPropMap)){//no previous entries
-                if(hitmap.get(theHit.get_Id())==null) {
+
+            // First pass: Calibration hits (if not already processed)
+            if (HitUtility.passCalibCuts(event, bnkHits, i, segPropMap)) {
+                if (hitmap.get(theHit.get_Id()) == null) {
                     hitmap.put(theHit.get_Id(), theHit);
                 }
             }
-            if(HitUtility.passCuts(event,bnkHits, i) && calhitmap.get(theHit.get_Id())==null){ 
+
+            // Second pass: Process calibrated hits
+            if (HitUtility.passCuts(event, bnkHits, i) && calhitmap.get(theHit.get_Id()) == null) {
                 calhitmap.put(theHit.get_Id(), theHit);
-                if(!T2DCalib.refitSegs) { 
-                    double calibTime = (double) (bnkHits.getInt("TDC", i) - bnkHits.getFloat("TProp", i)
-                                            - bnkHits.getFloat("TFlight", i) - bnkHits.getFloat("TStart", i) 
-                                            - bnkHits.getFloat("T0", i));
-                    
-                    Tvstrkdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
-                                    .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                    Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
-                                    .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                    Tvscalcdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
-                                    .fill(bnkHits.getFloat("doca", i), calibTime);
-                    Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
-                                    .fill(bnkHits.getFloat("doca", i), calibTime);
-                   
-                    double yf = TvstrkdocasFits.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins)).evaluate(bnkHits.getFloat("trkDoca", i));
-                   
-                    if(!Double.isNaN(yf)) {
-                        Tresvstrkdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
-                                        .fill(bnkHits.getFloat("trkDoca", i), calibTime-yf);
-                        Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
-                                        .fill(bnkHits.getFloat("trkDoca", i), calibTime-yf);
+
+                if (!T2DCalib.refitSegs) {
+                    // Common coordinate for all sector bins
+                    Coordinate coordBase = new Coordinate(secIdx, slyrIdx, alphaBin, BBins);
+                    Coordinate coordAllSec = new Coordinate(allSecIdx, slyrIdx, alphaBin, BBins);
+
+                    // Calibration time calculation
+                    double calibTime = (bnkHits.getInt("TDC", i) - bnkHits.getFloat("TProp", i)
+                        - bnkHits.getFloat("TFlight", i) - bnkHits.getFloat("TStart", i)
+                        - bnkHits.getFloat("T0", i));
+
+                    // Fill the data in the maps
+                    Tvstrkdocas.get(coordBase).fill(bnkHits.getFloat("trkDoca", i), calibTime);
+                    Tvstrkdocas.get(coordAllSec).fill(bnkHits.getFloat("trkDoca", i), calibTime);
+                    Tvscalcdocas.get(coordBase).fill(bnkHits.getFloat("doca", i), calibTime);
+                    Tvscalcdocas.get(coordAllSec).fill(bnkHits.getFloat("doca", i), calibTime);
+
+                    double yf = TvstrkdocasFits.get(coordBase).evaluate(bnkHits.getFloat("trkDoca", i));
+                    if (!Double.isNaN(yf)) {
+                        Tresvstrkdocas.get(coordBase).fill(bnkHits.getFloat("trkDoca", i), calibTime - yf);
+                        Tresvstrkdocas.get(coordAllSec).fill(bnkHits.getFloat("trkDoca", i), calibTime - yf);
                     }
-                    //Fill region 2 for different b-field values
-                    if(superlayer>2 && superlayer<5) { 
+
+                    // Region 2 (superlayer between 3 and 4)
+                    if (superlayer > 2 && superlayer < 5) {
                         int bBin = CalUtility.getBBin(bFieldVal);
-                        Tvstrkdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
-                                    .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                        Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
-                                    .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                        Tvscalcdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
-                                    .fill(bnkHits.getFloat("doca", i), calibTime);
-                        Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
-                                    .fill(bnkHits.getFloat("doca", i), calibTime);
-                        double r2yf = TvstrkdocasFits.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin)).evaluate(bnkHits.getFloat("trkDoca", i));
-                        if(!Double.isNaN(r2yf)) {
-                            Tresvstrkdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
-                                        .fill(bnkHits.getFloat("trkDoca", i), calibTime-r2yf);
-                            Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
-                                        .fill(bnkHits.getFloat("trkDoca", i), calibTime-r2yf);
+                        Coordinate coordRegion2 = new Coordinate(secIdx, slyrIdx, alphaBin, bBin);
+                        Coordinate coordAllSecRegion2 = new Coordinate(allSecIdx, slyrIdx, alphaBin, bBin);
+
+                        Tvstrkdocas.get(coordRegion2).fill(bnkHits.getFloat("trkDoca", i), calibTime);
+                        Tvstrkdocas.get(coordAllSecRegion2).fill(bnkHits.getFloat("trkDoca", i), calibTime);
+                        Tvscalcdocas.get(coordRegion2).fill(bnkHits.getFloat("doca", i), calibTime);
+                        Tvscalcdocas.get(coordAllSecRegion2).fill(bnkHits.getFloat("doca", i), calibTime);
+
+                        double r2yf = TvstrkdocasFits.get(coordRegion2).evaluate(bnkHits.getFloat("trkDoca", i));
+                        if (!Double.isNaN(r2yf)) {
+                            Tresvstrkdocas.get(coordRegion2).fill(bnkHits.getFloat("trkDoca", i), calibTime - r2yf);
+                            Tresvstrkdocas.get(coordAllSecRegion2).fill(bnkHits.getFloat("trkDoca", i), calibTime - r2yf);
                         }
                     }
                 }
-                // fill uncalibrated plot
-                timeResiFromFile.get(new Coordinate(bnkHits.getInt("superlayer", i) - 1))
-                                .fill(bnkHits.getFloat("timeResidual", i));
-                //Fill region 2 for different b-field values
-                if(superlayer<3 || superlayer>4) { 
-                    A.get(new Coordinate(superlayer-1, alphaBin, BBins))
-                                .fill(alphaUncor);
-                    //System.out.println("Filling alpha for spl "+superlayer+" alpha bin "+alphaBin+" alpha "+alphaUncor);
+
+                // Fill uncalibrated plot
+                Coordinate timeResiCoord = new Coordinate(superlayer - 1);
+                timeResiFromFile.get(timeResiCoord).fill(bnkHits.getFloat("timeResidual", i));
+
+                // Region 2 filling for alpha and b-field bins
+                if (superlayer < 3 || superlayer > 4) {
+                    A.get(new Coordinate(superlayer - 1, alphaBin, BBins)).fill(alphaUncor);
                 }
-                    
-                    // fill B values histograms
-                if(superlayer ==3 || superlayer ==4) {
+
+                // Fill B values for superlayer 3 and 4
+                if (superlayer == 3 || superlayer == 4) {
                     int bBin = CalUtility.getBBin(bFieldVal);
-                    B.get(new Coordinate(superlayer-3, alphaBin, bBin))
-                            .fill(bFieldVal);
-                    A.get(new Coordinate(superlayer-1, alphaBin, CalUtility.getBBin(bFieldVal)))
-                            .fill(alphaUncor);
-                    //System.out.println("Filling alpha for spl "+superlayer+" alpha bin "+alphaBin+" Bin "+this.getBBin(bFieldVal)+" alpha "+alphaUncor);
+                    B.get(new Coordinate(superlayer - 3, alphaBin, bBin)).fill(bFieldVal);
+                    A.get(new Coordinate(superlayer - 1, alphaBin, bBin)).fill(alphaUncor);
                 }
             }
-        } 
+        }
     }
+
+
 
     public static void createHistos(Map<Coordinate, H1F> timeResi, Map<Coordinate, H1F> timeResiFromFile, 
             Map<Coordinate, H1F> timeResiNew, Map<Coordinate, H1F> fitResi, 
@@ -229,7 +234,7 @@ public class HistoUtility {
         dataGroup.add(tr, 3,0,0);
         dataGroup.add(trb, 4,0,0);
         dataGroup.add(fr, 5,0,0);
-        
+        System.gc();
     }
     
     
