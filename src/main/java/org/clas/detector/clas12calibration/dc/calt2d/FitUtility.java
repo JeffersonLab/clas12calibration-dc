@@ -35,6 +35,11 @@ import org.jlab.rec.dc.Constants;
  */
 public class FitUtility {
 
+    /**
+     * Fix parameter utility
+     * @param i
+     * @param mp 
+     */
     public static void fixPar(int i, MinuitPar mp) {
         if(mp.fixed[i]==true) {
         } else {
@@ -42,6 +47,11 @@ public class FitUtility {
             mp.fixed[i]=true;
         }
     }
+    /**
+     * Release parameter utility
+     * @param i
+     * @param mp 
+     */
     public static void releasePar(int i, MinuitPar mp) {
         if(mp.fixed[i]==true) {
             mp.release(i);
@@ -49,22 +59,29 @@ public class FitUtility {
         } else {
         }
     }
-
+    /**
+     * Update parameter utility
+     * @param mp
+     * @param userParameters 
+     */
     public static void updatePar(MinuitPar mp, MnUserParameters userParameters) {
         for(int p =0; p<11; p++) {
             mp.setValue(p, userParameters.value(p));
             mp.setError(p, userParameters.error(p));
         }
     }
-    
+    /**
+     * Sets parameters for fitting
+     * @param TvstrkdocasFitPars
+     * @param fixFit 
+     */
     public static void initParsForFit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             boolean[][][] fixFit) {
-        for(int s =0; s<7; s++) {
+        for(int s =0; s<7; s++) {// loops over all sectors and sector-average
             int fitFitS =s;
             if(s==6) fitFitS=0;
-            for(int i =0; i<6; i++) {
-                MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i));
-                System.out.println(s+"] FOR FIT ...."+TvstrkdocasFitParsClon.toString());
+            for(int i =0; i<6; i++) {//loops over superlayers 
+                MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)); //makes a copy of the pars
                 for (int p = 0; p < 10; p++) { 
                     TvstrkdocasFitParsClon.fixed[p]=false; 
                     if(fixFit[p][i][fitFitS]==true) {
@@ -76,16 +93,17 @@ public class FitUtility {
                 //Fix r, distbeta//
                 FitUtility.fixPar(2, TvstrkdocasFitParsClon);
                 FitUtility.fixPar(4, TvstrkdocasFitParsClon);
-
-                 System.out.println("FOR FIT ...."+TvstrkdocasFitParsClon.toString());
             }
         }    
     }
+    /**
+     * Releases parameters after the fit
+     * @param TvstrkdocasFitPars 
+     */
     public static void releaseParsAfterFit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         for(int s =0; s<7; s++) {
             for(int i =0; i<6; i++) {
                 MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i));
-                 System.out.println(s+"] A FIT ...."+TvstrkdocasFitParsClon.toString());
                 for (int p = 0; p < 11; p++) {
                     FitUtility.releasePar(p, TvstrkdocasFitParsClon);
                 }
@@ -93,20 +111,31 @@ public class FitUtility {
         }    
     }
     
-    int maxNfits = 10;
+    int maxNfits = 10; //the maximum number of fit iterations
+    /**
+     * Loads the fit parameters
+     * @param Tvstrkdocas
+     * @param TvstrkdocasFitPars
+     * @param TvstrkdocasFits
+     * @param ParsVsIter
+     * @param resetPars
+     * @param parNames
+     * @param calib
+     * @throws FileNotFoundException 
+     */
     public void loadFitPars(Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
                             Map<Coordinate, FitLine> TvstrkdocasFits,
                             Map<Coordinate, H1F> ParsVsIter, 
-                            double[][] resetPars, String[] parNames,
+                            double[][][] resetPars, String[] parNames,
                             CalibrationConstants calib) throws FileNotFoundException {
         System.out.println("UPDATING TABLE.....");
         for (int s = 0; s<7; s++) {
             for (int i = 0; i < 6; i++) {
                 double[] pars = new double[11];
                 int si = s;
-                if(s==6) si = 0; //for all sectors use sector 1
-                //T2DFunctions.polyFcnMac(x, alpha, bfield, v0[s][r], vmid[s][r], FracDmaxAtMinVel[s][r], 
-                //tmax, dmax, delBf, Bb1, Bb2, Bb3, Bb4, superlayer) ;
+                if(s==6) si = 0; //for all sectors use sector 1 values as input
+                //Parameters order: v0[s][r], vmid[s][r], FracDmaxAtMinVel[s][r], 
+                //                  tmax, delBf, Bb1, Bb2, Bb3, Bb4, dmax ;
                 pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[si][i];
                 pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[si][i];
                 pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[si][i];
@@ -119,7 +148,7 @@ public class FitUtility {
                 pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[si][i];
                 pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
 
-                resetPars[i] = pars;
+                resetPars[s][i] = pars;
                 TvstrkdocasFitPars.put(new Coordinate(s,i), new MinuitPar());
                 for(int p = 0; p < 10; p++) {
                     TvstrkdocasFitPars.get(new Coordinate(s,i)).add(parNames[p], pars[p], errs[p]);
@@ -167,7 +196,14 @@ public class FitUtility {
         }
         System.out.println("TABLE UPDATED");
     }
-        
+    /**
+     * Updates the constants table
+     * @param secidx
+     * @param slidx
+     * @param j
+     * @param calib
+     * @param TvstrkdocasFitPars 
+     */    
     public static void updateTable(int secidx, int slidx, int j, CalibrationConstants calib, Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
        
         calib.setDoubleValue(TvstrkdocasFitPars.get(new Coordinate(secidx, slidx)).value(0), "v0", secidx+1, slidx+1, j+1);
@@ -183,7 +219,11 @@ public class FitUtility {
    
     
     }  
-
+    /**
+     * reloads the updated parameters
+     * @param ParsVsIter
+     * @param TvstrkdocasFitPars 
+     */
     public static void reLoadFitPars(Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         for (int s =0; s < 6; s++) {
             for (int i = 0; i < 6; i++) {
@@ -201,21 +241,27 @@ public class FitUtility {
                 org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i] = TvstrkdocasFitPars.get(new Coordinate(s,i)).value(8);
                 org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i] = TvstrkdocasFitPars.get(new Coordinate(s,i)).value(9);
                 for(int p = 0; p<6; p++) {
-                    ParsVsIter.get(new Coordinate(i,p)).setBinContent(0, TvstrkdocasFitPars.get(new Coordinate(s,i)).value(p));
-                    ParsVsIter.get(new Coordinate(i,p)).setBinError(0, TvstrkdocasFitPars.get(new Coordinate(s,i)).error(p));
+                    ParsVsIter.get(new Coordinate(i,p)).setBinContent(T2DCalib.iterationNum, TvstrkdocasFitPars.get(new Coordinate(s,i)).value(p));
+                    ParsVsIter.get(new Coordinate(i,p)).setBinError(T2DCalib.iterationNum, TvstrkdocasFitPars.get(new Coordinate(s,i)).error(p));
                 }
             }
         }
         
         TableLoader.ReFill();
     }
-
+    /**
+     * Resets the parameters to the default values
+     * @param TvstrkdocasFitPars
+     * @param ParsVsIter
+     * @param parNames
+     * @param resetPars 
+     */
     void resetPars(Map<Coordinate, MinuitPar> TvstrkdocasFitPars, Map<Coordinate, H1F> ParsVsIter, String[] parNames, 
-                   double[][]resetPars) {
+                   double[][][]resetPars) {
         TvstrkdocasFitPars.clear();
         for(int s = 0; s<7; s++) {
             for (int i = 0; i < 6; i++) {
-                double[] pars = resetPars[i];
+                double[] pars = resetPars[s][i];
                 TvstrkdocasFitPars.put(new Coordinate(s,i), new MinuitPar());
                 for(int p = 0; p < 10; p++) {
                     TvstrkdocasFitPars.get(new Coordinate(s,i)).add(parNames[p], pars[p]);
@@ -226,7 +272,13 @@ public class FitUtility {
             }
         } 
     }
-
+    /**
+     * Runs the parameter scan in single-threaded mode
+     * @param fixFit
+     * @param TvstrkdocasFitPars
+     * @param TvstrkdocasFit
+     * @param TvstrkdocasProf 
+     */
     public void runParamScan(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
@@ -235,6 +287,13 @@ public class FitUtility {
             T2DViewer.voice.speak("Parameter Scan done for Sector "+(s+1));
         }
     }
+    /**
+     * Runs the parameter scan in multi-threaded mode
+     * @param fixFit
+     * @param TvstrkdocasFitPars
+     * @param TvstrkdocasFit
+     * @param TvstrkdocasProf 
+     */
     public void runParamScanParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
@@ -269,6 +328,14 @@ public class FitUtility {
             executor.shutdown();
         }
     }
+    /**
+     * Run the parameter scan for sector index = s
+     * @param fixFit
+     * @param s
+     * @param TvstrkdocasFitPars
+     * @param TvstrkdocasFit
+     * @param TvstrkdocasProf 
+     */
     private void runParamScan(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
@@ -277,6 +344,7 @@ public class FitUtility {
         MnMigrad fitter[] = new MnMigrad[6];
         
         for(int i =0; i<6; i++) {
+            //make a parameter clone
             MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)).clone();
             
             TvstrkdocasFit.put(new Coordinate(s,i), 

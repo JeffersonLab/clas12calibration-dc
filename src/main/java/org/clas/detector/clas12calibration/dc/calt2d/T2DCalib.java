@@ -333,33 +333,40 @@ public class T2DCalib extends AnalysisMonitor{
     double[][] chi2FitNum = new double[100][6];
     int[] fitNum =new int[6];
     
-    public static boolean runParallel = true;
+    public static boolean runParallel = false; //no thread safe; DO NOT USE YET!!!
     
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][],Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
+        voice.speak("PARAMETER SCAN STARTED");
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         if(runParallel) {
+            voice.speak("Starting parallel processing");
             fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         } else {
             fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
+        voice.speak("PARAMETER SCAN DONE");
     }
     
     public void runFit(boolean fixFit[][][], Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
+        voice.speak("PARAMETER FIT STARTED");
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         if(runParallel) {
+            voice.speak("Starting parallel processing");
             fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         } else {
             fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
+        voice.speak("PARAMETER FIT DONE");
+        NbRunFit++;
     }
     
     
     public boolean useBProf = false;
     int counter = 0;
-    private int iterationNum = 0;
+    public static int iterationNum = 0;
     public  HipoDataSource calreader = new HipoDataSource();
     public  HipoDataSource reader = new HipoDataSource();
     private TimeToDistanceEstimator t2d = new TimeToDistanceEstimator();
@@ -528,7 +535,7 @@ public class T2DCalib extends AnalysisMonitor{
        
     }
     
-    private double[][] resetPars = new double[6*7][11];
+    private double[][][] resetPars = new double[7][6][11];
     public static String[] parNames = {"v0", "vmid", "R", "tmax", "distbeta", "delBf", 
         "b1", "b2", "b3", "b4", "dmax"};
     

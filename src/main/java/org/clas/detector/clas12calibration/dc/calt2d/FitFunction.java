@@ -16,15 +16,18 @@ import org.jlab.groot.data.GraphErrors;
  */
 public class FitFunction implements FCNBase{
 
-    public double beta = 1.0;
-    
     private Map<Coordinate, GraphErrors> _tvstrkdocasProf;
     private int sli;
     private int seci;
     public FitFunction() {
         
     }
-    
+    /**
+     * Fit function
+     * @param s
+     * @param i
+     * @param tvstrkdocasProf 
+     */
     public FitFunction(int s, int i, Map<Coordinate, GraphErrors> tvstrkdocasProf) {
         this.sli = i;
         this.seci = s;
@@ -131,7 +134,8 @@ public class FitFunction implements FCNBase{
         for (int j = 0; j < T2DCalib.alphaBins; j++) {
             if(this.sli>1 && this.sli<4) {
                 for(int k = 0; k < T2DCalib.BBins; k++) {
-                    if(_tvstrkdocasProf.get(new Coordinate(this.seci, this.sli, j, k)).getVectorX().size()>0){ 
+                    Coordinate co = new Coordinate(this.seci, this.sli, j, k);
+                    if(_tvstrkdocasProf.get(co).getVectorX().size()>0){ 
                         //local angle correction
                         double theta0 = Math.toDegrees(Math.acos(1-0.02*T2DCalib.BfieldValuesUpd[this.sli-2][j][k]));
                         //double alpha = T2DCalib.AlphaValues[j];
@@ -140,7 +144,7 @@ public class FitFunction implements FCNBase{
                         alpha-=(double)T2DCalib.polarity*theta0;
                         //reduce the corrected angle
                         double ralpha = (double) FcnUtility.getReducedAngle(alpha);
-                        GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.seci, this.sli, j, k));
+                        GraphErrors gr = _tvstrkdocasProf.get(co);
                             
                         for (int ix =0; ix< gr.getDataSize(0); ix++) {
                             double x = gr.getDataX(ix);
@@ -155,12 +159,13 @@ public class FitFunction implements FCNBase{
                     }
                 }
             } else {
-                if(_tvstrkdocasProf.get(new Coordinate(this.seci, this.sli, j, T2DCalib.BBins)).getVectorX().size()>0){ 
+                Coordinate cb = new Coordinate(this.seci, this.sli, j, T2DCalib.BBins);
+                if(_tvstrkdocasProf.get(cb).getVectorX().size()>0){ 
                     //local angle correction
                     double alpha = T2DCalib.AlphaValuesUpd[sli][j][T2DCalib.BBins];
                     //reduce the corrected angle
                     double ralpha = (double) FcnUtility.getReducedAngle(alpha);
-                    GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.seci, this.sli, j, T2DCalib.BBins));
+                    GraphErrors gr = _tvstrkdocasProf.get(cb);
 
                     for (int ix =0; ix< gr.getDataSize(0); ix++) {
                         double x = gr.getDataX(ix);

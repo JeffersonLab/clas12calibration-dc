@@ -16,6 +16,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValue
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValuesUpd;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.field;
+import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
@@ -30,7 +31,27 @@ import org.jlab.rec.dc.hit.FittedHit;
  * @author ziegler
  */
 public class CalUtility {
-     
+    
+    /**
+     * Method to reprocess the segment fits
+     * @param timeResi
+     * @param timeResiNew
+     * @param timeResiB
+     * @param A
+     * @param B
+     * @param BAlphaBins
+     * @param Tvstrkdocas
+     * @param Tvscalcdocas
+     * @param Tresvstrkdocas
+     * @param calreader
+     * @param hits
+     * @param calhits
+     * @param ParsVsIter
+     * @param TvstrkdocasFits
+     * @param TvstrkdocasProf
+     * @param TvstrkdocasFitPars
+     * @param useBProf 
+     */
     public static void reCook(Map<Coordinate, H1F> timeResi, Map<Coordinate, H1F> timeResiNew, 
             Map<Coordinate, H1F> timeResiB, Map<Coordinate, H1F> A, Map<Coordinate, H1F> B, Map<Coordinate, H1F> BAlphaBins,
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, H2F> Tresvstrkdocas, 
@@ -38,6 +59,7 @@ public class CalUtility {
             Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasProf,
             Map<Coordinate, FitUtility.MinuitPar> TvstrkdocasFitPars,
             boolean useBProf) {
+        //reset the residuals
         for (int i = 0; i < 6; i++) {
             timeResi.get(new Coordinate(i)).reset();
             timeResiNew.get(new Coordinate(i)).reset();
@@ -59,7 +81,7 @@ public class CalUtility {
             for (int i = 0; i < 6; i++) {
                 for (int j = 0; j < alphaBins; j++) {
                     for (int k = 0; k < BBins+1; k++) {
-                        if((i<2 || i>3) && k<BBins) continue;
+                        if((i<2 || i>3) && k<BBins) continue; //region 1 and 3 have bin index BBins
                         Tvstrkdocas.get(new Coordinate(s, i,j,k)).reset();
                         Tvscalcdocas.get(new Coordinate(s, i,j,k)).reset();
                         Tresvstrkdocas.get(new Coordinate(s, i,j,k)).reset();
@@ -157,37 +179,38 @@ public class CalUtility {
                         
                         double yf = TvstrkdocasFits.get(new Coordinate(hit.get_Sector()-1, hit.get_Superlayer()-1,
                                 alphaBin, BBins)).evaluate(hit.get_ClusFitDoca());
-                        
-                        Tvstrkdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
+                        final Coordinate cb0 = new Coordinate(secIdx, slyrIdx, alphaBin, BBins);
+                        Tvstrkdocas.get(cb0)
                                     .fill(hit.get_ClusFitDoca(), calibTime);
-                        Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, BBins))
+                        Tvstrkdocas.get(cb0)
                                     .fill(hit.get_ClusFitDoca(), calibTime);
-                        Tvscalcdocas.get(new Coordinate(secIdx,slyrIdx, alphaBin, BBins))
+                        Tvscalcdocas.get(cb0)
                                     .fill(hit.get_Doca(), calibTime);
-                        Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, BBins))
+                        Tvscalcdocas.get(cb0)
                                     .fill(hit.get_Doca(), calibTime);
                         if(!Double.isNaN(yf)) { 
-                            Tresvstrkdocas.get(new Coordinate(secIdx,slyrIdx, alphaBin, BBins)).fill(hit.get_ClusFitDoca(), calibTime-yf);
-                            Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, BBins)).fill(hit.get_ClusFitDoca(), calibTime-yf);
+                            Tresvstrkdocas.get(cb0).fill(hit.get_ClusFitDoca(), calibTime-yf);
+                            Tresvstrkdocas.get(cb0).fill(hit.get_ClusFitDoca(), calibTime-yf);
                         }
                         //Fill region 2 for different b-field values
                         if(hit.get_Superlayer() >2 && hit.get_Superlayer() <5) { 
                             int bBin = getBBin(bFieldVal);
+                            final Coordinate cb = new Coordinate(secIdx, slyrIdx, alphaBin, bBin);
                             double r2yf = TvstrkdocasFits.get(new Coordinate(secIdx,slyrIdx, alphaBin, bBin)).evaluate(hit.get_ClusFitDoca());
                             
-                            Tvstrkdocas.get(new Coordinate(secIdx,slyrIdx, alphaBin, bBin))
+                            Tvstrkdocas.get(cb)
                                         .fill(hit.get_ClusFitDoca(), calibTime);
-                            Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, bBin))
+                            Tvstrkdocas.get(cb)
                                         .fill(hit.get_ClusFitDoca(), calibTime);
-                            Tvscalcdocas.get(new Coordinate(secIdx,slyrIdx, alphaBin, bBin))
+                            Tvscalcdocas.get(cb)
                                         .fill(hit.get_Doca(),calibTime);
-                            Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, bBin))
+                            Tvscalcdocas.get(cb)
                                         .fill(hit.get_Doca(),calibTime);
                             
                             if(!Double.isNaN(r2yf)) {
-                                Tresvstrkdocas.get(new Coordinate(secIdx,slyrIdx, alphaBin, bBin))
+                                Tresvstrkdocas.get(cb)
                                         .fill(hit.get_ClusFitDoca(), calibTime-r2yf);
-                                Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx, alphaBin, bBin))
+                                Tresvstrkdocas.get(cb)
                                         .fill(hit.get_ClusFitDoca(), calibTime-r2yf);
                             }
                         }
@@ -236,6 +259,7 @@ public class CalUtility {
         }
         System.out.println("RECOOKING DONE WITH THE NEW CONSTANTS!");
         System.out.println("CHECK THE RESIDUALS!");
+        voice.speak("Segment fits done!");
         calreader.close();  
        // System.gc();
     }

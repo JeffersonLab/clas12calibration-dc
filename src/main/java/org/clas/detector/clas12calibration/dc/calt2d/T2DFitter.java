@@ -220,7 +220,7 @@ public class T2DFitter  {
         }
         
         
-        System.gc();
+        //System.gc();
         //System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
         return new fMin(bestmin2, bestMchi2);
     }
@@ -234,9 +234,9 @@ public class T2DFitter  {
         
         for(int i0 =2*ridx; i0<2*ridx+2; i0++) {
             String s2="";
-            s2+=(" ******************************************");
-            s2+=("   RUNNING THE PARAMETER FIT FOR SUPERLAYER "+(i0+1));
-            s2+=(" ******************************************");
+            s2+=(" **************************************************\n");
+            s2+=("   PARAMETER FIT FOR SECTOR "+(sec+1) +" SUPERLAYER "+(i0+1)+"\n");
+            s2+=(" **************************************************\n");
             fMin fm2 = getfMinFixedRDPars(sec, i0, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
             if(!fm2.getFcnMin().isValid()) {
@@ -245,7 +245,7 @@ public class T2DFitter  {
             }
             results[i0] = fm2;
             fmin = fm2.getFcnMin();
-
+            System.out.println(s2+" "+fmin.toString());
             FitUtility.updatePar(TvstrkdocasFitPars.get(new Coordinate(sec, i0)),
                     fmin.userParameters());
 
@@ -255,7 +255,6 @@ public class T2DFitter  {
                     fmin.userParameters());
                 }
             }
-            voice.speak("FIT DONE for sector "+(sec+1)+" superlayer "+(i0+1));
         }
     
     }

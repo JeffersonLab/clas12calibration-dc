@@ -117,19 +117,12 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     String[] calVars = {"default", "dc_team_rga_fall2018", ""};
     public static JComboBox  calVariation ;
     
-    //String[] distBetaFCNSelect = {"new", "old"};
-    //public static JComboBox  distBetaFCN ;
-    
-
-    
      // detector monitors
     AnalysisMonitor[] monitors ; 
     
     public static Voice voice ;    
     
     public T2DViewer() throws FileNotFoundException {    
-        //System.setProperty("freetts.voicedirectory", 
-        //        "/Users/ziegler/BASE/Tracking/DC-Cal/FreeTTS/FreeTTS/bld/classes/com/sun/speech/freetts/en/us");
         System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
         VoiceManager voiceManager = VoiceManager.getInstance();
         
@@ -251,7 +244,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         }
         //Constants.getInstance().setT2D(1);
         dcDetector = new DCGeant4Factory(provider, true, true);
-
         // set directory to local
         this.Dir = System.getProperty("user.dir");
         System.out.println("Work directory set to " + this.Dir);
@@ -490,7 +482,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 
     
     public void configure() {
-
         configFrame.setSize(700, 850);
         //configFrame.setSize(1000, 600); // vnc size
         configFrame.setLocationRelativeTo(mainPanel);
@@ -768,10 +759,9 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         //---------------------------------------------------------------------
         
         JPanel butPage3 = new configButtonPanel(this, true, "Finish");
+        butPage3.setSize(810, 1200);
         trOuterPanel.add(butPage3, BorderLayout.SOUTH);
-
         configPane.add("Selection Criteria", trOuterPanel);
-
         configFrame.add(configPane);
         configFrame.setVisible(true);
 
@@ -781,13 +771,13 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     public static void main(String[] args) throws FileNotFoundException {
         
         JFrame frame = new JFrame("DC Calibration");
-        Dimension dim = new Dimension(100,100) ;
+        Dimension dim = new Dimension(900,800) ;
         frame.setMinimumSize(dim);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         T2DViewer viewer = new T2DViewer();
         frame.add(viewer.mainPanel);
         frame.setJMenuBar(viewer.menuBar);
-        frame.setSize(1400, 800);
+        frame.setSize(1400, 900);
         frame.setVisible(true);
         viewer.configFrame.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         DefaultLogger.debug();

@@ -5,10 +5,6 @@
  */
 package org.clas.detector.clas12calibration.dc.calt2d;
 
-//import org.jlab.rec.dc.Constants;
-
-import java.io.File;
-
 
 /**
  *
@@ -16,7 +12,11 @@ import java.io.File;
  */
 public class FcnUtility {
     
-    
+    /**
+     * 
+     * @param alpha
+     * @return the reduced angle from 0 to 30 deg.
+     */
     public static double getReducedAngle(double alpha) {
         double ralpha = 0;
 
@@ -32,6 +32,14 @@ public class FcnUtility {
         return Math.toDegrees(ralpha);
     }  
 
+    /**
+     * 
+     * @param x
+     * @param beta
+     * @param distbeta
+     * @param v_0
+     * @return the beta-dependent timewalk
+     */
     public static double getDeltaTimeBeta(double x, double beta, double distbeta, double v_0) {
        
         double value = (0.5*Math.pow(beta*beta*distbeta,3)*x/(Math.pow(beta*beta*distbeta,3)+x*x*x))/v_0;

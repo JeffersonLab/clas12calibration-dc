@@ -156,7 +156,7 @@ public class FitPanel {
         }
         for(int j = 0; j<6; j++) {
             for(int i=0; i<npar; i++){
-                TvstrkdocasFitPars.get(new Coordinate(6,j)).setValue(i,this.pars.get(new Coordinate(6, j)).get(i));
+                TvstrkdocasFitPars.get(new Coordinate(6,j)).setValue(i,this.pars.get(new Coordinate(0, j)).get(i));
             }
         }
         if(panel.runIndivSectors.isSelected()==true) {

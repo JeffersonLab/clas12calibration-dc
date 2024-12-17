@@ -18,19 +18,19 @@ public class configButtonPanel extends JPanel {
 
         JButton nextButton = new JButton(nextText);
         nextButton.addActionListener(l);
-        JButton backButton = new JButton("Back");
-        backButton.setEnabled(backEnabled);
-        backButton.addActionListener(l);
+        //JButton backButton = new JButton("Back");
+        //backButton.setEnabled(backEnabled);
+        //backButton.addActionListener(l);
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(l);
 
         Box buttonBox = new Box(BoxLayout.X_AXIS);
         buttonBox.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10))); 
-        buttonBox.add(backButton);
+        //buttonBox.add(backButton);
         buttonBox.add(Box.createHorizontalStrut(10));
-        buttonBox.add(nextButton);
-        buttonBox.add(Box.createHorizontalStrut(30));
         buttonBox.add(cancelButton);
+        buttonBox.add(Box.createHorizontalStrut(30));
+        buttonBox.add(nextButton);
         this.add(buttonBox, java.awt.BorderLayout.EAST);
     }
 

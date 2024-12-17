@@ -96,6 +96,16 @@
         
     </dependencies> 
     <repositories>
+    <repository>
+        <id>local-repo</id>
+        <url>file://${basedir}/lib</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>    
      <repository>
        <id>jhep-maven</id>
        <url>https://clasweb.jlab.org/jhep/maven</url>
