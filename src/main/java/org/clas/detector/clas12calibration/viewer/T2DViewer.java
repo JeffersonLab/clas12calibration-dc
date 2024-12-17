@@ -4,6 +4,12 @@
  * and open the template in the editor.
  */
 package org.clas.detector.clas12calibration.viewer;
+import com.sun.speech.freetts.Age;
+import com.sun.speech.freetts.Gender;
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
+import com.sun.speech.freetts.en.us.CMUDiphoneVoice;
+import com.sun.speech.freetts.en.us.CMULexicon;
 import org.jlab.logging.DefaultLogger;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -21,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -120,8 +127,37 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     
      // detector monitors
     AnalysisMonitor[] monitors ; 
-        
+    
+    public static Voice voice ;    
+    
     public T2DViewer() throws FileNotFoundException {    
+        //System.setProperty("freetts.voicedirectory", 
+        //        "/Users/ziegler/BASE/Tracking/DC-Cal/FreeTTS/FreeTTS/bld/classes/com/sun/speech/freetts/en/us");
+        System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
+        VoiceManager voiceManager = VoiceManager.getInstance();
+        
+        voice = voiceManager.getVoice("kevin");
+        
+        if (voice != null) {
+            voice.allocate();
+            try {
+                voice.setPitch(140.0f);  
+                voice.setPitchRange(1.5f);  
+                voice.setRate(150);  
+                voice.setStyle("happy"); 
+                voice.setVolume(4);
+                voice.speak("Calibration started");
+            } catch (Exception e) {
+                e.printStackTrace();
+            } 
+            //finally {
+            //    voice.deallocate();
+            //}
+        } else {
+            System.out.println("Voice not available!");
+        }
+       
+
         calVariation = new JComboBox(calVars);
         calVariation.setEditable(true);
         //distBetaFCN = new JComboBox(distBetaFCNSelect);

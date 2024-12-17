@@ -27,100 +27,99 @@ import org.jlab.groot.math.F1D;
  */
 public class PlotUtility {
     
-   public static void Plot(int i, int j, Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, 
+   public static void Plot(int s, int i, int j, Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, GraphErrors> TvstrkdocasProf, 
             Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasInit, 
             EmbeddedCanvasTabbed analysisCanvas, int iterationNum) {
         DataLine l = new DataLine(0, 0, 2.5, 0);
         l.setLineStyle(2);
         l.setLineColor(2);
-        System.out.println("Iteration num "+iterationNum);
         if(i<2 || i>3) { // regions 1 and 3 --> no b-field
-            if(TvstrkdocasProf.get(new Coordinate(i, j, BBins)).getVectorX().size()>0) {
+            if(TvstrkdocasProf.get(new Coordinate(s, i, j, BBins)).getVectorX().size()>0) {
                 analysisCanvas.getCanvas("TrackDoca vs T").cd(0);
-                analysisCanvas.getCanvas("TrackDoca vs T").draw(Tvstrkdocas.get(new Coordinate(i, j, BBins)));
+                analysisCanvas.getCanvas("TrackDoca vs T").draw(Tvstrkdocas.get(new Coordinate(s, i, j, BBins)));
                 analysisCanvas.getCanvas("TrackDoca vs T Graphs").cd(0);
-                analysisCanvas.getCanvas("TrackDoca vs T Graphs").draw(Tvstrkdocas.get(new Coordinate(i, j, BBins)));
+                analysisCanvas.getCanvas("TrackDoca vs T Graphs").draw(Tvstrkdocas.get(new Coordinate(s, i, j, BBins)));
                 analysisCanvas.getCanvas("CalcDoca vs T").cd(0);
-                analysisCanvas.getCanvas("CalcDoca vs T").draw(Tvscalcdocas.get(new Coordinate(i, j, BBins)));
+                analysisCanvas.getCanvas("CalcDoca vs T").draw(Tvscalcdocas.get(new Coordinate(s, i, j, BBins)));
                 analysisCanvas.getCanvas("TrackDoca vs T Graphs").
-                        draw(TvstrkdocasProf.get(new Coordinate(i, j, BBins)), "same");
+                        draw(TvstrkdocasProf.get(new Coordinate(s, i, j, BBins)), "same");
                 //TvstrkdocasFits.get(new Coordinate(i, j, BBins)).setRange(0, maxx[i]);
                 analysisCanvas.getCanvas("TrackDoca vs T Graphs").
-                        draw(TvstrkdocasFits.get(new Coordinate(i, j, BBins)), "same");
+                        draw(TvstrkdocasFits.get(new Coordinate(s, i, j, BBins)), "same");
                 analysisCanvas.getCanvas("CalcDoca vs T").
-                        draw(TvstrkdocasFits.get(new Coordinate(i, j, BBins)), "same");
+                        draw(TvstrkdocasFits.get(new Coordinate(s, i, j, BBins)), "same");
                 //Resi canvas
                 //analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").cd(0);
                 
                 GraphErrors g1 = new GraphErrors();
                 GraphErrors g2 = new GraphErrors();
-                g2.setTitle(TvstrkdocasInit.get(new Coordinate(i, j, BBins)).getTitle());
-                g1.copy(TvstrkdocasProf.get(new Coordinate(i, j, BBins)));
+                g2.setTitle(TvstrkdocasInit.get(new Coordinate(s, i, j, BBins)).getTitle());
+                g1.copy(TvstrkdocasProf.get(new Coordinate(s, i, j, BBins)));
                 for(int ip =0; ip<g1.getVectorX().getSize(); ip++) {
                     if(g1.getDataEY(ip)!=0) {
-                        double yf = TvstrkdocasFits.get(new Coordinate(i, j, BBins)).evaluate(g1.getDataX(ip));
+                        double yf = TvstrkdocasFits.get(new Coordinate(s, i, j, BBins)).evaluate(g1.getDataX(ip));
                         double y = g1.getDataY(ip);
                         g2.addPoint(g1.getDataX(ip), y-yf, 0, g1.getDataEY(ip));
                         if(iterationNum==0) {
-                            TvstrkdocasInit.get(new Coordinate(i, j, BBins)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
+                            TvstrkdocasInit.get(new Coordinate(s, i, j, BBins)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
                         }
                     }       
                 }
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").clear();
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").cd(0);
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
-                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(i, j, BBins)));
+                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(s, i, j, BBins)));
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
-                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, BBins)), "Esame");                   
+                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(s, i, j, BBins)), "Esame");                   
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(l);
             }
         } else {   
             //plot the profiles for the various B-field components
             
             analysisCanvas.getCanvas("TrackDoca vs T").cd(0);
-            analysisCanvas.getCanvas("TrackDoca vs T").draw(Tvstrkdocas.get(new Coordinate(i, j, BBins)));
+            analysisCanvas.getCanvas("TrackDoca vs T").draw(Tvstrkdocas.get(new Coordinate(s, i, j, BBins)));
             analysisCanvas.getCanvas("TrackDoca vs T Graphs").cd(0);
-            analysisCanvas.getCanvas("TrackDoca vs T Graphs").draw(Tvstrkdocas.get(new Coordinate(i, j, BBins)));
+            analysisCanvas.getCanvas("TrackDoca vs T Graphs").draw(Tvstrkdocas.get(new Coordinate(s, i, j, BBins)));
             analysisCanvas.getCanvas("CalcDoca vs T").cd(0);
-            analysisCanvas.getCanvas("CalcDoca vs T").draw(Tvscalcdocas.get(new Coordinate(i, j, BBins)));    
+            analysisCanvas.getCanvas("CalcDoca vs T").draw(Tvscalcdocas.get(new Coordinate(s, i, j, BBins)));    
             int maxBbin=0;
             for(int k = 0; k < BBins; k++) {
-                if(TvstrkdocasProf.get(new Coordinate(i, j, k)).getVectorX().size()>0){
+                if(TvstrkdocasProf.get(new Coordinate(s, i, j, k)).getVectorX().size()>0){
                     maxBbin++;
                     analysisCanvas.getCanvas("TrackDoca vs T Graphs").
-                            draw(TvstrkdocasProf.get(new Coordinate(i, j, k)), "same");
+                            draw(TvstrkdocasProf.get(new Coordinate(s, i, j, k)), "same");
                     //TvstrkdocasFits.get(new Coordinate(i, j, k)).setRange(0, maxx[i]);
                     analysisCanvas.getCanvas("TrackDoca vs T Graphs").
-                            draw(TvstrkdocasFits.get(new Coordinate(i, j, k)), "same");
+                            draw(TvstrkdocasFits.get(new Coordinate(s, i, j, k)), "same");
                     analysisCanvas.getCanvas("CalcDoca vs T").
-                    draw(TvstrkdocasFits.get(new Coordinate(i, j, k)), "same");
+                    draw(TvstrkdocasFits.get(new Coordinate(s, i, j, k)), "same");
                 }
             }
            
             
-            if(TvstrkdocasProf.get(new Coordinate(i, j, 0)).getVectorX().size()>0) {
+            if(TvstrkdocasProf.get(new Coordinate(s, i, j, 0)).getVectorX().size()>0) {
             //Resi canvas
                 GraphErrors g1 = new GraphErrors();
                 GraphErrors g2 = new GraphErrors();
-                g2.setTitle(TvstrkdocasInit.get(new Coordinate(i, j, 0)).getTitle());
-                g1.copy(TvstrkdocasProf.get(new Coordinate(i, j, 0)));
+                g2.setTitle(TvstrkdocasInit.get(new Coordinate(s, i, j, 0)).getTitle());
+                g1.copy(TvstrkdocasProf.get(new Coordinate(s, i, j, 0)));
                 for(int ip =0; ip<g1.getVectorX().getSize(); ip++) {
                     if(g1.getDataEY(ip)!=0) {
-                        double yf = TvstrkdocasFits.get(new Coordinate(i, j, 0)).evaluate(g1.getDataX(ip));
+                        double yf = TvstrkdocasFits.get(new Coordinate(s, i, j, 0)).evaluate(g1.getDataX(ip));
                         double y = g1.getDataY(ip);
                         g2.addPoint(g1.getDataX(ip), y-yf, 0, g1.getDataEY(ip));
                         if(iterationNum==0) {
-                            TvstrkdocasInit.get(new Coordinate(i, j, 0)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
+                            TvstrkdocasInit.get(new Coordinate(s, i, j, 0)).addPoint(g1.getDataX(ip), y-yf, 0, 0);
                         }
                     }       
                 }
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").clear();
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").cd(0);
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
-                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(i, j, 0)));
+                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(Tresvstrkdocas.get(new Coordinate(s, i, j, 0)));
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(g2, "Esame");
-                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(i, j, 0)), "Esame");                   
+                analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(TvstrkdocasInit.get(new Coordinate(s, i, j, 0)), "Esame");                   
                 analysisCanvas.getCanvas("TrackDoca vs T Fit Resi").draw(l);
             }
         }   
@@ -211,12 +210,11 @@ public class PlotUtility {
         int ip =0;
             NbRunFit++;
             for(int s=0; s<6;s++) {
-                for (int i0 = 0; i0 < 6; i0++) {
-                    int i = i0+s*6;
+                for (int i = 0; i < 6; i++) {
                
                     for(int p = 0; p<6; p++) {
-                        ParsVsIter.get(new Coordinate(i,p)).setBinContent(NbRunFit, TvstrkdocasFitPars.get(new Coordinate(i)).value(p));
-                        ParsVsIter.get(new Coordinate(i,p)).setBinError(NbRunFit, TvstrkdocasFitPars.get(new Coordinate(i)).error(p));
+                        ParsVsIter.get(new Coordinate(i,p)).setBinContent(NbRunFit, TvstrkdocasFitPars.get(new Coordinate(0,i)).value(p));
+                        ParsVsIter.get(new Coordinate(i,p)).setBinError(NbRunFit, TvstrkdocasFitPars.get(new Coordinate(0,i)).error(p));
                         ParsVsIter.get(new Coordinate(i,p)).setOptStat(0);
                         canvas.cd(ip);
                         
@@ -235,31 +233,29 @@ public class PlotUtility {
             }    
             
             for(int s=0; s<6;s++) {
-                for (int i0 = 0; i0 < 6; i0++) {
-                    int i = i0+s*6;
-
+                for (int i = 0; i < 6; i++) {
                     for (int j = 0; j < alphaBins; j++) {
-                        if(i0<2 || i0>3) {
-                            if(TvstrkdocasProf.get(new Coordinate(i, j, BBins)).getVectorX().size()>0) {
-                                FitUtility.updateTable(i, j, calib, TvstrkdocasFitPars);
-                                TvstrkdocasFits.put(new Coordinate(i,j,BBins), new FitLine("f"+""+i+""+j+"0", i, j, BBins, 
-                                TvstrkdocasFitPars.get(new Coordinate(i))));
-                                TvstrkdocasFits.get(new Coordinate(i, j, BBins)).setLineStyle(4);
-                                TvstrkdocasFits.get(new Coordinate(i, j, BBins)).setLineWidth(5);
-                                TvstrkdocasFits.get(new Coordinate(i, j, BBins)).setLineColor(8);
+                        if(i<2 || i>3) {
+                            if(TvstrkdocasProf.get(new Coordinate(s,i, j, BBins)).getVectorX().size()>0) {
+                                FitUtility.updateTable(s, i, j, calib, TvstrkdocasFitPars);
+                                TvstrkdocasFits.put(new Coordinate(s,i,j,BBins), new FitLine("f"+""+s+""+i+""+j+"0", i, j, BBins, 
+                                TvstrkdocasFitPars.get(new Coordinate(s,i))));
+                                TvstrkdocasFits.get(new Coordinate(s,i, j, BBins)).setLineStyle(4);
+                                TvstrkdocasFits.get(new Coordinate(s,i, j, BBins)).setLineWidth(5);
+                                TvstrkdocasFits.get(new Coordinate(s,i, j, BBins)).setLineColor(8);
                             } else {
                                 //this.resetTable(i,j);
                             }
 
                         } else {
                             for(int k = 0; k < BBins; k++) { 
-                                if(TvstrkdocasProf.get(new Coordinate(i, j, k)).getVectorX().size()>0){
-                                    FitUtility.updateTable(i, j, calib, TvstrkdocasFitPars);
-                                    TvstrkdocasFits.put(new Coordinate(i,j,k), new FitLine("f"+""+i+""+j+""+k, i, j, k, 
-                                    TvstrkdocasFitPars.get(new Coordinate(i))));
-                                    TvstrkdocasFits.get(new Coordinate(i, j, k)).setLineStyle(4);
-                                    TvstrkdocasFits.get(new Coordinate(i, j, k)).setLineWidth(5);
-                                    TvstrkdocasFits.get(new Coordinate(i, j, k)).setLineColor(k+1);
+                                if(TvstrkdocasProf.get(new Coordinate(s,i, j, k)).getVectorX().size()>0){
+                                    FitUtility.updateTable(s, i, j, calib, TvstrkdocasFitPars);
+                                    TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine("f"+""+s+""+i+""+j+""+k, i, j, k, 
+                                    TvstrkdocasFitPars.get(new Coordinate(s,i))));
+                                    TvstrkdocasFits.get(new Coordinate(s, i, j, k)).setLineStyle(4);
+                                    TvstrkdocasFits.get(new Coordinate(s,i, j, k)).setLineWidth(5);
+                                    TvstrkdocasFits.get(new Coordinate(s,i, j, k)).setLineColor(k+1);
                                 } else {
                                     //this.resetTable(i,j);
                                 }
@@ -270,59 +266,58 @@ public class PlotUtility {
                 }
             }
             calib.fireTableDataChanged();    
-            for(int isec = 0; isec < 6; isec++) {
-                for(int i0 = 0; i0<6; i0++) {
-                    int i = i0+isec*6;
+            for(int s = 0; s < 6; s++) {
+                for(int i = 0; i<6; i++) {
                     pw.printf("%d\t %d\t %d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\n",
-                    (isec+1), (i0+1), 0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(0), //vo
+                    (s+1), (i+1), 0,
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(0), //vo
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(1), //vmid
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(1), //vmid
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(3), //tmax
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(3), //tmax
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(4), //distbeta
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(4), //distbeta
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(5), //delta_bfield
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(5), //delta_bfield
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(6), //b1
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(6), //b1
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(7), //b2
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(7), //b2
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(8), //b3
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(8), //b3
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(9), //b4
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(9), //b4
                     0.0,
                     0.0,
-                    TvstrkdocasFitPars.get(new Coordinate(i)).value(2), //R
+                    TvstrkdocasFitPars.get(new Coordinate(s,i)).value(2), //R
                     0.0,
                     0.0);
                     
                     pw2.printf("%d\t %d\t %d\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\t %.6f\t +/- %.6f\n",
-                            (isec+1), (i0+1), 0,
+                            (s+1), (i+1), 0,
                             //v0
-                            TvstrkdocasFitPars.get(new Coordinate(i)).value(0),
-                            TvstrkdocasFitPars.get(new Coordinate(i)).error(0),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).value(0),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).error(0),
                             //tmax
-                            TvstrkdocasFitPars.get(new Coordinate(i)).value(3),
-                            TvstrkdocasFitPars.get(new Coordinate(i)).error(3),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).value(3),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).error(3),
                             //vmid
-                            TvstrkdocasFitPars.get(new Coordinate(i)).value(1),
-                            TvstrkdocasFitPars.get(new Coordinate(i)).error(1),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).value(1),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).error(1),
                             //deltaBf
-                            TvstrkdocasFitPars.get(new Coordinate(i)).value(5),
-                            TvstrkdocasFitPars.get(new Coordinate(i)).error(5),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).value(5),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).error(5),
                             //distbeta
-                            TvstrkdocasFitPars.get(new Coordinate(i)).value(4),
-                            TvstrkdocasFitPars.get(new Coordinate(i)).error(4));
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).value(4),
+                            TvstrkdocasFitPars.get(new Coordinate(s,i)).error(4));
                             
                     
                 }

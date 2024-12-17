@@ -23,12 +23,12 @@ import org.jlab.rec.dc.Constants;
  */
 public class GraphUtility {
     
-     public static void filltrkDocavsTGraphs(int i, int j,  Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, GraphErrors> TvstrkdocasProf, boolean useBProf) {
-        if(T2DCalib.getSuperlayerIdx(i)<2 || T2DCalib.getSuperlayerIdx(i)>3) { //region 1 and 3
-            filltrkDocavsTGraphs(i, j, BBins, Tvstrkdocas, TvstrkdocasProf,useBProf);
+     public static void filltrkDocavsTGraphs(int s, int i, int j,  Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, GraphErrors> TvstrkdocasProf, boolean useBProf) {
+        if(i<2 || i>3) { //region 1 and 3
+            filltrkDocavsTGraphs(s, i, j, BBins, Tvstrkdocas, TvstrkdocasProf,useBProf);
         } else {
             for(int k = 0; k < BBins; k++) {    
-                filltrkDocavsTGraphs(i, j, k, Tvstrkdocas, TvstrkdocasProf,useBProf);
+                filltrkDocavsTGraphs(s, i, j, k, Tvstrkdocas, TvstrkdocasProf,useBProf);
             }
         }       
     }
@@ -39,21 +39,21 @@ public class GraphUtility {
     //F1D f2 = new F1D("f2","[amp1]*gaus(x,[mean1],[sigma1])+[amp2]*gaus(x,[mean2],[sigma2])+[p02]", 0, 1.8);
     static F1D f1 = new F1D("f1","[amp1]*gaus(x,[mean1],[sigma1])", 0, 2);
     
-    public static void filltrkDocavsTGraphs(int i, int j, int k,  Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, GraphErrors> TvstrkdocasProf, boolean useBProf) {
+    public static void filltrkDocavsTGraphs(int s, int i, int j, int k,  Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, GraphErrors> TvstrkdocasProf, boolean useBProf) {
         Logger.getLogger("org.freehep.math.minuit").setLevel(Level.WARNING);
-        if(TvstrkdocasProf.get(new Coordinate(i, j, k))!=null) {
-            TvstrkdocasProf.get(new Coordinate(i, j, k)).reset();
+        if(TvstrkdocasProf.get(new Coordinate(s, i, j, k))!=null) {
+            TvstrkdocasProf.get(new Coordinate(s, i, j, k)).reset();
         } 
-        if(Tvstrkdocas.get(new Coordinate(i, j, k))!=null) {
-            H2F h2 = Tvstrkdocas.get(new Coordinate(i, j, k));
-            double integ = h2.getEntries();
+        if(Tvstrkdocas.get(new Coordinate(s, i, j, k))!=null) {
+            H2F h2 = Tvstrkdocas.get(new Coordinate(s, i, j, k));
+            double integ = h2.getEntries(); 
             ArrayList<H1F> hslice = h2.getSlicesX();
             int n=0;
             boolean saveG =false;
             for(int si=0; si<hslice.size(); si++) {
                 double x = h2.getXAxis().getBinCenter(si);
                 double amp   = hslice.get(si).getBinContent(hslice.get(si).getMaximumBin());
-                double dmax = 2.*Constants.getInstance().wpdist[T2DCalib.getSuperlayerIdx(i)];
+                double dmax = 2.*Constants.getInstance().wpdist[i];
                 if(hslice.get(si).getMean()==0 || integ<200 || x>dmax) 
                     continue;
                 H1F hn = hslice.get(si).histClone("h");
@@ -64,15 +64,15 @@ public class GraphUtility {
                     nbrebin++;
                 }
                 if(amp>MINENTRIES)
-                    n=fitLandau(x, dmax, hn, TvstrkdocasProf.get(new Coordinate(i, j, k)));
+                    n=fitLandau(x, dmax, hn, TvstrkdocasProf.get(new Coordinate(s, i, j, k)));
                 
                 if(n>0 && x/dmax >0.8) 
                     saveG = true;  //ensure the large doca entries are filled to avoid biases at small docas
             }
-            if(!useBProf && (T2DCalib.getSuperlayerIdx(i)==2 || T2DCalib.getSuperlayerIdx(i)==3) && k>0)
+            if(!useBProf && (i==2 || i==3) && k>0)
                 saveG = false;
             if(!saveG) {
-                TvstrkdocasProf.get(new Coordinate(i, j, k)).reset();
+                TvstrkdocasProf.get(new Coordinate(s, i, j, k)).reset();
             }
         }
     }

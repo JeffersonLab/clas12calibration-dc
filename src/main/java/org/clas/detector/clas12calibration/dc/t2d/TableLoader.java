@@ -97,63 +97,63 @@ public class TableLoader {
     static double[] errs = {0.001,0.001,0.01,1.0,0.01,0.001,0.001,0.001,0.001,0.001,0.00001};
     
     private static synchronized void fitsinit(){
-        for (int i = 0; i < 6; i++) {
-            double[] pars = new double[11];
-            pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[0][i];
-            pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[0][i];
-            pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[0][i];
-            pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[0][i];
-            pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[0][i];
-            pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[0][i];
-            pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[0][i];
-            pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[0][i];
-            pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[0][i];
-            pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[0][i];
-            pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
-            MinuitPar mnp = new MinuitPar();
-            
-            for(int p = 0; p < 10; p++) {
-                mnp.add(parNames[p], pars[p], errs[p]);
-            }
-            mnp.add(parNames[10], pars[10], errs[10]);
-            for (int j = 0; j < T2DCalib.alphaBins; j++) {
-                for (int k = 0; k < BBins+1; k++) {
-                    TvsDB.put(new Coordinate(i,j,k), new FitLine("f_"+"i"+i+"j"+j+"k"+k, i, j, k, 
-                                mnp));
-                    TvsDB.get(new Coordinate(i, j, k)).setLineWidth(2);
-                    TvsDB.get(new Coordinate(i, j, k)).setLineColor(k+1);
-                    TvsDB.get(new Coordinate(i, j, k)).setRange(0, pars[10]);   
-                    TvsDB.get(new Coordinate(i, j, k)).useMidBfieldBin=true;
-                    TvsDB.get(new Coordinate(i, j, k)).useMidAlphaBin=true;
-                    TvsDBr.put(new Coordinate(i,j,k), new FitLine("f_"+"i"+i+"j"+j+"k"+k, i, j, k, 
-                               mnp));
-                    TvsDBr.get(new Coordinate(i, j, k)).setLineWidth(2);
-                    TvsDBr.get(new Coordinate(i, j, k)).setLineColor(k+1);
-                    TvsDBr.get(new Coordinate(i, j, k)).setRange(0, pars[10]); 
-                    TvsDBr.get(new Coordinate(i, j, k)).useMidBfieldBin=true;
-                    TvsDBr.get(new Coordinate(i, j, k)).useMidAlphaBin=true;
+        for (int s = 0; s < 6; s++) {
+            for (int i = 0; i < 6; i++) {
+                double[] pars = new double[11];
+                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i];
+                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i];
+                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i];
+                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i];
+                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i];
+                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i];
+                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i];
+                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i];
+                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i];
+                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i];
+                pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
+                MinuitPar mnp = new MinuitPar();
+
+                for(int p = 0; p < 10; p++) {
+                    mnp.add(parNames[p], pars[p], errs[p]);
+                }
+                mnp.add(parNames[10], pars[10], errs[10]);
+                for (int j = 0; j < T2DCalib.alphaBins; j++) {
+                    for (int k = 0; k < BBins+1; k++) {
+                            TvsDB.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k, i, j, k, 
+                                    mnp));
+                            TvsDB.get(new Coordinate(s, i, j, k)).setLineWidth(2);
+                            TvsDB.get(new Coordinate(s, i, j, k)).setLineColor(k+1);
+                            TvsDB.get(new Coordinate(s, i, j, k)).setRange(0, pars[10]);   
+                            TvsDB.get(new Coordinate(s, i, j, k)).useMidBfieldBin=true;
+                            TvsDB.get(new Coordinate(s, i, j, k)).useMidAlphaBin=true;
+                            TvsDBr.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k, i, j, k, 
+                                   mnp));
+                            TvsDBr.get(new Coordinate(s, i, j, k)).setLineWidth(2);
+                            TvsDBr.get(new Coordinate(s, i, j, k)).setLineColor(k+1);
+                            TvsDBr.get(new Coordinate(s, i, j, k)).setRange(0, pars[10]); 
+                            TvsDBr.get(new Coordinate(s, i, j, k)).useMidBfieldBin=true;
+                            TvsDBr.get(new Coordinate(s, i, j, k)).useMidAlphaBin=true;
+                    }
                 }
             }
         }
-        
     }
     private static synchronized void reset(){
         TvsDBr.clear();
         for (int s = 0; s < 6; s++) {
-            for (int i0 = 0; i0 < 6; i0++) {
-                int i = i0+s*6;
+            for (int i = 0; i < 6; i++) {
                 double[] pars = new double[11];
-                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i0];
-                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i0];
-                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i0];
-                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i0];
-                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i0];
-                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i0];
-                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i0];
-                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i0];
-                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i0];
-                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i0];
-                pars[10] = 2.*Constants.getInstance().wpdist[i0];//fix dmax
+                pars[0] = org.jlab.rec.dc.timetodistance.TableLoader.v0[s][i];
+                pars[1] = org.jlab.rec.dc.timetodistance.TableLoader.vmid[s][i];
+                pars[2] = org.jlab.rec.dc.timetodistance.TableLoader.FracDmaxAtMinVel[s][i];
+                pars[3] = org.jlab.rec.dc.timetodistance.TableLoader.Tmax[s][i];
+                pars[4] = org.jlab.rec.dc.timetodistance.TableLoader.distbeta[s][i];
+                pars[5] = org.jlab.rec.dc.timetodistance.TableLoader.delta_bfield_coefficient[s][i];
+                pars[6] = org.jlab.rec.dc.timetodistance.TableLoader.b1[s][i];
+                pars[7] = org.jlab.rec.dc.timetodistance.TableLoader.b2[s][i];
+                pars[8] = org.jlab.rec.dc.timetodistance.TableLoader.b3[s][i];
+                pars[9] = org.jlab.rec.dc.timetodistance.TableLoader.b4[s][i];
+                pars[10] = 2.*Constants.getInstance().wpdist[i];//fix dmax
                 MinuitPar mnp = new MinuitPar();
 
                 for(int p = 0; p < 10; p++) {
@@ -190,9 +190,10 @@ public class TableLoader {
                     org.jlab.rec.dc.timetodistance.TableLoader.b3[s][l]=11.5;
                 }
             }
+           
         }
         
-        System.out.println("T2D TABLE filled...");
+        
         fillT2DGraphs();
         System.out.println(" T2D TABLE FILLED.....");
         //testBeq1();
@@ -219,40 +220,34 @@ public class TableLoader {
         fitsinit();
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").divide(4, 3);
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").setAxisLabelSize(9);
-        
-        for (int i = 0; i < 6; i++) {
-           int cd1=0;
-           int cd2=0;
-           if(i/2==0) {
-               cd1=i;
-               cd2=cd1+2;
-           }
-           if(i/2==1){
-               cd1=i+2;
-               cd2=cd1+2;
-           }
-           if(i/2==2){
-               cd1=i+4;
-               cd2=cd1+2;
-           }
-           
-            for (int j = 0; j < T2DCalib.alphaBins; j++) {
-                if(i<2 || i>3) {
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,8)), "same");
-                    //t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
-                    //t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,8)), "same");
-                } else {
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,0)), "same");
-                    for (int k = 1; k < BBins; k++) {
-                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,k)), "same");
-                    } 
-                    //t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
-                    //t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,0)), "same");
-                    //for (int k = 1; k < BBins; k++) {
-                    //    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,k)), "same");
-                    //} 
+        for(int s=0; s<6; s++) {
+            for (int i = 0; i < 6; i++) {
+               int cd1=0;
+               int cd2=0;
+               if(i/2==0) {
+                   cd1=i;
+                   cd2=cd1+2;
+               }
+               if(i/2==1){
+                   cd1=i+2;
+                   cd2=cd1+2;
+               }
+               if(i/2==2){
+                   cd1=i+4;
+                   cd2=cd1+2;
+               }
+
+                for (int j = 0; j < T2DCalib.alphaBins; j++) {
+                    if(i<2 || i>3) {
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s,i,j,8)), "same");
+                    } else {
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s, i,j,0)), "same");
+                        for (int k = 1; k < BBins; k++) {
+                            t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s, i,j,k)), "same");
+                        } 
+                    }
                 }
             }
         }
@@ -273,42 +268,43 @@ public class TableLoader {
         //TColorPalette palette = new TColorPalette();
         //palette.setBackgroundColor(Color.yellow);
         System.out.println("RESETTING Fit Function Panel");
-        for (int i = 0; i < 6; i++) {
-           int cd1=0;
-           int cd2=0;
-           if(i/2==0) {
-               cd1=i;
-               cd2=cd1+2;
-           }
-           if(i/2==1){
-               cd1=i+2;
-               cd2=cd1+2;
-           }
-           if(i/2==2){
-               cd1=i+4;
-               cd2=cd1+2;
-           }
-            for (int j = 0; j < T2DCalib.alphaBins; j++) {
-                if(i<2 || i>3) {
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,8)), "same");
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(i,j,8)), "same");
-                } else {
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,0)), "same");
-                    for (int k = 1; k < BBins; k++) {
-                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(i,j,k)), "same");
-                    } 
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
-                    t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(i,j,0)), "same");
-                    for (int k = 1; k < BBins; k++) {
-                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(i,j,k)), "same");
-                    } 
+        for(int s = 0; s<6; s++) {
+            for (int i = 0; i < 6; i++) {
+               int cd1=0;
+               int cd2=0;
+               if(i/2==0) {
+                   cd1=i;
+                   cd2=cd1+2;
+               }
+               if(i/2==1){
+                   cd1=i+2;
+                   cd2=cd1+2;
+               }
+               if(i/2==2){
+                   cd1=i+4;
+                   cd2=cd1+2;
+               }
+                for (int j = 0; j < T2DCalib.alphaBins; j++) {
+                    if(i<2 || i>3) {
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s, i,j,8)), "same");
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(s, i,j,8)), "same");
+                    } else {
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd1);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s, i,j,0)), "same");
+                        for (int k = 1; k < BBins; k++) {
+                            t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDB.get(new Coordinate(s, i,j,k)), "same");
+                        } 
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").cd(cd2);
+                        t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(s, i,j,0)), "same");
+                        for (int k = 1; k < BBins; k++) {
+                            t2dc.getAnalysisCanvas().getCanvas("Fit Function").draw(TvsDBr.get(new Coordinate(s, i,j,k)), "same");
+                        } 
+                    }
                 }
-            }
-        } 
-        
+            } 
+        }
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").getPad(0).getAxisY().setTitle("time (ns)");
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").getPad(4).getAxisY().setTitle("time (ns)");
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").getPad(8).getAxisY().setTitle("time (ns)");

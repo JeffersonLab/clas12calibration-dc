@@ -37,14 +37,14 @@ public class HistoUtility {
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H1F> timeResiFromFile, 
             Map<Coordinate, H1F> A, Map<Coordinate, H1F> B,
             Map<Integer, SegmentProperty> segPropMap) {
+        int allSecIdx = 6;
         for (int i = 0; i < bnkHits.rows(); i++) {
             double bFieldVal = (double) bnkHits.getFloat("B", i);
             int superlayer = bnkHits.getInt("superlayer", i);
             int sector = bnkHits.getInt("sector", i);
-            //if(!T2DCalib.fitBySector) sector=1;
-            int slyrIdx = (superlayer-1)+(sector-1)*6;
-            int allSlyrIdx = 35+superlayer;
-            //int selectedSlyrIdx = (superlayer-1)+selectedSectorIdx*6;
+            int slyrIdx = superlayer-1;
+            int secIdx = sector-1;
+            
             // alpha in the bank is corrected for B field.  To fill the alpha bin use the uncorrected value
             double theta0 = Math.toDegrees(Math.acos(1-0.02*bFieldVal));
             double alphaUncor = bnkHits.getFloat("Alpha", i)+(double)T2DCalib.polarity*theta0;
@@ -59,42 +59,44 @@ public class HistoUtility {
             }
             if(HitUtility.passCuts(event,bnkHits, i) && calhitmap.get(theHit.get_Id())==null){ 
                 calhitmap.put(theHit.get_Id(), theHit);
-                if(!T2DCalib.refitSegs) {
+                if(!T2DCalib.refitSegs) { 
                     double calibTime = (double) (bnkHits.getInt("TDC", i) - bnkHits.getFloat("TProp", i)
                                             - bnkHits.getFloat("TFlight", i) - bnkHits.getFloat("TStart", i) 
                                             - bnkHits.getFloat("T0", i));
                     
-                    Tvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, BBins))
+                    Tvstrkdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
                                     .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                    Tvstrkdocas.get(new Coordinate(allSlyrIdx, alphaBin, BBins))
+                    Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
                                     .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                    Tvscalcdocas.get(new Coordinate(slyrIdx, alphaBin, BBins))
+                    Tvscalcdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                    Tvscalcdocas.get(new Coordinate(allSlyrIdx, alphaBin, BBins))
+                    Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                    double yf = TvstrkdocasFits.get(new Coordinate(slyrIdx, alphaBin, BBins)).evaluate(bnkHits.getFloat("trkDoca", i));
+                   
+                    double yf = TvstrkdocasFits.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins)).evaluate(bnkHits.getFloat("trkDoca", i));
+                   
                     if(!Double.isNaN(yf)) {
-                        Tresvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, BBins))
+                        Tresvstrkdocas.get(new Coordinate(secIdx, slyrIdx, alphaBin, BBins))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-yf);
-                        Tresvstrkdocas.get(new Coordinate(allSlyrIdx, alphaBin, BBins))
+                        Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, BBins))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-yf);
                     }
                     //Fill region 2 for different b-field values
                     if(superlayer>2 && superlayer<5) { 
                         int bBin = CalUtility.getBBin(bFieldVal);
-                        Tvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, bBin))
+                        Tvstrkdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
                                     .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                        Tvstrkdocas.get(new Coordinate(allSlyrIdx, alphaBin, bBin))
+                        Tvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
                                     .fill(bnkHits.getFloat("trkDoca", i), calibTime);
-                        Tvscalcdocas.get(new Coordinate(slyrIdx, alphaBin, bBin))
+                        Tvscalcdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                        Tvscalcdocas.get(new Coordinate(allSlyrIdx, alphaBin, bBin))
+                        Tvscalcdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
                                     .fill(bnkHits.getFloat("doca", i), calibTime);
-                        double r2yf = TvstrkdocasFits.get(new Coordinate(slyrIdx, alphaBin, bBin)).evaluate(bnkHits.getFloat("trkDoca", i));
+                        double r2yf = TvstrkdocasFits.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin)).evaluate(bnkHits.getFloat("trkDoca", i));
                         if(!Double.isNaN(r2yf)) {
-                            Tresvstrkdocas.get(new Coordinate(slyrIdx, alphaBin, bBin))
+                            Tresvstrkdocas.get(new Coordinate(secIdx, slyrIdx,alphaBin, bBin))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-r2yf);
-                            Tresvstrkdocas.get(new Coordinate(allSlyrIdx, alphaBin, bBin))
+                            Tresvstrkdocas.get(new Coordinate(allSecIdx, slyrIdx,alphaBin, bBin))
                                         .fill(bnkHits.getFloat("trkDoca", i), calibTime-r2yf);
                         }
                     }
@@ -156,44 +158,40 @@ public class HistoUtility {
             fr.addDataSet(fitResi.get(new Coordinate(i)), i);
         }
         for(int s = 0; s<7; s++) {
-            for (int i0 = 0; i0 < 6; i0++) {    
-                int i = i0+s*6;
+            for (int i = 0; i < 6; i++) { 
                 DataGroup prfdvst = new DataGroup(1,1);
-                TvstrkdocasFitPars.put(new Coordinate(i), new MinuitPar());
+                TvstrkdocasFitPars.put(new Coordinate(s, i), new MinuitPar());
                 for (int j = 0; j < alphaBins; j++) {
-                    //DataGroup trkdvst = new DataGroup(1,1);
-                    //DataGroup dvst = new DataGroup(1,1);
-
                     for (int k = 0; k < BBins+1; k++) {
-                        if((i0<2 || i0>3) && k<BBins ) continue; 
+                        if((i<2 || i>3) && k<BBins ) continue; 
                         
                         String stg = "";
-                        stg+= "sl" + (i0 + 1);
+                        stg+= "sl" + (i + 1);
                         stg+=  ", alpha ("+(AlphaValues[j]-AlphaBinHalfWidth)+", "+(AlphaValues[j]+AlphaBinHalfWidth)+")"
                                 +", B "+k;
                         System.out.println(stg);
-                        TvstrkdocasProf.put(new Coordinate(i,j,k), new GraphErrors());
-                        TvstrkdocasInit.put(new Coordinate(i,j,k), new GraphErrors());
-                        TvstrkdocasProf.get(new Coordinate(i,j,k)).setMarkerColor(k+1);
-                        TvstrkdocasInit.get(new Coordinate(i,j,k)).setMarkerColor(k+1);
-                        TvstrkdocasInit.get(new Coordinate(i,j,k)).setMarkerStyle(2);
-                        TvstrkdocasInit.get(new Coordinate(i,j,k)).setTitle( "superlayer" + (i + 1)
+                        TvstrkdocasProf.put(new Coordinate(s,i,j,k), new GraphErrors());
+                        TvstrkdocasInit.put(new Coordinate(s,i,j,k), new GraphErrors());
+                        TvstrkdocasProf.get(new Coordinate(s,i,j,k)).setMarkerColor(k+1);
+                        TvstrkdocasInit.get(new Coordinate(s,i,j,k)).setMarkerColor(k+1);
+                        TvstrkdocasInit.get(new Coordinate(s,i,j,k)).setMarkerStyle(2);
+                        TvstrkdocasInit.get(new Coordinate(s,i,j,k)).setTitle( "superlayer" + (i + 1)
                                 + ", alpha ("+(AlphaValues[j]-AlphaBinHalfWidth)+", "+(AlphaValues[j]+AlphaBinHalfWidth)+")");
                         
-                        Tvstrkdocas.put(new Coordinate(i,j,k), new H2F("trkDocavsT" + stg, nbinx[i0], 0, maxx[i0], nbiny[i0], 0, maxy[i0]));
-                        Tresvstrkdocas.put(new Coordinate(i,j,k), new H2F("trkDocavsTres" +stg, nbinx[i0], 0, maxx[i0], nbiny[i0], -50, 50));
-                        Tvscalcdocas.put(new Coordinate(i,j,k), new H2F("calcDocavsT" + stg, nbinx[i0], 0, maxx[i0], nbiny[i0], 0, maxy[i0]));
+                        Tvstrkdocas.put(new Coordinate(s,i,j,k), new H2F("trkDocavsT" + stg, nbinx[i], 0, maxx[i], nbiny[i], 0, maxy[i]));
+                        Tresvstrkdocas.put(new Coordinate(s,i,j,k), new H2F("trkDocavsTres" +stg, nbinx[i], 0, maxx[i], nbiny[i], -50, 50));
+                        Tvscalcdocas.put(new Coordinate(s,i,j,k), new H2F("calcDocavsT" + stg, nbinx[i], 0, maxx[i], nbiny[i], 0, maxy[i]));
                         
-                        tdp.addDataSet(TvstrkdocasProf.get(new Coordinate(i,j,k)), ijk);
-                        tdp.addDataSet(Tresvstrkdocas.get(new Coordinate(i,j,k)), 0);
+                        tdp.addDataSet(TvstrkdocasProf.get(new Coordinate(s,i,j,k)), ijk);
+                        tdp.addDataSet(Tresvstrkdocas.get(new Coordinate(s,i,j,k)), 0);
                         //trkdvst.addDataSet(Tvstrkdocas.get(new Coordinate(i,j,k)), 0);
-                        prfdvst.addDataSet(TvstrkdocasProf.get(new Coordinate(i,j,k)), 0);
-                        prfdvst.addDataSet(TvstrkdocasInit.get(new Coordinate(i,j,k)), 0);
+                        prfdvst.addDataSet(TvstrkdocasProf.get(new Coordinate(s,i,j,k)), 0);
+                        prfdvst.addDataSet(TvstrkdocasInit.get(new Coordinate(s,i,j,k)), 0);
 
-                        TvstrkdocasFits.put(new Coordinate(i,j,k), new FitLine());
-                        prfdvst.addDataSet(TvstrkdocasFits.get(new Coordinate(i,j,k)), 0);
-                        dataGroup.add(prfdvst, s+1, i0+1, j+1);
-                        dataGroup.add(tdp, s+1, i0+1, j+1);
+                        TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine());
+                        prfdvst.addDataSet(TvstrkdocasFits.get(new Coordinate(s,i,j,k)), 0);
+                        dataGroup.add(prfdvst, s+1, i+1, j+1);
+                        dataGroup.add(tdp, s+1, i+1, j+1);
                         ijk++; 
                     }
                 }

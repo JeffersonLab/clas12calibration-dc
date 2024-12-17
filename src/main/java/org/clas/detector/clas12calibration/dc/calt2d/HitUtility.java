@@ -334,9 +334,8 @@ public class HitUtility {
     }
 
     public static void updateHit(FittedHit hit, boolean flagOT) {
-        double distbeta = T2DCalib.TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer() + (hit.get_Sector() - 1) * 6 - 1)).value(4);
-        double v0 = T2DCalib.TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer() + (hit.get_Sector() - 1) * 6 - 1)).value(0);
-        //double dmax = T2DCalib.TvstrkdocasFitPars.get(new Coordinate(hit.get_Superlayer() + (hit.get_Sector() - 1) * 6 - 1)).value(10);
+        double distbeta = T2DCalib.TvstrkdocasFitPars.get(new Coordinate(hit.get_Sector()-1,hit.get_Superlayer()-1)).value(4);
+        double v0 = T2DCalib.TvstrkdocasFitPars.get(new Coordinate(hit.get_Sector()-1,hit.get_Superlayer()-1)).value(0);
         double d = hit.get_ClusFitDoca();
         double beta = hit.get_Beta();
         if (beta > 1.0) {

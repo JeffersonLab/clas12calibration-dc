@@ -26,17 +26,17 @@ public class FitLine extends Func1D{
     public static final int nPars = 11;
     private double[] par = new double[nPars];
     public FitLine(String name, int i, int j, int k, MinuitPar pars) {
-        super(name, 0.0, pars.value(10));;
-        this.i = i-6*((int) (i/6));
+        super(name, 0.0, pars.value(10));
+        this.i = i;
         this.j = j;
-        this.k = k;
+        this.k = k; 
         fc = new FitFunction();
         this.initParameters(pars);
     }
 
     private void initParameters(MinuitPar pars) {
         for(int p = 0; p< nPars; p++) {
-            par[p] = pars.value(p);
+            par[p] = pars.value(p); 
         }
     }
     @Override

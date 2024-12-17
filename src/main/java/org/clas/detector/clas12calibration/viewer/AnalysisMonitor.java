@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.jlab.detector.calib.tasks.CalibrationEngine;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.CalibrationConstantsListener;

@@ -7,58 +7,6 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.jlab.clas12.detector</groupId>
-            <artifactId>clas12detector-dc</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-analysis</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-geometry</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-jcsg</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-detector</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-math</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-physics</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-reco</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas</groupId>
-                    <artifactId>clas-tracking</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jlab.clas12.detector</groupId>
-                    <artifactId>clas12detector-urwell</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.jlab.coat</groupId>
             <artifactId>coat-libs</artifactId>
             <version>11.0.2-SNAPSHOT</version>
@@ -98,6 +46,54 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.jlab.clas12.detector</groupId>
+            <artifactId>clas12detector-dc</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>freetts</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>cmu_time_awb</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
+         <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>cmu_us_kal</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>en_us</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>cmulex</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>cmutimelex</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.speech</groupId>
+            <artifactId>cmudict04</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
+        </dependency>
+        
     </dependencies> 
     <repositories>
      <repository>

@@ -5,7 +5,9 @@
 package org.clas.detector.clas12calibration.dc.calt2d;
 
 
+import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.freehep.math.minuit.FunctionMinimum;
 import org.freehep.math.minuit.MnMigrad;
 /**
@@ -32,7 +34,7 @@ public class T2DFitter  {
 
         double R ;
         double distbeta ;
-        System.out.println("Estimating PARS "+nR+" "+ndbeta);
+        //System.out.println("Estimating PARS "+nR+" "+ndbeta);
         int cnt =0;
         
         for(int ri =1; ri<nR-1; ri++) {
@@ -41,13 +43,13 @@ public class T2DFitter  {
                 distbeta=T2DCalib.distbetalimits[0][0]+(double)di*errs4;
                 double[] c2=new double[3];
                 cnt++;
-                System.out.println(cnt+"] R "+R+" disbeta "+distbeta);
+                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta);
                 for(int i =0; i<2; i++) {
                     String s="";
                     s+=(" ***********************************************************≈***");
                     s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
                     s+=(" ***************************************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], R, distbeta, true, s);
+                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
                     c2[0]+= fm.getChi2();
                 }
                 for(int i =2; i<4; i++) {
@@ -55,7 +57,7 @@ public class T2DFitter  {
                     s+=(" ***********************************************************≈***");
                     s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
                     s+=(" ***************************************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], R, distbeta, true, s);
+                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
                     c2[1]+= fm.getChi2();
                 }
                 for(int i =4; i<6; i++) {
@@ -63,10 +65,10 @@ public class T2DFitter  {
                     s+=(" ***********************************************************≈***");
                     s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
                     s+=(" ***************************************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], R, distbeta, true, s);
+                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
                     c2[2]+= fm.getChi2();
                 }
-                System.out.println(cnt+"] R "+R+" disbeta "+distbeta +" c2 "+c2[0]+" "+c2[1]+" "+c2[2]);
+                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta +" c2 "+c2[0]+" "+c2[1]+" "+c2[2]);
                 for(int j = 0; j < 3; j++) {
                     if(c2[j]<bestchi2[j]) {
                         bestR[j] = R;
@@ -80,7 +82,7 @@ public class T2DFitter  {
         for(int k =0; k<3; k++) {
             result[0][k] = bestR[k];
             result[1][k] = bestDistbeta[k];
-            System.out.println("Best results for R "+bestR[k]+" istbeta "+bestDistbeta[k]);
+            //System.out.println("Best results for R "+bestR[k]+" istbeta "+bestDistbeta[k]);
         }
         return result;
     }
@@ -98,7 +100,7 @@ public class T2DFitter  {
 
         double R = T2DCalib.Rlimits[0][0];
         double distbeta = T2DCalib.distbetalimits[0][0];
-        System.out.println("Estimating PARS "+nR+" "+ndbeta);
+       // System.out.println("Estimating PARS "+nR+" "+ndbeta);
         int cnt =0;
         
         for(int ri =1; ri<nR-1; ri++) {
@@ -107,21 +109,21 @@ public class T2DFitter  {
                 distbeta=T2DCalib.distbetalimits[0][0]+(double)di*errs4;
                 double c2=0;
                 cnt++;
-                System.out.println(cnt+"] R "+R+" disbeta "+distbeta);
+                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta);
                 for(int i =0; i<6; i++) {
                     String s="";
                     s+=(" ******************************************");
                     s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1));
                     s+=(" ******************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], R, distbeta, true, s);
+                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
                     c2+= fm.getChi2();
                 }
-                System.out.println(cnt+"] R "+R+" disbeta "+distbeta +" c2 "+c2);
+                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta +" c2 "+c2);
                 if(c2<bestchi2) {
                     bestR = R;
                     bestDistbeta = distbeta;
                     bestchi2 = c2;
-                    System.out.println(cnt+"] best R "+R+" disbeta "+distbeta +" c2 "+c2);
+                    //System.out.println(cnt+"] best R "+R+" disbeta "+distbeta +" c2 "+c2);
                 }
             }
         }
@@ -129,13 +131,13 @@ public class T2DFitter  {
         return new double[] {bestR, bestDistbeta};
     }
     
-    private static fMin getfMinFixedRDPars(int sec, int i, boolean fixFit[][][], MnMigrad scanner, MnMigrad fitter, 
+    private static fMin getfMinFixedRDPars(int sec, int i,  MnMigrad scanner, MnMigrad fitter, 
             double R, double distbeta, boolean reset, String s) {
         
         if(reset) {
             for (int p = 0; p < 10; p++) {
-                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
-                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).value(p));
+                scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)).value(p));
+                fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)).value(p));
             }
         }
         double edm = Double.POSITIVE_INFINITY;
@@ -143,7 +145,7 @@ public class T2DFitter  {
         double bestchi2 = Double.POSITIVE_INFINITY;
         double bestMchi2 = Double.POSITIVE_INFINITY;
         
-        System.out.println(s); 
+       // System.out.println(s); 
         FunctionMinimum min = null ;
         FunctionMinimum bestmin = null ;
         FunctionMinimum min2 = null ;
@@ -218,21 +220,15 @@ public class T2DFitter  {
         }
         
         
-        //System.out.println("R "+R+" db "+distbeta);
-        //System.out.println(+itercnt+"] SCAN CHI2 "+bestchi2+" "+min.toString());
-        //System.out.println(itercnt2+"] MIGRAD CHI2 "+bestMchi2+" "+min2.toString()+" comp "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)).toString());
-        
-        
-        
         System.gc();
-        System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
+        //System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
         return new fMin(bestmin2, bestMchi2);
     }
     
     
     
     public static void fitWithFixedParsPerRegion(int sec, int ridx,boolean fixFit[][][], double pars[], 
-            MnMigrad scanner[], MnMigrad fitter[]) { 
+            MnMigrad scanner[], MnMigrad fitter[], Map<Coordinate, FitUtility.MinuitPar> TvstrkdocasFitPars) { 
         fMin results [] = new fMin[6];
        
         
@@ -241,52 +237,53 @@ public class T2DFitter  {
             s2+=(" ******************************************");
             s2+=("   RUNNING THE PARAMETER FIT FOR SUPERLAYER "+(i0+1));
             s2+=(" ******************************************");
-            fMin fm2 = getfMinFixedRDPars(sec, i0, fixFit, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
+            fMin fm2 = getfMinFixedRDPars(sec, i0, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
             if(!fm2.getFcnMin().isValid()) {
                 System.out.println("FIT NOT VALID!!!");
+                voice.speak("FIT NOT VALID!!! for sector "+(sec+1)+" superlayer "+(i0+1));
             }
             results[i0] = fm2;
             fmin = fm2.getFcnMin();
 
-            FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)),
+            FitUtility.updatePar(TvstrkdocasFitPars.get(new Coordinate(sec, i0)),
                     fmin.userParameters());
 
             if(sec==6) {
                 for(int s = 0; s<6; s++) {
-                    FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*s)),
+                    FitUtility.updatePar(TvstrkdocasFitPars.get(new Coordinate(s,i0)),
                     fmin.userParameters());
                 }
             }
-            System.out.println("UPDATED "+T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i0+6*sec)).toString());
-            
+            voice.speak("FIT DONE for sector "+(sec+1)+" superlayer "+(i0+1));
         }
     
     }
-    public static void fitWithFixedPars(boolean fixFit[][][], double pars[], MnMigrad scanner[], MnMigrad fitter[], int sec) { 
+    public static void fitWithFixedPars(double pars[][][], MnMigrad scanner[], MnMigrad fitter[], int sec) { 
         fMin results [] = new fMin[6];
         
         for(int i =0; i<6; i++) {
-            
             String s2="";
             s2+=(" ************************************************************************");
-            s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[0]+"]["+pars[0]+"]");
+            s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[sec][i][0]+"]["+pars[sec][i][0]+"]");
             s2+=(" ************************************************************************");
-            fMin fm2 = getfMinFixedRDPars(sec, i, fixFit, scanner[i], fitter[i], pars[0], pars[1], false, s2);
+            fMin fm2 = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], pars[sec][i][0], pars[sec][i][1], false, s2);
             FunctionMinimum fmin=null;
             if(fm2.getFcnMin().isValid()) {
                 results[i] = fm2;
                 fmin = fm2.getFcnMin();
-                System.out.println("UPDATED "+fmin.toString());
-                FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)),
+                //System.out.println("UPDATED "+fmin.toString());
+                FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)),
                         fmin.userParameters());
                 if(sec==6) {
                     for(int s = 0; s<6; s++) {
-                        FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(i+6*sec)),
+                        FitUtility.updatePar(T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)),
                         fmin.userParameters()); 
                     }
                 }
-            } 
+            } else {
+                voice.speak("fit invalid for sector "+(sec+1)+" superlayer "+(i+1));
+            }
         }
     }
     
