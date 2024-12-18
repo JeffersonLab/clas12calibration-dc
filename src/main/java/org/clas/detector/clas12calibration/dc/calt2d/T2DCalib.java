@@ -334,8 +334,8 @@ public class T2DCalib extends AnalysisMonitor{
     double[][] chi2FitNum = new double[100][6];
     int[] fitNum =new int[6];
     
-    public static boolean runParallel = false; //no thread safe; DO NOT USE YET!!!
-    
+    public static boolean runParallel = true; //no thread safe; DO NOT USE YET!!!
+    public static int numThreads = 6;  // Adjust the number of threads based on your system capabilities
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][],Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
         if(T2DCalib.vocal==true) voice.speak("PARAMETER SCAN STARTED");
@@ -347,9 +347,9 @@ public class T2DCalib extends AnalysisMonitor{
         }
         
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
-        if(runParallel) {
+        if(runParallel && T2DCalib.maxSec==6) {
             if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
-            fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
         } else {
             fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
@@ -366,9 +366,9 @@ public class T2DCalib extends AnalysisMonitor{
             }
         }
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
-        if(runParallel) {
+        if(runParallel && T2DCalib.maxSec==6) {
             if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
-            fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
         } else {
             fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }

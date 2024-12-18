@@ -298,10 +298,9 @@ public class FitUtility {
     public void runParamScanParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, GraphErrors> TvstrkdocasProf, int numThreads) {
     
         // Create a FixedThreadPool (number of threads can be adjusted as needed)
-        int numThreads = 4;  // Adjust the number of threads based on your system capabilities
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         // Create a list to keep track of futures (optional, for waiting for task completion)
@@ -416,10 +415,9 @@ public class FitUtility {
     public void runFitParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, GraphErrors> TvstrkdocasProf, int numThreads) {
     
         // Create a FixedThreadPool (number of threads can be adjusted as needed)
-        int numThreads = 4;  // Adjust the number of threads based on your system capabilities
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         // Create a list to keep track of futures (optional, for waiting for task completion)
