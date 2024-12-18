@@ -211,15 +211,16 @@ public class TableLoader {
         org.jlab.rec.dc.timetodistance.TableLoader.DISTFROMTIME = new double[6][6][org.jlab.rec.dc.timetodistance.TableLoader.maxBinIdxB+1][org.jlab.rec.dc.timetodistance.TableLoader.maxBinIdxAlpha+1][org.jlab.rec.dc.timetodistance.TableLoader.betaValues.length][nBinsT]; // sector slyr alpha Bfield time bins [s][r][ibfield][icosalpha][tbin]      
         org.jlab.rec.dc.timetodistance.TableLoader.FillTable();
         if(t2dc.NbRunFit>0) {
+            System.out.println("REMAKING T2D FUNCTION PLOTS....");
             refillT2DGraphs();
-            System.out.println(" T2D TABLE RE-FILLED.....");
+            System.out.println("T2D FUNCTION PLOTS DONE ");
         }
      }
     public static void fillT2DGraphs() {
         fitsinit();
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").divide(4, 3);
         t2dc.getAnalysisCanvas().getCanvas("Fit Function").setAxisLabelSize(9);
-        int s=T2DCalib.minSec;
+        int s=0;
         for (int i = 0; i < 6; i++) {
            int cd1=0;
            if(i/2==0) {
@@ -262,7 +263,7 @@ public class TableLoader {
         //TColorPalette palette = new TColorPalette();
         //palette.setBackgroundColor(Color.yellow);
         System.out.println("RESETTING Fit Function Panel");
-        int s = T2DCalib.minSec; 
+        int s = 0; 
         for (int i = 0; i < 6; i++) {
            int cd1=0;
            int cd2=0;

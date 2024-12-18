@@ -68,6 +68,7 @@ public class T2DCalib extends AnalysisMonitor{
     private T2DFitter t2df;
     public static int minSec=6;
     public static int maxSec=7;
+    public static boolean vocal= false;
     
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
@@ -277,7 +278,7 @@ public class T2DCalib extends AnalysisMonitor{
             eventProcessingDone = true;
             System.out.println("ANALYSIS Done ....");
             
-            voice.speak("Event  processing done!");
+            if(T2DCalib.vocal==true) voice.speak("Event  processing done!");
         } catch (FileNotFoundException ex) {
             Logger.getLogger(T2DCalib.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -337,29 +338,42 @@ public class T2DCalib extends AnalysisMonitor{
     
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][],Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
-        voice.speak("PARAMETER SCAN STARTED");
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER SCAN STARTED");
+        for(int s=0; s<7;s++) {
+            for (int i = 0; i < 6; i++) {
+                this.runInitFit(s,i);
+
+            }
+        }
+        
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         if(runParallel) {
-            voice.speak("Starting parallel processing");
+            if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
             fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         } else {
             fitUtil.runParamScan(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
-        voice.speak("PARAMETER SCAN DONE");
+        
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER SCAN DONE");
     }
     
     public void runFit(boolean fixFit[][][], Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
-        voice.speak("PARAMETER FIT STARTED");
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT STARTED");
+        for(int s=0; s<7;s++) {
+            for (int i = 0; i < 6; i++) {
+                this.runInitFit(s,i);
+            }
+        }
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         if(runParallel) {
-            voice.speak("Starting parallel processing");
+            if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
             fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         } else {
             fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
-        voice.speak("PARAMETER FIT DONE");
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT DONE");
         NbRunFit++;
     }
     
@@ -371,14 +385,14 @@ public class T2DCalib extends AnalysisMonitor{
     public  HipoDataSource reader = new HipoDataSource();
     private TimeToDistanceEstimator t2d = new TimeToDistanceEstimator();
     public void reCook() {
-        voice.speak("Reprocessing the segment fits");
+        if(T2DCalib.vocal==true) voice.speak("Reprocessing the segment fits");
         iterationNum++;
         fp.setRedFitButton();
         //reset histos to refill
         CalUtility.reCook(timeResi, timeResiNew, timeResiB, A, B, BAlphaBins, Tvstrkdocas, Tvscalcdocas, Tresvstrkdocas, 
                 calreader, hits, calhits, ParsVsIter, TvstrkdocasFits, TvstrkdocasProf, TvstrkdocasFitPars, useBProf);
         fp.setGreenFitButton();
-        voice.speak("Reprocessing done");
+        if(T2DCalib.vocal==true) voice.speak("Reprocessing done");
     }
     
     public void rePlotResi() {
@@ -422,7 +436,7 @@ public class T2DCalib extends AnalysisMonitor{
          
         //if(count>20000) return;
         if(count==1) {
-            voice.speak("Event processing started!");
+            if(T2DCalib.vocal==true) voice.speak("Event processing started!");
             HipoReader read = new HipoReader();
             read.open(T2DViewer.theFile);
             schemaFactory = read.getSchemaFactory();

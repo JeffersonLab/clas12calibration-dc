@@ -136,7 +136,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
                 voice.setRate(150);  
                 voice.setStyle("happy"); 
                 voice.setVolume(4);
-                voice.speak("Calibration started");
             } catch (Exception e) {
                 e.printStackTrace();
             } 

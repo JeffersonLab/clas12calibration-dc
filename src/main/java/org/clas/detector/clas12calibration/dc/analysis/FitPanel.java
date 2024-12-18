@@ -39,7 +39,7 @@ public class FitPanel {
     private JFrame            frame     = new JFrame();
     private CustomPanel2      panel     = null;            
     private T2DCalib _pM;
-   
+    
     public FitPanel(T2DCalib pM) {
        
         this._pM = pM;
@@ -60,6 +60,10 @@ public class FitPanel {
         frame.add(panel);
         frame.pack();
         frame.setVisible(true);
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+            voice.speak("Calibration started");
+        }
 //        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
             
     }
@@ -78,7 +82,9 @@ public class FitPanel {
     public void refit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
-        voice.speak("Fit started");
+        if(panel.vocal.isSelected()==true) {
+            voice.speak("Fit started");
+        }
         if(!this._pM.useBProf) {
             for(int s=0; s<6; s++) {
                 for(int j = 2; j<4; j++) {
@@ -168,7 +174,7 @@ public class FitPanel {
         }
         //
         this._pM.initFitParsToFile();
-        voice.speak("Fit parameters initialized");
+        if(panel.vocal.isSelected()==true) voice.speak("Fit parameters initialized");
         for(int s = 0; s<6; s++) {
             for(int j = 0; j<6; j++) {
                 panel.fixFit[2][j][s].setSelected(true);
@@ -182,7 +188,7 @@ public class FitPanel {
         //Don't allow to fit the B>0 profile if they are not filled
         
         this._pM.runFit(fixedPars, TvstrkdocasFitPars);
-         voice.speak("Fit done");
+         if(panel.vocal.isSelected()==true) voice.speak("Fit done");
             //this._pM.runParamScan(j, fixedPars);
         for(int s = 0; s<6; s++) {        
             for(int j = 0; j<6; j++) { 
@@ -204,7 +210,8 @@ public class FitPanel {
     
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         if(this._pM.eventProcessingDone==false) {
-            System.out.println("PATIENCE ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
+            System.out.println(" ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
+            if(T2DCalib.vocal) voice.speak("PLEASE WAIT UNTIL EVENT PROCESSING IS DONE TO DO THE SCAN");
             return;
         }
         boolean[][][] fixedPars = new boolean[10][6][6];
@@ -259,6 +266,7 @@ public class FitPanel {
             T2DCalib.minSec=6;
             T2DCalib.maxSec=7;
         }
+        
         this._pM.runParamScan(fixedPars, TvstrkdocasFitPars);
         initscan=true;
         for(int s = 0; s<6; s++) {
@@ -405,6 +413,7 @@ public class FitPanel {
             settings.add(debug);
             settings.add(new JLabel("    "));
             vocal = new JCheckBox(" Vocal mode");
+            vocal.setSelected(true);
             settings.add(vocal);
             
             JPanel buttonsPanel = new JPanel();

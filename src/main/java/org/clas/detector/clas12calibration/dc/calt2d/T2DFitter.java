@@ -134,7 +134,7 @@ public class T2DFitter  {
     private static fMin getfMinFixedRDPars(int sec, int i,  MnMigrad scanner, MnMigrad fitter, 
             double R, double distbeta, boolean reset, String s) {
         
-        if(reset) {
+        if(reset) { 
             for (int p = 0; p < 10; p++) {
                 scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)).value(p));
                 fitter.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)).value(p));
@@ -173,21 +173,21 @@ public class T2DFitter  {
         
         int itercnt=0;
         for(int it = 0; it<maxIter; it++) {
-                try {
-                        min = scanner.minimize();
-                    } catch (Exception e) {
-                        // Handle the exception appropriately
-                        System.err.println("An error occurred during minimization: " + e.getMessage());
-                        // You may want to log the exception or take other actions depending on your application
-                    }
-                itercnt++;
-                if(FitFunction.chi2<bestchi2) {
-                    bestchi2 = FitFunction.chi2;
-                    bestmin = min;
-                    
+            try {
+                    min = scanner.minimize();
+                } catch (Exception e) {
+                    // Handle the exception appropriately
+                    System.err.println("An error occurred during minimization: " + e.getMessage());
+                    // You may want to log the exception or take other actions depending on your application
                 }
-                if(edm-FitFunction.chi2<0.1 || FitFunction.chi2+10>edm) break;
-                edm = FitFunction.chi2;
+            itercnt++;
+            if(min.fval()<bestchi2) {
+                bestchi2 = min.fval();
+                bestmin = min;
+
+            }
+            if(edm-min.fval()<0.1 || min.fval()+10>edm) break;
+            edm = min.fval();
         } 
         if(bestmin!=null) {
             for (int p = 0; p < 10; p++) {
@@ -207,11 +207,11 @@ public class T2DFitter  {
                 }
             itercnt2++;
             
-            if(FitFunction.chi2<bestMchi2) {
-                bestMchi2 = FitFunction.chi2;
+            if(min2.fval()<bestMchi2) {
+                bestMchi2 = min2.fval();
                 bestmin2 = min2;
-                if(edm2-FitFunction.chi2<0.01) break;
-                edm2 = FitFunction.chi2;
+                if(edm2-min2.fval()<0.01) break;
+                edm2 = min2.fval();
             }
         }
         if(bestmin2==null || bestMchi2>bestchi2) {
@@ -221,7 +221,7 @@ public class T2DFitter  {
         
         
         //System.gc();
-        //System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
+        System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
         return new fMin(bestmin2, bestMchi2);
     }
     
@@ -241,11 +241,10 @@ public class T2DFitter  {
             FunctionMinimum fmin=null;
             if(!fm2.getFcnMin().isValid()) {
                 System.out.println("FIT NOT VALID!!!");
-                voice.speak("FIT NOT VALID!!! for sector "+(sec+1)+" superlayer "+(i0+1));
+                if(T2DCalib.vocal==true) voice.speak("FIT NOT VALID!!! for sector "+(sec+1)+" superlayer "+(i0+1));
             }
             results[i0] = fm2;
             fmin = fm2.getFcnMin();
-            System.out.println(s2+" "+fmin.toString());
             FitUtility.updatePar(TvstrkdocasFitPars.get(new Coordinate(sec, i0)),
                     fmin.userParameters());
 
@@ -263,9 +262,10 @@ public class T2DFitter  {
         
         for(int i =0; i<6; i++) {
             String s2="";
-            s2+=(" ************************************************************************");
-            s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[sec][i][0]+"]["+pars[sec][i][0]+"]");
-            s2+=(" ************************************************************************");
+            s2+=(" ************************************************************************\n");
+            s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[sec][i][0]+"]["+pars[sec][i][0]+"]\n");
+            s2+=(" ************************************************************************\n");
+            System.out.println(s2);
             fMin fm2 = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], pars[sec][i][0], pars[sec][i][1], false, s2);
             FunctionMinimum fmin=null;
             if(fm2.getFcnMin().isValid()) {
@@ -280,9 +280,7 @@ public class T2DFitter  {
                         fmin.userParameters()); 
                     }
                 }
-            } else {
-                voice.speak("fit invalid for sector "+(sec+1)+" superlayer "+(i+1));
-            }
+            } 
         }
     }
     

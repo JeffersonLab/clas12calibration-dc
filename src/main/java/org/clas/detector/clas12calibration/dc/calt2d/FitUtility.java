@@ -20,6 +20,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.errs;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.parNames;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
+import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.freehep.math.minuit.FCNBase;
 import org.freehep.math.minuit.MnMigrad;
 import org.freehep.math.minuit.MnUserParameters;
@@ -284,7 +285,7 @@ public class FitUtility {
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             this.runParamScan(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
-            T2DViewer.voice.speak("Parameter Scan done for Sector "+(s+1));
+            if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector "+(s+1));
         }
     }
     /**
@@ -312,7 +313,7 @@ public class FitUtility {
             final int sector = s;
             futures.add(executor.submit(() -> {
                 this.runParamScan(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
-                T2DViewer.voice.speak("Parameter Scan done for Sector " + (sector + 1));
+                if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector " + (sector + 1));
             }));
         }
 
@@ -346,9 +347,8 @@ public class FitUtility {
         for(int i =0; i<6; i++) {
             //make a parameter clone
             MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)).clone();
-            
-            TvstrkdocasFit.put(new Coordinate(s,i), 
-                                         new FitFunction(s, i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
+            //TvstrkdocasFit.put(new Coordinate(s,i), 
+            //                             new FitFunction(s, i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
             scanner[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
                                                 TvstrkdocasFitParsClon,0);
             fitter[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
@@ -372,86 +372,81 @@ public class FitUtility {
         
     }
 
-    void runFit(boolean[][][] fixFit, Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
-        MnMigrad scanner[][] = new MnMigrad[7][6];
-        MnMigrad fitter[][] = new MnMigrad[7][6];
-        double[][][] pars = new double[7][6][2];
-        
-        
-        for(int s =0; s<7; s++) {
-            for(int i =0; i<6; i++) {
-                pars[s][i][0] = TvstrkdocasFitPars.get(new Coordinate(s,i)).value(2);
-                pars[s][i][1] = TvstrkdocasFitPars.get(new Coordinate(s,i)).value(4);
-                TvstrkdocasFit.put(new Coordinate(s,i), 
-                                             new FitFunction(s,i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
-                scanner[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
-                                                    TvstrkdocasFitPars.get(new Coordinate(s,i)),0);
-                fitter[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s,i)), 
-                                                    TvstrkdocasFitPars.get(new Coordinate(s,i)),1);
-            }
-        }
-        
-        for(int s =T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
-            T2DFitter.fitWithFixedPars(pars, scanner[s], fitter[s], s);
+    public void runFit(boolean fixFit[][][], 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+        for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
+            this.runFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
         }
     }
+    private void runFit(boolean fixFit[][][], int s, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+       
+        MnMigrad scanner[] = new MnMigrad[6];
+        MnMigrad fitter[] = new MnMigrad[6];
+        
+        for(int i =0; i<6; i++) {
+            //make a parameter clone
+            MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)).clone();
+            //TvstrkdocasFit.put(new Coordinate(s,i), 
+            //                             new FitFunction(s, i, (Map<Coordinate, GraphErrors>) TvstrkdocasProf));
+            scanner[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                                                TvstrkdocasFitParsClon,0);
+            fitter[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                                                TvstrkdocasFitParsClon,1);
+            for(int p =0; p<11; p++) {
+                if(TvstrkdocasFitPars.get(new Coordinate(s, i)).fixed[p]) {
+                    scanner[i].fix(p);
+//                    fitter[i].fix(p);
+                }
+            }
+        }
+        for(int i = 0; i<3; i++) {
+            double[] pars = new double[2];
+            pars[0] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(2);
+            pars[1] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(4);
+            T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter, TvstrkdocasFitPars);
+        }
+        
+    }
+    
 
-    public void runFitParallel(boolean[][][] fixFit, 
+    public void runFitParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, 
             Map<Coordinate, GraphErrors> TvstrkdocasProf) {
-
-        // Create a FixedThreadPool with a specified number of threads
-        int numThreads = 4;  // Adjust the number of threads based on your system's capabilities
+    
+        // Create a FixedThreadPool (number of threads can be adjusted as needed)
+        int numThreads = 4;  // Adjust the number of threads based on your system capabilities
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
-        // Prepare the necessary data structures
-        MnMigrad[][] scanner = new MnMigrad[7][6];
-        MnMigrad[][] fitter = new MnMigrad[7][6];
-        double[][][] pars = new double[7][6][2];
-
-        // Prepare parameters and set up fitting functions
-        for (int s = 0; s < 7; s++) {
-            for (int i = 0; i < 6; i++) {
-                pars[s][i][0] = TvstrkdocasFitPars.get(new Coordinate(s, i)).value(2);
-                pars[s][i][1] = TvstrkdocasFitPars.get(new Coordinate(s, i)).value(4);
-                TvstrkdocasFit.put(new Coordinate(s, i), new FitFunction(s, i, TvstrkdocasProf));
-                scanner[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
-                        TvstrkdocasFitPars.get(new Coordinate(s, i)), 0);
-                fitter[s][i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
-                        TvstrkdocasFitPars.get(new Coordinate(s, i)), 1);
-            }
-        }
-
-        // List to hold futures for tracking task completion
+        // Create a list to keep track of futures (optional, for waiting for task completion)
         List<Future<?>> futures = new ArrayList<>();
 
-        // Submit tasks for each sector (parallelize this part)
+        // Submit tasks for each sector to be executed in parallel
         for (int s = T2DCalib.minSec; s < T2DCalib.maxSec; s++) {
+            // Submit a task to the executor for each sector
             final int sector = s;
             futures.add(executor.submit(() -> {
-                // Perform the fitting for this sector
-                T2DFitter.fitWithFixedPars(pars, scanner[sector], fitter[sector], sector);
-                // Optionally, you can provide feedback here if needed
-                T2DViewer.voice.speak("Fitting done for Sector " + (sector + 1));
+                this.runFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
             }));
         }
 
-        // Wait for all tasks to finish (optional, can be skipped if you don't need to block until all tasks complete)
+        // Wait for all tasks to finish 
         try {
             for (Future<?> future : futures) {
-                future.get();  // Wait for each task to finish
+                future.get();  // Waits for each task to complete
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } finally {
-            // Shut down the executor service
+            // Shut down the executor to release resources
             executor.shutdown();
         }
     }
-
     
     public static class MinuitPar extends MnUserParameters implements Cloneable {
 

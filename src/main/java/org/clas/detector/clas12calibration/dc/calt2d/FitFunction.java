@@ -120,7 +120,6 @@ public class FitFunction implements FCNBase{
                      3*Bb3*Math.pow(ihatalpha, 3)*x*x+4*Bb4*Math.pow(ihatalpha, 4)*x*x*x);
         return deltatime_bfield_der;
     } 
-    public static double chi2=Double.POSITIVE_INFINITY;
     @Override
     public double valueOf(double[] par) {
         for(int ii =0; ii<par.length; ii++) {
@@ -129,7 +128,6 @@ public class FitFunction implements FCNBase{
             }
         }
         double chisq = 0;
-        chi2 = Double.POSITIVE_INFINITY;
         double delta = 0;
         for (int j = 0; j < T2DCalib.alphaBins; j++) {
             if(this.sli>1 && this.sli<4) {
@@ -180,7 +178,6 @@ public class FitFunction implements FCNBase{
                 }
             }
         }
-        chi2 = chisq;
         return chisq;
     }
     
