@@ -50,7 +50,7 @@ import org.jlab.utils.system.ClasUtilsFile;
  */
 public class T2DCalib extends AnalysisMonitor{
 
-    public static double DeltaTimeCut = 150;
+    public static double DeltaTimeCut = 150;//differencce between the calculated time from trkDoca and the measured time in ns
     public HipoDataSync calwriter = null;
     public HipoDataSync writer = null;
     private HipoDataEvent calhipoEvent = null;
@@ -339,6 +339,7 @@ public class T2DCalib extends AnalysisMonitor{
     public static int numThreads = 6;  // Adjust the number of threads based on your system capabilities
     FitUtility fitUtil = new FitUtility();
     public void runParamScan(boolean fixFit[][][],Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
+        System.out.println("PARAMETER SCAN STARTED");
         if(T2DCalib.vocal==true) voice.speak("PARAMETER SCAN STARTED");
         for(int s=0; s<7;s++) {
             for (int i = 0; i < 6; i++) {

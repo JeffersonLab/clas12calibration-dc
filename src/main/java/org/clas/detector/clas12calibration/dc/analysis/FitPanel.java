@@ -63,9 +63,13 @@ public class FitPanel {
         if(panel.vocal.isSelected()==true) {
             T2DCalib.vocal=true;
             voice.speak("Calibration started");
+        } else {
+            T2DCalib.vocal=false;
         }
         if(panel.debug.isSelected()==true) {
             T2DCalib.debug=true;
+        } else {
+            T2DCalib.debug=false;
         }
 //        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
             
@@ -85,6 +89,16 @@ public class FitPanel {
     public void refit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         System.out.println("READY TO RUN THE FIT "+initscan);
         if(initscan==false) return;
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
+        if(panel.debug.isSelected()==true) {
+            T2DCalib.debug=true;
+        } else {
+            T2DCalib.debug=false;
+        }
         if(panel.vocal.isSelected()==true) {
             voice.speak("Fit started");
         }
@@ -213,6 +227,11 @@ public class FitPanel {
     }
     
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
         if(this._pM.eventProcessingDone==false) {
             System.out.println(" ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
             if(T2DCalib.vocal) voice.speak("PLEASE WAIT UNTIL EVENT PROCESSING IS DONE TO DO THE SCAN");
@@ -296,6 +315,11 @@ public class FitPanel {
         this._pM.rePlotResi();
     }
     public void reCook() {
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
         if(panel.useBprof.isSelected()==true)
             this._pM.useBProf=true;
         this._pM.reCook();
@@ -307,6 +331,11 @@ public class FitPanel {
         
     }
     public void savePars() throws FileNotFoundException {
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
         this._pM.plotFits(true);
     }
     private final class CustomPanel2 extends JPanel {
