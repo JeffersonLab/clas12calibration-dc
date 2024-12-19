@@ -25,7 +25,7 @@ public class Refit {
     
     public Refit() {
     }
-    public List<FittedCluster> recomposeClusters(List<FittedHit> fhits, boolean useOT) {
+    public List<FittedCluster> recomposeClusters(List<FittedHit> fhits, boolean rejectOT) {
         Map<Integer, ArrayList<FittedHit>> grpHits = new HashMap<Integer, ArrayList<FittedHit>>();
         List<FittedCluster> clusters = new ArrayList<FittedCluster>();
         for (FittedHit hit : fhits) { 
@@ -33,18 +33,19 @@ public class Refit {
             if (hit.get_AssociatedClusterID() == -1 || hit.get_AssociatedHBTrackID() == -1 ) {
                 continue;
             }
-            if(useOT && hit.get_OutOfTimeFlag()) {
+            if(rejectOT && hit.get_OutOfTimeFlag()) {
                 continue;
             }
             if (hit.get_AssociatedClusterID() != -1 &&
                     hit.get_AssociatedHBTrackID() != -1) {
-                int index = hit.get_AssociatedHBTrackID()*10000+hit.get_AssociatedClusterID();
-               
+                int index = hit.get_AssociatedClusterID();
+                
                 if(grpHits.get(index)==null) { // if the list not yet created make it
                     grpHits.put(index, new ArrayList<FittedHit>()); 
                     grpHits.get(index).add(hit); // append hit
                     //System.out.println("appended first hit "+hit.get_Sector()+","+hit.get_Superlayer()+", "+hit.get_Layer()+","+hit.get_TDC()+
                     //        " to cluster "+index);
+                    
                 } else {
                     grpHits.get(index).add(hit); // append hit
                     //System.out.println("appended subs hit "+hit.get_Sector()+","+hit.get_Superlayer()+", "+hit.get_Layer()+","+hit.get_TDC()+
@@ -71,42 +72,83 @@ public class Refit {
         
         return clusters;
     }
+
     private ClusterFitter cf = new ClusterFitter();
-    public void reFit(List<FittedHit> hits, boolean useOT) {
-        List<FittedCluster> clusters = this.recomposeClusters(hits, useOT);
-        for(FittedCluster clus : clusters) {
-            if(clus==null) continue;
+
+    public void reFit(List<FittedHit> hits, boolean rejectOT) {
+        List<FittedCluster> clusters = this.recomposeClusters(hits, rejectOT);
+
+        for (FittedCluster clus : clusters) {
+            if (clus == null) continue;
+
+            // Resolve ambiguity once for the cluster
             FittedCluster LRresolvClus = this.LRAmbiguityResolver(clus, cf);
-            if(LRresolvClus==null) continue;
-            
-            clus = LRresolvClus;
-            
-            cf.SetFitArray(clus, "TSC");
-            cf.Fit(clus, true);
-            cf.SetResidualDerivedParams(clus, false, false, T2DViewer.dcDetector); //calcTimeResidual=false, resetLRAmbig=false 
-            
-            double trkAngle = clus.get_clusterLineFitSlope();
-            
-            for(FittedHit h : clus) {
-                
-                //local angle updated
-                double theta0 = Math.toDegrees(Math.acos(1-0.02*h.getB()));
-                double alpha = Math.toDegrees(Math.atan(trkAngle));
-                // correct alpha with theta0, the angle corresponding to the isochrone lines twist due to the electric field
-                alpha-=(double)T2DCalib.polarity*theta0;
-                h.setAlpha(alpha);
-                double cosTkAng = 1./Math.sqrt(trkAngle*trkAngle + 1.);
-                h.set_X(h.get_XWire() + h.get_LeftRightAmb() * (h.get_Doca() / cosTkAng) );
+            if (LRresolvClus == null) {
+                System.out.println("LRresolvClus failed");
+                continue;
             }
-            //refit after updating alpha
+            clus = LRresolvClus;
+
+            // Perform the initial fit
             cf.SetFitArray(clus, "TSC");
             cf.Fit(clus, true);
-            cf.SetResidualDerivedParams(clus, true, false, T2DViewer.dcDetector); //calcTimeResidual=false, resetLRAmbig=false 
-            
+            cf.SetResidualDerivedParams(clus, false, false, T2DViewer.dcDetector);
+
+            double trkAngle = clus.get_clusterLineFitSlope();
+
+            // Precompute common values
+            double cosTkAng = 1. / Math.sqrt(trkAngle * trkAngle + 1.);
+
+            // Iterate through the hits and update their properties
+            for (FittedHit h : clus) {
+                if (h == null) continue;
+
+                // Calculate angle and correct alpha
+                double theta0 = Math.toDegrees(Math.acos(1 - 0.02 * h.getB()));
+                double alpha = Math.toDegrees(Math.atan(trkAngle)) - (double) T2DCalib.polarity * theta0;
+                h.setAlpha(alpha);
+
+                // Update X based on the new angle
+                h.set_X(h.get_XWire() + h.get_LeftRightAmb() * (h.get_Doca() / cosTkAng));
+
+                // Update the hit in the original list if needed
+                updateOriginalHit(hits, h);
+            }
+
+            // Refitting after updating alpha
+            cf.SetFitArray(clus, "TSC");
+            cf.Fit(clus, true);
+            cf.SetResidualDerivedParams(clus, true, false, T2DViewer.dcDetector);
+
+            // Iterate through the hits again and update
+            for (FittedHit h : clus) {
+                if (h == null) continue;
+
+                // Calculate angle and correct alpha again
+                double theta0 = Math.toDegrees(Math.acos(1 - 0.02 * h.getB()));
+                double alpha = Math.toDegrees(Math.atan(trkAngle)) - (double) T2DCalib.polarity * theta0;
+                h.setAlpha(alpha);
+
+                // Update X based on the new angle
+                h.set_X(h.get_XWire() + h.get_LeftRightAmb() * (h.get_Doca() / cosTkAng));
+
+                // Update the hit in the original list if needed
+                updateOriginalHit(hits, h);
+            }
         }
         clusters.clear();
     }
-    
+
+    // Helper method to update the original hit list
+    private void updateOriginalHit(List<FittedHit> hits, FittedHit updatedHit) {
+        for (int i = 0; i < hits.size(); i++) {
+            if (hits.get(i).get_Id() == updatedHit.get_Id()) {
+                hits.set(i, updatedHit);
+                break;
+            }
+        }
+    }
+
     public FittedCluster LRAmbiguityResolver(FittedCluster fClus, 
             ClusterFitter cf) {
         //	int[] notResolvedLR = {0,0,0,0,0,0};
@@ -367,9 +409,20 @@ public class Refit {
                 }
             }
         }
-
-        return cf.BestClusterSelector(arrayOfClus, "TSC");
-
+        
+        double bestChi2 = Double.POSITIVE_INFINITY;
+        FittedCluster bestCls = null;
+            
+        for(FittedCluster c : arrayOfClus) {
+            cf.SetFitArray(c, "TSC");
+            cf.Fit(c, true);
+            if(c.get_Chisq()<bestChi2) {
+                bestCls=c;
+                bestChi2=c.get_Chisq();
+            }
+        }
+        
+        return bestCls;
     }
 
     private int getLRAve(FittedCluster clus) {

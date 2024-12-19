@@ -31,7 +31,8 @@ import org.jlab.rec.dc.hit.FittedHit;
  * @author ziegler
  */
 public class CalUtility {
-    
+    static int hitcount=0;
+    static int hitcnt=0;
     /**
      * Method to reprocess the segment fits
      * @param timeResi
@@ -59,6 +60,7 @@ public class CalUtility {
             Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasProf,
             Map<Coordinate, FitUtility.MinuitPar> TvstrkdocasFitPars,
             boolean useBProf) {
+        hitcnt=0;
         //reset the residuals
         for (int i = 0; i < 6; i++) {
             timeResi.get(new Coordinate(i)).reset();
@@ -102,9 +104,9 @@ public class CalUtility {
             hits.clear();
             DataEvent event = calreader.getNextEvent();
             eventcounter++;
-            if ((eventcounter%10000 == 0) && (eventcounter < numberofeventsinfile) ) {
-             	 System.out.println("Processed " + eventcounter + " events from " + numberofeventsinfile);  
-            }
+            //if ((eventcounter%10000 == 0) && (eventcounter < numberofeventsinfile) ) {
+            // 	 System.out.println("Processed " + eventcounter + " events from " + numberofeventsinfile);  
+            //}
             if(event.hasBank("TimeBasedTrkg::TBHits")) { 
                 DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
                 
@@ -119,10 +121,10 @@ public class CalUtility {
                 }
                 //refit with new constants
                 Refit rf = new Refit();
-                rf.reFit(hits, true);    //refit to get the parameters
+                rf.reFit(hits, false);    //refit to get the parameters
                 
                 for(FittedHit hit : hits) {
-                    if(hit.get_OutOfTimeFlag()==true) continue;
+                    //if(hit.get_OutOfTimeFlag()==true) continue;
                     //filling the timeResi for the previously calibrated hits
                     timeResi.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
                 }
@@ -130,9 +132,9 @@ public class CalUtility {
         }
         
         // the newly calibrated hits
-        System.out.println("*************************************************");       
-        System.out.println("*** Done Reprocessing with initial parameters ***");
-        System.out.println("*************************************************");
+        //System.out.println("*************************************************");       
+        //System.out.println("*** Done Reprocessing with initial parameters ***");
+        //System.out.println("*************************************************");
         
         
         FitUtility.reLoadFitPars(ParsVsIter,TvstrkdocasFitPars);
@@ -144,9 +146,7 @@ public class CalUtility {
             calhits.clear();
             DataEvent event = calreader.getNextEvent();
             eventcounter++;
-            if ((eventcounter%10000 == 0) && (eventcounter < numberofeventsinfile) ) {
-            	 System.out.println("Processed " + eventcounter + " events from " + numberofeventsinfile);  
-            }
+            
             if(event.hasBank("TimeBasedTrkg::TBHits")) {
                 DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
                 
@@ -162,8 +162,8 @@ public class CalUtility {
                 //refit with new constants
                 Refit rf = new Refit();
                 rf.reFit(calhits, true);    //use only not out of time hits to get the calib cst
+                
                 for(FittedHit hit : calhits) {
-                    //if(hit.get_OutOfTimeFlag()) continue;
                     double theta0 = Math.toDegrees(Math.acos(1-0.02*hit.getB()));
                     double alphaUncor = hit.getAlpha()+(double)T2DCalib.polarity*theta0;
                     int alphaBin = getAlphaBin(alphaUncor);
@@ -171,8 +171,11 @@ public class CalUtility {
                     int slyrIdx = hit.get_Superlayer()-1;
                     int secIdx = hit.get_Sector()-1;
                     int allSecIdx = 6;
-                    if(alphaBin!=-1 && !hit.get_OutOfTimeFlag()) {
-                       
+                    if(alphaBin!=-1 
+                            //&& !hit.get_OutOfTimeFlag() 
+                            && hit.get_TimeResidual()!=-999
+                            ) {
+                        hitcnt++;
                         double calibTime = (double) (hit.get_TDC() - hit.getTProp()
                                             - hit.getTFlight() - hit.getTStart()
                                             - hit.getT0()); 
@@ -239,7 +242,9 @@ public class CalUtility {
                 rf.reFit(calhits, false);    //use all hits
                 for(FittedHit hit : calhits) {
                     //filling the timeResi for the newly calibrated hits
+                    //hit.set_TimeResidual(hit.get_Doca()-hit.get_ClusFitDoca());
                     timeResiNew.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    
                     if(hit.get_Superlayer() ==3 || hit.get_Superlayer() ==4) {
                         double bFieldVal = (double) hit.getB();
                         int bBin = getBBin(bFieldVal);
@@ -262,7 +267,9 @@ public class CalUtility {
         System.out.println("RECOOKING DONE WITH THE NEW CONSTANTS!");
         System.out.println("CHECK THE RESIDUALS!");
         if(T2DCalib.vocal==true) voice.speak("Segment fits done!");
-        calreader.close();  
+        calreader.close();
+        System.out.println("SELECTED SAMPLE SIZE AFTER REPROCESSING DIFF "+(hitcnt-hitcount));
+        hitcount = hitcnt;
        // System.gc();
     }
     

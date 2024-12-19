@@ -758,10 +758,10 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         //---------------------------------------------------------------------
         
         JPanel butPage3 = new configButtonPanel(this, true, "Finish");
-        butPage3.setSize(810, 1200);
         trOuterPanel.add(butPage3, BorderLayout.SOUTH);
         configPane.add("Selection Criteria", trOuterPanel);
         configFrame.add(configPane);
+        configFrame.setSize(810, 900);
         configFrame.setVisible(true);
 
 	}

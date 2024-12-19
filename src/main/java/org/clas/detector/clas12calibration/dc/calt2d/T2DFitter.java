@@ -219,9 +219,14 @@ public class T2DFitter  {
             bestmin2 = bestmin;
         }
         
-        
-        //System.gc();
-        System.out.println(itercnt2+"] OUTPUT  "+bestmin2.toString());
+        if(T2DCalib.debug) {
+            String s3="";
+            s3+=(" **************************************************\n");
+            s3+=("   PARAMETER FIT FOR SECTOR "+(sec+1) +" SUPERLAYER "+(i+1)+"\n");
+            s3+=(" **************************************************\n");
+
+            if(bestmin2!=null) System.out.println(s3+bestmin2.toString());
+        }
         return new fMin(bestmin2, bestMchi2);
     }
     
@@ -265,7 +270,7 @@ public class T2DFitter  {
             s2+=(" ************************************************************************\n");
             s2+=("   RUNNING THE PARAMETER FIT FOR "+" SECTOR "+(sec+1)+" SUPERLAYER "+(i+1)+" WITH FIXED PARS ["+pars[sec][i][0]+"]["+pars[sec][i][0]+"]\n");
             s2+=(" ************************************************************************\n");
-            System.out.println(s2);
+            if(T2DCalib.debug) System.out.println(s2);
             fMin fm2 = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], pars[sec][i][0], pars[sec][i][1], false, s2);
             FunctionMinimum fmin=null;
             if(fm2.getFcnMin().isValid()) {

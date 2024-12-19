@@ -50,7 +50,7 @@ import org.jlab.utils.system.ClasUtilsFile;
  */
 public class T2DCalib extends AnalysisMonitor{
 
-    public static double DeltaTimeCut = 50;
+    public static double DeltaTimeCut = 150;
     public HipoDataSync calwriter = null;
     public HipoDataSync writer = null;
     private HipoDataEvent calhipoEvent = null;
@@ -69,6 +69,7 @@ public class T2DCalib extends AnalysisMonitor{
     public static int minSec=6;
     public static int maxSec=7;
     public static boolean vocal= false;
+    public static boolean debug= false;
     
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
@@ -355,7 +356,9 @@ public class T2DCalib extends AnalysisMonitor{
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
         
+        System.out.println("PARAMETER SCAN DONE");
         if(T2DCalib.vocal==true) voice.speak("PARAMETER SCAN DONE");
+        
     }
     
     public void runFit(boolean fixFit[][][], Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {

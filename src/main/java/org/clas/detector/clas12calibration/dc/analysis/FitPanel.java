@@ -64,6 +64,9 @@ public class FitPanel {
             T2DCalib.vocal=true;
             voice.speak("Calibration started");
         }
+        if(panel.debug.isSelected()==true) {
+            T2DCalib.debug=true;
+        }
 //        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
             
     }
@@ -188,7 +191,8 @@ public class FitPanel {
         //Don't allow to fit the B>0 profile if they are not filled
         
         this._pM.runFit(fixedPars, TvstrkdocasFitPars);
-         if(panel.vocal.isSelected()==true) voice.speak("Fit done");
+        if(panel.vocal.isSelected()==true) voice.speak("Fits done");
+        System.out.println("FITS DONE!");
             //this._pM.runParamScan(j, fixedPars);
         for(int s = 0; s<6; s++) {        
             for(int j = 0; j<6; j++) { 
@@ -314,8 +318,8 @@ public class FitPanel {
         JCheckBox runIndivSectors;
         JCheckBox debug;
         JCheckBox vocal;
-    	JTextField minRange = new JTextField(5);
-	JTextField maxRange = new JTextField(5);
+    	JTextField minRange = new JTextField(3);
+	JTextField maxRange = new JTextField(3);
 	JTextField[][][] params = new JTextField[10][6][6];
         JCheckBox[][][]  fixFit = new JCheckBox[10][6][6];;
         JPanel[] secpanels = new JPanel[6];   
@@ -409,7 +413,8 @@ public class FitPanel {
             settings.add(new JLabel("    "));
             settings.add(runIndivSectors);
             settings.add(new JLabel("    "));
-            debug = new JCheckBox(" Debug mode");
+            debug = new JCheckBox(" Print ");
+            debug.setSelected(false);
             settings.add(debug);
             settings.add(new JLabel("    "));
             vocal = new JCheckBox(" Vocal mode");
