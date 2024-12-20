@@ -510,12 +510,12 @@ public class FitUtility {
                 scanner[i].fix(p);
             }
         }
-        for(int i = 0; i<3; i++) {
-            double[] pars = new double[2];
-            pars[0] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(2);
-            pars[1] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(4);
-            T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter, TvstrkdocasFitPars);
-        }
+        int i = 1;
+        double[] pars = new double[2];
+        pars[0] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(2);
+        pars[1] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(4);
+        T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter, TvstrkdocasFitPars);
+        
     }
     
     private void runBFit(boolean fixFit[][][], int s, 
