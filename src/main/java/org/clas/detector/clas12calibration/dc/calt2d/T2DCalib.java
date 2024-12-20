@@ -378,9 +378,9 @@ public class T2DCalib extends AnalysisMonitor{
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
         if(runParallel && T2DCalib.maxSec==6) {
             if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
-            fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
+            fitUtil.runFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, numThreads);
         } else {
-            fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            fitUtil.runFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
         if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT DONE");
@@ -396,9 +396,9 @@ public class T2DCalib extends AnalysisMonitor{
         }
         if(runParallel && T2DCalib.maxSec==6) {
             if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
-            fitUtil.runBFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
+            fitUtil.runBFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, numThreads);
         } else {
-            fitUtil.runBFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            fitUtil.runBFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit);
         }
         fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
         if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT DONE");

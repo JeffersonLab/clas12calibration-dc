@@ -318,8 +318,29 @@ public class FitPanel {
         this._pM.plotFits(fitted);
         this._pM.pw3.close();
     }
-    
-    
+    private int NumIter = 3;
+    public void doAll(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
+        if(panel.runIndivSectors.isSelected()==true) {
+            panel.runIndivSectors.setSelected(false);
+            this.parscan(TvstrkdocasFitPars);
+            panel.runIndivSectors.setSelected(true); //ensure scanning averaging over sectors at 1st pass
+        } else {
+            this.parscan(TvstrkdocasFitPars); 
+        }
+        if(panel.runIndivSectors.isSelected()==true) { //rescan for each sector
+            this.parscan(TvstrkdocasFitPars);
+        }
+        panel.useBprof.setSelected(true);
+        
+        this.reCook();
+        this.refit(TvstrkdocasFitPars);
+        this.reCook(); // do a first pass with the B-f params fixed
+        for(int iter = 0; iter<NumIter; iter++) {
+            this.refit(TvstrkdocasFitPars);
+            this.bfit(TvstrkdocasFitPars); //refit B-f pars
+            this.reCook();
+        }
+    }
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         if(panel.vocal.isSelected()==true) {
             T2DCalib.vocal=true;
@@ -450,6 +471,7 @@ public class FitPanel {
         JButton   scanButton = null;
         JButton   fitButton = null;
         JButton   fitBButton = null;
+        JButton   fitAllButton = null;
         JButton   resetButton = null;
         JButton   saveToFileButton = null;
         JButton   resButton = null;
@@ -655,6 +677,23 @@ public class FitPanel {
                 }
             });
 
+            fitAllButton = new JButton("AUTO CALIBRATION");
+            fitAllButton.setUI(new MetalButtonUI());
+            fitAllButton.setBackground(new Color(0, 255, 0)); 
+            fitAllButton.setContentAreaFilled(false);
+            fitAllButton.setOpaque(true);
+            fitAllButton.setFont(bBold);
+            fitAllButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        doAll(TvstrkdocasFitPars);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(FitPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    return;
+                }
+            });
+            
             scanButton = new JButton("INITIAL PARAMETER SCAN");
             scanButton.setUI(new MetalButtonUI());
             scanButton.setBackground(Color.WHITE);
@@ -680,7 +719,7 @@ public class FitPanel {
             buttonsPanel.add(resButton);
             buttonsPanel.add(resetButton);
             buttonsPanel.add(saveToFileButton);
-            
+            buttonsPanel.add(fitAllButton);
             
             this.add(panel, BorderLayout.PAGE_START);
             this.add(settings, BorderLayout.CENTER);
@@ -691,7 +730,7 @@ public class FitPanel {
                            JLabel.CENTER);
             
         }
-        private Font bBold = new Font("Arial", Font.BOLD, 15);
+        private Font bBold = new Font("Arial", Font.BOLD, 13);
         void setLabel(String newText) {
             label.setText(newText);
         }

@@ -284,7 +284,7 @@ public class FitUtility {
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
-            this.runParamScan(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            this.runParamScan(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
             if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector "+(s+1));
         }
     }
@@ -311,7 +311,7 @@ public class FitUtility {
             // Submit a task to the executor for each sector
             final int sector = s;
             futures.add(executor.submit(() -> {
-                this.runParamScan(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                this.runParamScan(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
                 if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector " + (sector + 1));
             }));
         }
@@ -338,7 +338,7 @@ public class FitUtility {
      */
     private void runParamScan(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit) {
        
         MnMigrad scanner[] = new MnMigrad[6];
         MnMigrad fitter[] = new MnMigrad[6];
@@ -373,15 +373,15 @@ public class FitUtility {
 
     public void runFit(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
-            this.runFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            this.runFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
             if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
         }
     }
     private void runFit(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit) {
        
         MnMigrad scanner[] = new MnMigrad[6];
         MnMigrad fitter[] = new MnMigrad[6];
@@ -414,8 +414,7 @@ public class FitUtility {
 
     public void runFitParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf, int numThreads) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit, int numThreads) {
     
         // Create a FixedThreadPool (number of threads can be adjusted as needed)
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
@@ -428,7 +427,7 @@ public class FitUtility {
             // Submit a task to the executor for each sector
             final int sector = s;
             futures.add(executor.submit(() -> {
-                this.runFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                this.runFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
                 if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
             }));
         }
@@ -448,8 +447,7 @@ public class FitUtility {
     
     public void runBFitParallel(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf, int numThreads) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit, int numThreads) {
     
         // Create a FixedThreadPool (number of threads can be adjusted as needed)
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
@@ -462,7 +460,7 @@ public class FitUtility {
             // Submit a task to the executor for each sector
             final int sector = s;
             futures.add(executor.submit(() -> {
-                this.runBFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                this.runBFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
                 if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
             }));
         }
@@ -482,9 +480,9 @@ public class FitUtility {
     
     public void runBFit(boolean fixFit[][][], 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
-            this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
             if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
         }
     }
@@ -520,8 +518,7 @@ public class FitUtility {
     
     private void runBFit(boolean fixFit[][][], int s, 
             Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
-            Map<Coordinate, FitFunction> TvstrkdocasFit, 
-            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+            Map<Coordinate, FitFunction> TvstrkdocasFit) {
         for(int p = 5; p<10; p++) {
             this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, p);
         }
