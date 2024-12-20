@@ -226,6 +226,100 @@ public class FitPanel {
         this._pM.pw3.close();
     }
     
+    public void bfit(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
+        System.out.println("READY TO RUN THE FIT "+fitted);
+        if(fitted==false) return;
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
+        if(panel.debug.isSelected()==true) {
+            T2DCalib.debug=true;
+        } else {
+            T2DCalib.debug=false;
+        }
+        if(panel.vocal.isSelected()==true) {
+            voice.speak("B-Field Fit started");
+        }
+        
+        boolean[][][] fixedPars = new boolean[10][6][6];
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                pars.get(new Coordinate(s, j)).clear();
+            }
+        }
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                for(int i=0; i<5; i++){ 
+                    fixedPars[i][j][s] = true;
+                }
+            }
+        }
+        int npar = 10;
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                for(int i=0; i<npar; i++){   
+                    if(panel.params[i][j][s].getText().isEmpty()){
+                        this.pars.get(new Coordinate(s, j)).add(TvstrkdocasFitPars.get(new Coordinate(s, j)).value(i));
+                    }
+                    else { 
+                        this.pars.get(new Coordinate(s, j)).add(Double.parseDouble(panel.params[i][j][s].getText()));
+                    }
+                }
+            }
+        }
+        if(!panel.minRange.getText().isEmpty())this.range[0] = Double.parseDouble(panel.minRange.getText());
+        else this.range[0] = 0.0;
+        if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
+        else this.range[1] = 2.0;
+        
+        //
+        for(int s = 0; s<6; s++) {
+            for(int j = 0; j<6; j++) {
+                for(int i=0; i<npar; i++){
+                    TvstrkdocasFitPars.get(new Coordinate(s,j)).setValue(i,this.pars.get(new Coordinate(s, j)).get(i));
+                }
+            }
+        }
+        for(int j = 0; j<6; j++) {
+            for(int i=0; i<npar; i++){
+                TvstrkdocasFitPars.get(new Coordinate(6,j)).setValue(i,this.pars.get(new Coordinate(0, j)).get(i));
+            }
+        }
+        if(panel.runIndivSectors.isSelected()==true) {
+            T2DCalib.minSec=0;
+            T2DCalib.maxSec=6;
+        } else {
+            T2DCalib.minSec=6;
+            T2DCalib.maxSec=7;
+        }
+        //
+        this._pM.initFitParsToFile();
+        if(panel.vocal.isSelected()==true) voice.speak("Fit parameters initialized");
+        
+        this._pM.runBParamsFit(fixedPars, TvstrkdocasFitPars);
+        if(panel.vocal.isSelected()==true) voice.speak("Fits done");
+        System.out.println("FITS DONE!");
+            //this._pM.runParamScan(j, fixedPars);
+        for(int s = 0; s<6; s++) {        
+            for(int j = 0; j<6; j++) { 
+                for(int p = 0; p<10; p++) {
+                    panel.pars[p][j][s] = TvstrkdocasFitPars.get(new Coordinate(s,j)).value(p);
+                    if(p!=3) {
+                        panel.params[p][j][s].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(s,j)).value(p)));
+                    } else {
+                        panel.params[p][j][s].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(s,j)).value(p)));
+                    }
+                }
+            }
+        }
+        
+        this._pM.plotFits(fitted);
+        this._pM.pw3.close();
+    }
+    
+    
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         if(panel.vocal.isSelected()==true) {
             T2DCalib.vocal=true;
@@ -355,6 +449,7 @@ public class FitPanel {
         
         JButton   scanButton = null;
         JButton   fitButton = null;
+        JButton   fitBButton = null;
         JButton   resetButton = null;
         JButton   saveToFileButton = null;
         JButton   resButton = null;
@@ -542,6 +637,23 @@ public class FitPanel {
                     return;
                 }
             });
+            
+            fitBButton = new JButton("FIT B PARAMETERS");
+            fitBButton.setUI(new MetalButtonUI());
+            fitBButton.setBackground(new Color(102, 178, 255)); 
+            fitBButton.setContentAreaFilled(false);
+            fitBButton.setOpaque(true);
+            fitBButton.setFont(bBold);
+            fitBButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        bfit(TvstrkdocasFitPars);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(FitPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    return;
+                }
+            });
 
             scanButton = new JButton("INITIAL PARAMETER SCAN");
             scanButton.setUI(new MetalButtonUI());
@@ -563,6 +675,7 @@ public class FitPanel {
             
             buttonsPanel.add(scanButton);
             buttonsPanel.add(fitButton);
+            buttonsPanel.add(fitBButton);
             buttonsPanel.add(reCookButton);
             buttonsPanel.add(resButton);
             buttonsPanel.add(resetButton);
@@ -578,7 +691,7 @@ public class FitPanel {
                            JLabel.CENTER);
             
         }
-        private Font bBold = new Font("Arial", Font.BOLD, 16);
+        private Font bBold = new Font("Arial", Font.BOLD, 15);
         void setLabel(String newText) {
             label.setText(newText);
         }

@@ -446,6 +446,88 @@ public class FitUtility {
         }
     }
     
+    public void runBFitParallel(boolean fixFit[][][], 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, 
+            Map<Coordinate, GraphErrors> TvstrkdocasProf, int numThreads) {
+    
+        // Create a FixedThreadPool (number of threads can be adjusted as needed)
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Create a list to keep track of futures (optional, for waiting for task completion)
+        List<Future<?>> futures = new ArrayList<>();
+
+        // Submit tasks for each sector to be executed in parallel
+        for (int s = T2DCalib.minSec; s < T2DCalib.maxSec; s++) {
+            // Submit a task to the executor for each sector
+            final int sector = s;
+            futures.add(executor.submit(() -> {
+                this.runBFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+                if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
+            }));
+        }
+
+        // Wait for all tasks to finish 
+        try {
+            for (Future<?> future : futures) {
+                future.get();  // Waits for each task to complete
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            // Shut down the executor to release resources
+            executor.shutdown();
+        }
+    }
+    
+    public void runBFit(boolean fixFit[][][], 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+        for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
+            this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+            if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
+        }
+    }
+    private void runBFit(boolean fixFit[][][], int s, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, int freeParIdx) {
+       
+        MnMigrad scanner[] = new MnMigrad[6];
+        MnMigrad fitter[] = new MnMigrad[6];
+        
+        for(int i =2; i<4; i++) {
+            //make a parameter clone
+            MinuitPar TvstrkdocasFitParsClon = TvstrkdocasFitPars.get(new Coordinate(s,i)).clone();
+            scanner[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                                                TvstrkdocasFitParsClon,0);
+            fitter[i] = new MnMigrad((FCNBase) TvstrkdocasFit.get(new Coordinate(s, i)), 
+                                                TvstrkdocasFitParsClon,1);
+            
+            for(int p =0; p<freeParIdx; p++) {
+                scanner[i].fix(p);
+            }
+            for(int p =freeParIdx+1; p<11; p++) {
+                scanner[i].fix(p);
+            }
+        }
+        for(int i = 0; i<3; i++) {
+            double[] pars = new double[2];
+            pars[0] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(2);
+            pars[1] = TvstrkdocasFitPars.get(new Coordinate(s,2*i)).value(4);
+            T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter, TvstrkdocasFitPars);
+        }
+    }
+    
+    private void runBFit(boolean fixFit[][][], int s, 
+            Map<Coordinate, MinuitPar> TvstrkdocasFitPars, 
+            Map<Coordinate, FitFunction> TvstrkdocasFit, 
+            Map<Coordinate, GraphErrors> TvstrkdocasProf) {
+        for(int p = 5; p<10; p++) {
+            this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit, p);
+        }
+        
+    }
+    
     public static class MinuitPar extends MnUserParameters implements Cloneable {
 
         public boolean[] fixed ;

@@ -387,7 +387,22 @@ public class T2DCalib extends AnalysisMonitor{
         NbRunFit++;
     }
     
-    
+    public void runBParamsFit(boolean fixFit[][][], Map<Coordinate, MinuitPar> TvstrkdocasFitPars) {
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT STARTED");
+        for(int s=0; s<7;s++) {
+            for (int i = 0; i < 6; i++) {
+                this.runInitFit(s,i);
+            }
+        }
+        if(runParallel && T2DCalib.maxSec==6) {
+            if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
+            fitUtil.runBFitParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
+        } else {
+            fitUtil.runBFit(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf);
+        }
+        fitUtil.releaseParsAfterFit(TvstrkdocasFitPars);
+        if(T2DCalib.vocal==true) voice.speak("PARAMETER FIT DONE");
+    }
     public boolean useBProf = false;
     int counter = 0;
     public static int iterationNum = 0;
