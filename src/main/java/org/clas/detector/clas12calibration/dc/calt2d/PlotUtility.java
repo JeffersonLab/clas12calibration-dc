@@ -238,7 +238,7 @@ public class PlotUtility {
                         if(i<2 || i>3) {
                             if(TvstrkdocasProf.get(new Coordinate(s,i, j, BBins)).getVectorX().size()>0) {
                                 FitUtility.updateTable(s, i, j, calib, TvstrkdocasFitPars);
-                                TvstrkdocasFits.put(new Coordinate(s,i,j,BBins), new FitLine("f"+""+s+""+i+""+j+"0", i, j, BBins, 
+                                TvstrkdocasFits.put(new Coordinate(s,i,j,BBins), new FitLine("f"+""+s+""+i+""+j+"0",s, i, j, BBins, 
                                 TvstrkdocasFitPars.get(new Coordinate(s,i))));
                                 TvstrkdocasFits.get(new Coordinate(s,i, j, BBins)).setLineStyle(4);
                                 TvstrkdocasFits.get(new Coordinate(s,i, j, BBins)).setLineWidth(5);
@@ -251,7 +251,7 @@ public class PlotUtility {
                             for(int k = 0; k < BBins; k++) { 
                                 if(TvstrkdocasProf.get(new Coordinate(s,i, j, k)).getVectorX().size()>0){
                                     FitUtility.updateTable(s, i, j, calib, TvstrkdocasFitPars);
-                                    TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine("f"+""+s+""+i+""+j+""+k, i, j, k, 
+                                    TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine("f"+""+s+""+i+""+j+""+k, s, i, j, k, 
                                     TvstrkdocasFitPars.get(new Coordinate(s,i))));
                                     TvstrkdocasFits.get(new Coordinate(s, i, j, k)).setLineStyle(4);
                                     TvstrkdocasFits.get(new Coordinate(s,i, j, k)).setLineWidth(5);

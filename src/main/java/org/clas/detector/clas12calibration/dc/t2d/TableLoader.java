@@ -119,14 +119,14 @@ public class TableLoader {
                 mnp.add(parNames[10], pars[10], errs[10]);
                 for (int j = 0; j < T2DCalib.alphaBins; j++) {
                     for (int k = 0; k < BBins+1; k++) {
-                            TvsDB.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k, i, j, k, 
+                            TvsDB.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k,s, i, j, k, 
                                     mnp));
                             TvsDB.get(new Coordinate(s, i, j, k)).setLineWidth(2);
                             TvsDB.get(new Coordinate(s, i, j, k)).setLineColor(k+1);
                             TvsDB.get(new Coordinate(s, i, j, k)).setRange(0, pars[10]);   
                             TvsDB.get(new Coordinate(s, i, j, k)).useMidBfieldBin=true;
                             TvsDB.get(new Coordinate(s, i, j, k)).useMidAlphaBin=true;
-                            TvsDBr.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k, i, j, k, 
+                            TvsDBr.put(new Coordinate(s, i,j,k), new FitLine("f_"+"s"+s+"i"+i+"j"+j+"k"+k,s, i, j, k, 
                                    mnp));
                             TvsDBr.get(new Coordinate(s, i, j, k)).setLineWidth(2);
                             TvsDBr.get(new Coordinate(s, i, j, k)).setLineColor(k+1);
@@ -163,7 +163,7 @@ public class TableLoader {
                 mnp.add(parNames[10], pars[10], errs[10]);
                 for (int j = 0; j < T2DCalib.alphaBins; j++) {
                     for (int k = 0; k < BBins+1; k++) {
-                        TvsDBr.put(new Coordinate(s, i,j,k), new FitLine("f_"+"i"+i+"i"+s+"j"+j+"k"+k, i, j, k, 
+                        TvsDBr.put(new Coordinate(s, i,j,k), new FitLine("f_"+"i"+i+"i"+s+"j"+j+"k"+k,s, i, j, k, 
                                    mnp));
                         TvsDBr.get(new Coordinate(s, i, j, k)).useMidBfieldBin=true;
                         TvsDBr.get(new Coordinate(s, i, j, k)).useMidAlphaBin=true;

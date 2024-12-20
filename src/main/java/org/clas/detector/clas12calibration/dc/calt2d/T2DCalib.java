@@ -83,6 +83,9 @@ public class T2DCalib extends AnalysisMonitor{
             for (int j = 0; j < this.alphaBins; j++) {
                 for (int k = 0; k < this.BBins; k++) {
                     BfieldValuesUpd[i][j][k] = BfieldValues[k];
+                    for(int s=0; s<6; s++) {
+                        BfieldSecValuesUpd[s][i][j][k] = BfieldValues[k];
+                    }
                 }
             }
         }
@@ -110,6 +113,7 @@ public class T2DCalib extends AnalysisMonitor{
     private Map<Coordinate, H1F> timeResiB                      = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> fitResi                        = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> B                              = new HashMap<Coordinate, H1F>(); //histogram to get B values centroids
+    private Map<Coordinate, H1F> BSec                           = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> A                              = new HashMap<Coordinate, H1F>(); //histogram to get Alpha values centroids
     private Map<Coordinate, H1F> BAlphaBins                     = new HashMap<Coordinate, H1F>();
     private Map<Coordinate, H1F> ParsVsIter                     = new HashMap<Coordinate, H1F>();
@@ -132,6 +136,7 @@ public class T2DCalib extends AnalysisMonitor{
     public static int BBins = BfieldValues.length;
     //update middle of the B bins
     public static double[][][] BfieldValuesUpd = new double[2][alphaBins][BBins];
+    public static double[][][][] BfieldSecValuesUpd = new double[6][2][alphaBins][BBins];
     public static double[][][] AlphaValuesUpd = new double[6][alphaBins][BBins+1];
     public static int nbinx[] = new int[6];
     public static int nbiny[] = new int[6];
@@ -150,7 +155,7 @@ public class T2DCalib extends AnalysisMonitor{
         
         HistoUtility.createHistos(timeResi, timeResiFromFile, timeResiNew, fitResi, 
                 TvstrkdocasFitPars, TvstrkdocasProf, TvstrkdocasInit, Tvstrkdocas, 
-                Tresvstrkdocas, Tvscalcdocas, TvstrkdocasFits, A, B, BAlphaBins, timeResiB,
+                Tresvstrkdocas, Tvscalcdocas, TvstrkdocasFits, A, B, BSec, BAlphaBins, timeResiB,
                 this.getDataGroup());
        
          
@@ -233,6 +238,7 @@ public class T2DCalib extends AnalysisMonitor{
             writer.close();
             CalUtility.UpdateAlphaBinCenters(A);
             CalUtility.UpdateBBinCenters(B, BAlphaBins);
+            CalUtility.UpdateBBinCenters4Sectors(BSec);
             
             for(int s=0; s<7;s++) {
                 for (int i = 0; i < 6; i++) {
@@ -393,7 +399,7 @@ public class T2DCalib extends AnalysisMonitor{
         iterationNum++;
         fp.setRedFitButton();
         //reset histos to refill
-        CalUtility.reCook(timeResi, timeResiNew, timeResiB, A, B, BAlphaBins, Tvstrkdocas, Tvscalcdocas, Tresvstrkdocas, 
+        CalUtility.reCook(timeResi, timeResiNew, timeResiB, A, B, BSec, BAlphaBins, Tvstrkdocas, Tvscalcdocas, Tresvstrkdocas, 
                 calreader, hits, calhits, ParsVsIter, TvstrkdocasFits, TvstrkdocasProf, TvstrkdocasFitPars, useBProf);
         fp.setGreenFitButton();
         if(T2DCalib.vocal==true) voice.speak("Reprocessing done");
@@ -509,7 +515,7 @@ public class T2DCalib extends AnalysisMonitor{
         
         HitUtility.getSegProperty(bnkHits,segPropMap,segMapTBHits);
         HistoUtility.fill(event, bnkHits, hitmap, calhitmap, Tvstrkdocas, Tvscalcdocas, TvstrkdocasFits,
-                Tresvstrkdocas, timeResiFromFile, A, B, segPropMap);
+                Tresvstrkdocas, timeResiFromFile, A, B, BSec, segPropMap);
         
         //hitmap.forEach((k,v) -> hitlist.add(v));
         //calhitmap.forEach((k,v) -> calhitlist.add(v));

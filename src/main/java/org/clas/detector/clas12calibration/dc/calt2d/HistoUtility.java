@@ -35,7 +35,7 @@ public class HistoUtility {
     public static void fill(DataEvent event, DataBank bnkHits, Map<Integer, FittedHit> hitmap, Map<Integer, FittedHit> calhitmap, 
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, FitLine> TvstrkdocasFits, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H1F> timeResiFromFile, 
-            Map<Coordinate, H1F> A, Map<Coordinate, H1F> B,
+            Map<Coordinate, H1F> A, Map<Coordinate, H1F> B, Map<Coordinate, H1F> BSec,
             Map<Integer, SegmentProperty> segPropMap) {
         
         int allSecIdx = 6;
@@ -121,6 +121,7 @@ public class HistoUtility {
                 if (superlayer == 3 || superlayer == 4) {
                     int bBin = CalUtility.getBBin(bFieldVal);
                     B.get(new Coordinate(superlayer - 3, alphaBin, bBin)).fill(bFieldVal);
+                    BSec.get(new Coordinate(sector-1,superlayer - 3, alphaBin, bBin)).fill(bFieldVal);
                     A.get(new Coordinate(superlayer - 1, alphaBin, bBin)).fill(alphaUncor);
                 }
             }
@@ -135,7 +136,8 @@ public class HistoUtility {
             Map<Coordinate, GraphErrors> TvstrkdocasInit, Map<Coordinate, H2F> Tvstrkdocas, 
             Map<Coordinate, H2F> Tresvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, 
             Map<Coordinate, FitLine> TvstrkdocasFits, 
-            Map<Coordinate, H1F> A, Map<Coordinate, H1F> B, Map<Coordinate, H1F> BAlphaBins, Map<Coordinate, H1F> timeResiB,
+            Map<Coordinate, H1F> A, Map<Coordinate, H1F> B, Map<Coordinate, H1F> BSec, 
+            Map<Coordinate, H1F> BAlphaBins, Map<Coordinate, H1F> timeResiB,
             IndexedList<DataGroup> dataGroup) {
         DataGroup td = new DataGroup(7,2);
         DataGroup tdp = new DataGroup(14,8);
@@ -217,6 +219,9 @@ public class HistoUtility {
                 BAlphaBins.put(new Coordinate(i,j), new H1F("B  " , 100, 0.0, 3.0));
                 for (int k = 0; k < BBins; k++) {
                     B.put(new Coordinate(i,j,k), new H1F("B centroid " +(i + 1)*1000+(j+1)+26, 100, 0.0, 3.0));
+                    for(int s=0; s<6; s++) {
+                        BSec.put(new Coordinate(s, i,j,k), new H1F("B centroid " +(s+1)*10000+(i + 1)*1000+(j+1)+26, 100, 0.0, 3.0));
+                    }
                 }
             }
         }

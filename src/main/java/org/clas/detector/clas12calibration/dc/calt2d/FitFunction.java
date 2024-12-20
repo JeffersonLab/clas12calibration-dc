@@ -135,7 +135,9 @@ public class FitFunction implements FCNBase{
                     Coordinate co = new Coordinate(this.seci, this.sli, j, k);
                     if(_tvstrkdocasProf.get(co).getVectorX().size()>0){ 
                         //local angle correction
-                        double theta0 = Math.toDegrees(Math.acos(1-0.02*T2DCalib.BfieldValuesUpd[this.sli-2][j][k]));
+                        double Bcorr = T2DCalib.BfieldValuesUpd[this.sli-2][j][k];
+                        if(T2DCalib.fitBySector) Bcorr = T2DCalib.BfieldSecValuesUpd[this.seci][this.sli-2][j][k];
+                        double theta0 = Math.toDegrees(Math.acos(1-0.02*Bcorr));
                         //double alpha = T2DCalib.AlphaValues[j];
                         double alpha = T2DCalib.AlphaValuesUpd[sli][j][k]; 
                         // correct alpha with theta0, the angle corresponding to the isochrone lines twist due to the electric field
@@ -149,7 +151,7 @@ public class FitFunction implements FCNBase{
                             double time = gr.getDataY(ix);
                             double err = gr.getDataEY(ix);
                             if(err>0) { 
-                                double calcTime = this.eval(x, ralpha, T2DCalib.BfieldValuesUpd[sli-2][j][k], par);
+                                double calcTime = this.eval(x, ralpha, Bcorr, par);
                                 delta = (time - calcTime) / err; 
                                 chisq += delta * delta;
                             }

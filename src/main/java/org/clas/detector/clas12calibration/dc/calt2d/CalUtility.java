@@ -12,6 +12,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.AlphaBinHal
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.AlphaValues;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.AlphaValuesUpd;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldSecValuesUpd;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValues;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValuesUpd;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
@@ -54,7 +55,7 @@ public class CalUtility {
      * @param useBProf 
      */
     public static void reCook(Map<Coordinate, H1F> timeResi, Map<Coordinate, H1F> timeResiNew, 
-            Map<Coordinate, H1F> timeResiB, Map<Coordinate, H1F> A, Map<Coordinate, H1F> B, Map<Coordinate, H1F> BAlphaBins,
+            Map<Coordinate, H1F> timeResiB, Map<Coordinate, H1F> A, Map<Coordinate, H1F> B,Map<Coordinate, H1F> BSec, Map<Coordinate, H1F> BAlphaBins,
             Map<Coordinate, H2F> Tvstrkdocas, Map<Coordinate, H2F> Tvscalcdocas, Map<Coordinate, H2F> Tresvstrkdocas, 
             HipoDataSource calreader, List<FittedHit> hits, List<FittedHit> calhits, 
             Map<Coordinate, H1F> ParsVsIter, Map<Coordinate, FitLine> TvstrkdocasFits, Map<Coordinate, GraphErrors> TvstrkdocasProf,
@@ -76,6 +77,9 @@ public class CalUtility {
                 for (int k = 0; k < BBins+1; k++) {
                     if(A.containsKey(new Coordinate(i,j,k))) A.get(new Coordinate(i,j,k)).reset();
                     if(k<BBins && B.containsKey(new Coordinate(i,j,k))) B.get(new Coordinate(i,j,k)).reset();
+                    for(int s =0; s<6; s++) {
+                        if(k<BBins && BSec.containsKey(new Coordinate(s, i,j,k))) BSec.get(new Coordinate(s,i,j,k)).reset();
+                    }
                 }
             }
         }
@@ -313,6 +317,25 @@ public class CalUtility {
         }
     }
     static boolean filledBspectra = false;
+    static boolean filledBspectraSec = false;
+    
+    public static void UpdateBBinCenters4Sectors(Map<Coordinate, H1F> BSec) {
+        if(field==0) return;
+        if(filledBspectraSec) return;
+        for(int s = 0; s<6; s++) { 
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < alphaBins; j++) {
+                    for (int k = 0; k < BBins; k++) {
+                        BfieldSecValuesUpd[s][i][j][k] = BfieldValues[k];
+                        if(BSec.get(new Coordinate(s,i,j,k)).getBinContent(BSec.get(new Coordinate(s,i,j,k)).getMaximumBin())>10) {
+                            BfieldSecValuesUpd[s][i][j][k] = BSec.get(new Coordinate(s,i,j,k)).getMean();
+                        }
+                    }
+                }
+            }
+        }
+        filledBspectraSec=true;
+    }
     public static void UpdateBBinCenters(Map<Coordinate, H1F> B, Map<Coordinate, H1F> BAlphaBins) {
         if(field==0) return;
         if(filledBspectra) return;

@@ -15,6 +15,7 @@ public class FitLine extends Func1D{
     public int i;
     public int j;
     public int k;
+    public int s;
     private FitFunction fc ;
     private FcnUtility util = new FcnUtility();
     public boolean useMidBfieldBin=false;
@@ -25,8 +26,9 @@ public class FitLine extends Func1D{
     }
     public static final int nPars = 11;
     private double[] par = new double[nPars];
-    public FitLine(String name, int i, int j, int k, MinuitPar pars) {
+    public FitLine(String name, int s, int i, int j, int k, MinuitPar pars) {
         super(name, 0.0, pars.value(10));
+        this.s = s;
         this.i = i;
         this.j = j;
         this.k = k; 
@@ -49,6 +51,7 @@ public class FitLine extends Func1D{
             alpha = T2DCalib.AlphaValues[j];
         if(this.i>1 && this.i<4) {
             B = T2DCalib.BfieldValuesUpd[i-2][j][k];
+            if(T2DCalib.fitBySector) B=T2DCalib.BfieldSecValuesUpd[s][i-2][j][k];
             if(useMidBfieldBin)
                 B=T2DCalib.BfieldValues[k]; 
             double theta0 = Math.toDegrees(Math.acos(1-0.02*B));

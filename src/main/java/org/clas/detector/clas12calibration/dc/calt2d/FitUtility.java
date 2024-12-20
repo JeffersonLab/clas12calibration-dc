@@ -182,12 +182,12 @@ public class FitUtility {
             for (int i = 0; i < 6; i++) {
                 for (int j = 0; j < alphaBins; j++) {
                     if(i<2 || i>3) {
-                        TvstrkdocasFits.put(new Coordinate(s, i,j,BBins), new FitLine("f"+""+s+""+i+""+j+"0", i, j, BBins, 
+                        TvstrkdocasFits.put(new Coordinate(s, i,j,BBins), new FitLine("f"+""+s+""+i+""+j+"0", s, i, j, BBins, 
                         TvstrkdocasFitPars.get(new Coordinate(s,i))));
 
                     } else {
                         for(int k = 0; k < BBins; k++) { 
-                            TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine("f"+""+s+""+i+""+j+""+k, i, j, k, 
+                            TvstrkdocasFits.put(new Coordinate(s,i,j,k), new FitLine("f"+""+s+""+i+""+j+""+k, s, i, j, k, 
                             TvstrkdocasFitPars.get(new Coordinate(s,i))));
 
                         }
