@@ -285,7 +285,13 @@ public class FitUtility {
             Map<Coordinate, FitFunction> TvstrkdocasFit, Map<Coordinate, GraphErrors> TvstrkdocasProf) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             this.runParamScan(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
-            if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector "+(s+1));
+            if(T2DCalib.vocal==true) {
+                    if(s!=6) {
+                        voice.speak("Parameter Scan done for Sector " + (s + 1));
+                    } else {
+                        voice.speak("Parameter Scan done for all Sectors ");
+                    }
+                }
         }
     }
     /**
@@ -312,7 +318,13 @@ public class FitUtility {
             final int sector = s;
             futures.add(executor.submit(() -> {
                 this.runParamScan(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
-                if(T2DCalib.vocal==true) voice.speak("Parameter Scan done for Sector " + (sector + 1));
+                if(T2DCalib.vocal==true) {
+                    if(sector!=6) {
+                        voice.speak("Parameter Scan done for Sector " + (sector + 1));
+                    } else {
+                        voice.speak("Parameter Scan done for all Sectors ");
+                    }
+                }
             }));
         }
 
@@ -376,7 +388,13 @@ public class FitUtility {
             Map<Coordinate, FitFunction> TvstrkdocasFit) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             this.runFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
-            if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
+            if(T2DCalib.vocal==true) {
+                if(s!=6) {
+                    voice.speak("Parameter Fit done for Sector " + (s + 1));
+                } else {
+                    voice.speak("Parameter Fit done for all Sectors ");
+                }
+            }
         }
     }
     private void runFit(boolean fixFit[][][], int s, 
@@ -428,7 +446,13 @@ public class FitUtility {
             final int sector = s;
             futures.add(executor.submit(() -> {
                 this.runFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
-                if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
+                if(T2DCalib.vocal==true) {
+                    if(sector!=6) {
+                        voice.speak("Parameter Fit done for Sector " + (sector + 1));
+                    } else {
+                        voice.speak("Parameter Fit done for all Sectors ");
+                    }
+                }
             }));
         }
 
@@ -461,7 +485,13 @@ public class FitUtility {
             final int sector = s;
             futures.add(executor.submit(() -> {
                 this.runBFit(fixFit, sector, TvstrkdocasFitPars, TvstrkdocasFit);
-                if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector " + (sector + 1));
+                if(T2DCalib.vocal==true) {
+                    if(sector!=6) {
+                        voice.speak("Parameter Fit done for Sector " + (sector + 1));
+                    } else {
+                        voice.speak("Parameter Fit done for all Sectors ");
+                    }
+                }
             }));
         }
 
@@ -483,7 +513,13 @@ public class FitUtility {
             Map<Coordinate, FitFunction> TvstrkdocasFit) {
         for(int s = T2DCalib.minSec; s<T2DCalib.maxSec; s++) {
             this.runBFit(fixFit, s, TvstrkdocasFitPars, TvstrkdocasFit);
-            if(T2DCalib.vocal==true) voice.speak("Parameter Fit done for Sector "+(s+1));
+            if(T2DCalib.vocal==true) {
+                    if(s!=6) {
+                        voice.speak("Parameter Fit done for Sector " + (s + 1));
+                    } else {
+                        voice.speak("Parameter Fit done for all Sectors ");
+                    }
+                }
         }
     }
     private void runBFit(boolean fixFit[][][], int s, 
