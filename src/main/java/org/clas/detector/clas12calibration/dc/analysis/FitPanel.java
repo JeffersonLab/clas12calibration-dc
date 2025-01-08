@@ -240,7 +240,7 @@ public class FitPanel {
             T2DCalib.debug=false;
         }
         if(panel.vocal.isSelected()==true) {
-            voice.speak("B-Field Fit started");
+            voice.speak("B-Field Parameters Fit started");
         }
         
         boolean[][][] fixedPars = new boolean[10][6][6];
@@ -318,8 +318,18 @@ public class FitPanel {
         this._pM.plotFits(fitted);
         this._pM.pw3.close();
     }
-    private int NumIter = 3;
+    private int NumIter = 4;
     public void doAll(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
+        if(panel.vocal.isSelected()==true) {
+            T2DCalib.vocal=true;
+        } else {
+            T2DCalib.vocal=false;
+        }
+        if(this._pM.eventProcessingDone==false) {
+            System.out.println(" ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");
+            if(T2DCalib.vocal) voice.speak("PLEASE WAIT UNTIL EVENT PROCESSING IS DONE TO DO THE SCAN");
+            return;
+        }
         if(panel.runIndivSectors.isSelected()==true) {
             panel.runIndivSectors.setSelected(false);
             this.parscan(TvstrkdocasFitPars);
@@ -331,14 +341,23 @@ public class FitPanel {
             this.parscan(TvstrkdocasFitPars);
         }
         panel.useBprof.setSelected(true);
-        
+        panel.updateUI();
         this.reCook();
         this.refit(TvstrkdocasFitPars);
         this.reCook(); // do a first pass with the B-f params fixed
+        panel.updateUI();
         for(int iter = 0; iter<NumIter; iter++) {
+            if(iter>0) { //run sector fits after fits averaging over all sectors
+                panel.runIndivSectors.setSelected(true);
+                this.parscan(TvstrkdocasFitPars);
+                panel.updateUI();
+            }
             this.refit(TvstrkdocasFitPars);
+            this.reCook();
+            panel.updateUI();
             this.bfit(TvstrkdocasFitPars); //refit B-f pars
             this.reCook();
+            panel.updateUI();
         }
     }
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{

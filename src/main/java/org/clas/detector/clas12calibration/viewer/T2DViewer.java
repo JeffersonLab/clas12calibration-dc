@@ -515,7 +515,6 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         c.anchor = c.NORTHWEST;
         c.insets = new Insets(3,3,3,3);
 
-        // Target GMEAN channel
         c.gridx = 0;
         c.gridy = y;
         trPanel.add(new JLabel(""),c);
