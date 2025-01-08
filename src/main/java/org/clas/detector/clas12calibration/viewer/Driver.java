@@ -8,6 +8,7 @@ package org.clas.detector.clas12calibration.viewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -79,6 +80,7 @@ public class Driver {
         frame.setTitle("DC CALIBRATIONS");
         ImageIcon imageIcon = new ImageIcon("CLAS12.jpg");
         imageIcon.getImage().getScaledInstance(800, 400, java.awt.Image.SCALE_SMOOTH);
+        
         JLabel imgLabel = new JLabel(imageIcon);
         frame.add(imgLabel, BorderLayout.PAGE_START);
         frame.add(panel);
@@ -104,6 +106,8 @@ public class Driver {
                 frame.add(viewer.mainPanel);
                 frame.setJMenuBar(viewer.menuBar);
                 frame.setSize(300, 300);
+                Dimension dim = new Dimension(1500,1000) ;
+                frame.setMinimumSize(dim);
                 frame.setVisible(true);
                 viewer.configFrame.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
                 viewer.configure();
@@ -167,7 +171,8 @@ public class Driver {
         });
         panel.add(TDCButton);
         
-        
+        Dimension dim = new Dimension(400,800) ;
+        frame.setMinimumSize(dim);
         frame.add(panel, BorderLayout.PAGE_END);
         //frame.add(T2DButton, BorderLayout.PAGE_END);
         DefaultLogger.initialize();
