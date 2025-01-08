@@ -106,7 +106,7 @@ public class Driver {
                 frame.add(viewer.mainPanel);
                 frame.setJMenuBar(viewer.menuBar);
                 frame.setSize(300, 300);
-                Dimension dim = new Dimension(1500,1000) ;
+                Dimension dim = new Dimension(1600,1000) ;
                 frame.setMinimumSize(dim);
                 frame.setVisible(true);
                 viewer.configFrame.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
