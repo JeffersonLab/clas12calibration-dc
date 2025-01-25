@@ -63,12 +63,12 @@ public class CalUtility {
             boolean useBProf) {
         hitcnt=0;
         //reset the residuals
+        for(int s=0; s<7; s++) {
         for (int i = 0; i < 6; i++) {
-            timeResi.get(new Coordinate(i)).reset();
-            timeResiNew.get(new Coordinate(i)).reset();
-            if(i==2 || i==3) {
-                for (int k = 0; k < BBins; k++) {
-                     timeResiB.get(new Coordinate(i,k)).reset();
+                timeResi.get(new Coordinate(s,i)).reset();
+                timeResiNew.get(new Coordinate(s,i)).reset();
+                if(i==2 || i==3) {
+                    timeResiB.get(new Coordinate(s,i)).reset();
                 }
             }
         }
@@ -130,7 +130,8 @@ public class CalUtility {
                 for(FittedHit hit : hits) {
                     //if(hit.get_OutOfTimeFlag()==true) continue;
                     //filling the timeResi for the previously calibrated hits
-                    timeResi.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    timeResi.get(new Coordinate(6,hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    timeResi.get(new Coordinate(hit.get_Sector()-1,hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
                 }
             } 
         }
@@ -247,12 +248,16 @@ public class CalUtility {
                 for(FittedHit hit : calhits) {
                     //filling the timeResi for the newly calibrated hits
                     //hit.set_TimeResidual(hit.get_Doca()-hit.get_ClusFitDoca());
-                    timeResiNew.get(new Coordinate(hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    timeResiNew.get(new Coordinate(6,hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                    timeResiNew.get(new Coordinate(hit.get_Sector()-1,hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
                     
                     if(hit.get_Superlayer() ==3 || hit.get_Superlayer() ==4) {
                         double bFieldVal = (double) hit.getB();
                         int bBin = getBBin(bFieldVal);
-                        timeResiB.get(new Coordinate(hit.get_Superlayer()-1, bBin)).fill(hit.get_TimeResidual());
+                        if(bBin>0) {
+                            timeResiB.get(new Coordinate(6, hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                            timeResiB.get(new Coordinate(hit.get_Sector()-1, hit.get_Superlayer()-1)).fill(hit.get_TimeResidual());
+                        }
                     }
                 }
             }
@@ -341,7 +346,7 @@ public class CalUtility {
         if(filledBspectra) return;
         TCanvas can1 = new TCanvas("superlayer3 B", 800, 800);
         TCanvas can2 = new TCanvas("superlayer4 B", 800, 800);
-        
+        System.out.println("***********************************************UpdateBBinCenters");
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < alphaBins; j++) {
                 for (int k = 0; k < BBins; k++) {

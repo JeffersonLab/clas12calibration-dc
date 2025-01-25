@@ -74,7 +74,9 @@ public class T2DCalib extends AnalysisMonitor{
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
         this.setAnalysisTabNames("TrackDoca vs T","TrackDoca vs T Graphs","TrackDoca vs T Fit Resi", 
-                "CalcDoca vs T","Time Residuals", "Parameters", "Fit Function");
+                "CalcDoca vs T","Time Residuals", 
+                "sector 1", "sector 2", "sector 3", "sector 4", "sector 5", "sector 6",
+                "Parameters", "Fit Function");
         this.init(false, "v0:vmid:R:tmax:distbeta:delBf:b1:b2:b3:b4");
         
         String dir = ClasUtilsFile.getResourceDir("CLAS12DIR", "etc/bankdefs/hipo4");
@@ -195,8 +197,10 @@ public class T2DCalib extends AnalysisMonitor{
     }    
     @Override
     public void plotHistos() {
-        String[] Names = {"TrackDoca vs T","TrackDoca vs T Graphs","TrackDoca vs T Fit Resi","CalcDoca vs T","Time Residuals","Parameters",
-                            "Fit Function"};
+        String[] Names = {"TrackDoca vs T","TrackDoca vs T Graphs","TrackDoca vs T Fit Resi","CalcDoca vs T","Time Residuals",
+            "sector 1", "sector 2", "sector 3", "sector 4", "sector 5", "sector 6",
+            "Parameters",
+            "Fit Function"};
         for(int s = 0; s<3; s++) {
             this.getAnalysisCanvas().getCanvas(Names[s]).setGridX(false);
             this.getAnalysisCanvas().getCanvas(Names[s]).setGridY(false);
@@ -207,14 +211,16 @@ public class T2DCalib extends AnalysisMonitor{
             }
         }
         this.getAnalysisCanvas().getCanvas(Names[2]).getPad(0).getAxisZ().setLog(true);
-        for(int s = 3; s<6; s++) {
+        for(int s = 3; s<6+6; s++) {
             this.getAnalysisCanvas().getCanvas(Names[s]).setGridX(false);
             this.getAnalysisCanvas().getCanvas(Names[s]).setGridY(false);
         }
-        this.getAnalysisCanvas().getCanvas(Names[4]).divide(6, 2);
-        this.getAnalysisCanvas().getCanvas(Names[5]).divide(6, 6);
+        for(int s = 4; s<4+6; s++) {
+            this.getAnalysisCanvas().getCanvas(Names[s]).divide(6, 2);
+        }
+        this.getAnalysisCanvas().getCanvas(Names[5+6]).divide(6, 6);
         
-        this.getAnalysisCanvas().getCanvas(Names[6]).divide(4, 3);
+        this.getAnalysisCanvas().getCanvas(Names[6+6]).divide(4, 3);
         
         this.getAnalysisCanvas().getCanvas( "TrackDoca vs T Fit Resi").getPad().getAxisY().setRange(-150, 150);
         this.getAnalysisCanvas().getCanvas( "TrackDoca vs T Fit Resi").getPad().setPalette(TColorPalette.PaletteName.kRainBow);
@@ -225,6 +231,9 @@ public class T2DCalib extends AnalysisMonitor{
         this.getAnalysisCanvas().getCanvas("Time Residuals").update();
         this.getAnalysisCanvas().getCanvas("Parameters").update();
         this.getAnalysisCanvas().getCanvas("Fit Function").update();
+        for(int s = 5;s<5+6; s++) {
+            this.getAnalysisCanvas().getCanvas(Names[s]).update();
+        }
     }
     @Override
     public void timerUpdate() {
@@ -264,11 +273,19 @@ public class T2DCalib extends AnalysisMonitor{
             }
             for (int i = 0; i < 6; i++) {
                 this.getAnalysisCanvas().getCanvas("Time Residuals").cd(i);
-                PlotUtility.fitTimeResPlot(timeResiFromFile.get(new Coordinate(i)), 
+                PlotUtility.fitTimeResPlot(timeResiFromFile.get(new Coordinate(6,i)), 
                         this.getAnalysisCanvas().getCanvas("Time Residuals"));
-                
             }
-                   
+            for(int s = 0; s<6; s++) {  
+                String st = "sector ";
+                st+=s+1;
+                for (int i = 0; i < 6; i++) {
+                    this.getAnalysisCanvas().getCanvas(st).cd(i);
+                    PlotUtility.fitTimeResPlot(timeResiFromFile.get(new Coordinate(s,i)), 
+                            this.getAnalysisCanvas().getCanvas(st));
+                }
+            }
+            
             //fp.setGreenFitButton();
             this.plotFits(true);
             
@@ -652,6 +669,6 @@ public class T2DCalib extends AnalysisMonitor{
         }
     }
 
-    
+   
 }
 

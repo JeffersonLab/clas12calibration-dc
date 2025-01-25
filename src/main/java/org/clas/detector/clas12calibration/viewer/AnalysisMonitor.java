@@ -28,7 +28,7 @@ public class AnalysisMonitor extends CalibrationEngine implements IDataEventList
         CalibrationConstantsListener{    
     
     private final String           analysisName;
-    public ArrayList<String>      analysisTabNames  = new ArrayList();
+    public ArrayList<String>       analysisTabNames  = new ArrayList();
     private IndexedList<DataGroup> analysisData    = new IndexedList<DataGroup>(3);
     private DataGroup              analysisSummary = null;
     private JPanel                 analysisPanel   = null;

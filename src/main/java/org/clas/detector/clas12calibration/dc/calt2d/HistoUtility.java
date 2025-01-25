@@ -109,9 +109,8 @@ public class HistoUtility {
                 }
 
                 // Fill uncalibrated plot
-                Coordinate timeResiCoord = new Coordinate(superlayer - 1);
-                timeResiFromFile.get(timeResiCoord).fill(bnkHits.getFloat("timeResidual", i));
-
+                timeResiFromFile.get(new Coordinate(6, superlayer - 1)).fill(bnkHits.getFloat("timeResidual", i));
+                timeResiFromFile.get(new Coordinate(sector-1, superlayer - 1)).fill(bnkHits.getFloat("timeResidual", i));
                 // Region 2 filling for alpha and b-field bins
                 if (superlayer < 3 || superlayer > 4) {
                     A.get(new Coordinate(superlayer - 1, alphaBin, BBins)).fill(alphaUncor);
@@ -153,16 +152,18 @@ public class HistoUtility {
         
         int ijk = 0;
         int ij = 0;
-        for (int i = 0; i < 6; i++) {
-            timeResi.put(new Coordinate(i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
-            timeResiFromFile.put(new Coordinate(i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
-            timeResiNew.put(new Coordinate(i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
-            fitResi.put(new Coordinate(i), new H1F("fit residual for sly " + (i+1), 100, -0.5, 0.5));
-            
-            tr.addDataSet(timeResi.get(new Coordinate(i)), i);
-            tr.addDataSet(timeResiFromFile.get(new Coordinate(i)), i);
-            tr.addDataSet(timeResiNew.get(new Coordinate(i)), i);
-            fr.addDataSet(fitResi.get(new Coordinate(i)), i);
+        for(int s = 0; s<7; s++) {
+            for (int i = 0; i < 6; i++) {
+                timeResi.put(new Coordinate(s,i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
+                timeResiFromFile.put(new Coordinate(s,i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
+                timeResiNew.put(new Coordinate(s,i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
+                fitResi.put(new Coordinate(s,i), new H1F("fit residual for sly " + (i+1), 100, -0.5, 0.5));
+
+                tr.addDataSet(timeResi.get(new Coordinate(s,i)), i+s*6);
+                tr.addDataSet(timeResiFromFile.get(new Coordinate(s,i)), i+s*6);
+                tr.addDataSet(timeResiNew.get(new Coordinate(s,i)), i+s*6);
+                fr.addDataSet(fitResi.get(new Coordinate(s,i)), i+s*6);
+            }
         }
         for(int s = 0; s<7; s++) {
             for (int i = 0; i < 6; i++) { 
@@ -226,11 +227,11 @@ public class HistoUtility {
             }
         }
         int ik=0;
-        for (int i = 2; i < 4; i++) {
-            for (int k = 0; k < BBins; k++) {
-                timeResiB.put(new Coordinate(i,k), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
-                trb.addDataSet(timeResiB.get(new Coordinate(i,k)), ik++);
-                timeResiB.get(new Coordinate(i,k)).setLineColor(k+1);
+        for (int s = 0; s < 7; s++) {
+            for (int i = 2; i < 4; i++) {
+                timeResiB.put(new Coordinate(s,i), new H1F("time residual for sly " + (i+1), 100, -0.3, 0.3)); 
+                trb.addDataSet(timeResiB.get(new Coordinate(s,i)), ik++);
+                timeResiB.get(new Coordinate(s,i)).setLineColor(2);
             }
         }
         dataGroup.add(td, 0,0,0);

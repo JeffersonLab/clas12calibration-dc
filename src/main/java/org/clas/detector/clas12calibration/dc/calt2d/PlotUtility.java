@@ -129,21 +129,44 @@ public class PlotUtility {
             Map<Coordinate, H1F> timeResi, Map<Coordinate, H1F> timeResiNew) {
         analysisCanvas.getCanvas("Time Residuals").clear();
         analysisCanvas.getCanvas("Time Residuals").divide(6, 3);
+        for(int s=0; s<6; s++) {
+            String st = "sector ";
+            st+=s+1;
+            analysisCanvas.getCanvas(st).clear();
+            analysisCanvas.getCanvas(st).divide(6, 3);
+        }
         //
         for(int i = 0; i<6; i++) {
             analysisCanvas.getCanvas("Time Residuals").cd(i);
-            fitTimeResPlot(timeResiFromFile.get(new Coordinate(i)), 
+            fitTimeResPlot(timeResiFromFile.get(new Coordinate(6,i)), 
                     analysisCanvas.getCanvas("Time Residuals"));
             analysisCanvas.getCanvas("Time Residuals").cd(i+6);
-            fitTimeResPlot(timeResi.get(new Coordinate(i)), 
+            fitTimeResPlot(timeResi.get(new Coordinate(6,i)), 
                     analysisCanvas.getCanvas("Time Residuals"));
             analysisCanvas.getCanvas("Time Residuals").cd(i+12);
-            //analysisCanvas.getCanvas("Time Residuals").draw(timeResiNew.get(new Coordinate(i)));
-            fitTimeResPlot(timeResiNew.get(new Coordinate(i)), 
+            fitTimeResPlot(timeResiNew.get(new Coordinate(6,i)), 
                     analysisCanvas.getCanvas("Time Residuals"));
-            
         }
+        //sectors
+        for(int s =0; s<6; s++) {
+            String st = "sector ";
+            st+=s+1;
+            for(int i = 0; i<6; i++) {
+                analysisCanvas.getCanvas(st).cd(i);
+                fitTimeResPlot(timeResiFromFile.get(new Coordinate(s,i)), 
+                        analysisCanvas.getCanvas(st));
+                analysisCanvas.getCanvas(st).cd(i+6);
+                fitTimeResPlot(timeResi.get(new Coordinate(s,i)), 
+                        analysisCanvas.getCanvas(st));
+                analysisCanvas.getCanvas(st).cd(i+12);
+                fitTimeResPlot(timeResiNew.get(new Coordinate(s,i)), 
+                        analysisCanvas.getCanvas(st));
+            }
+        }
+    
+        
     }
+    
     
     public static void fitTimeResPlot(H1F h1, EmbeddedCanvas canvasRes) {
         if (h1==null) return;

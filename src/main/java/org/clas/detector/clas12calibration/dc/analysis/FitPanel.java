@@ -116,7 +116,8 @@ public class FitPanel {
         } else {
             for(int s=0; s<6; s++) {
                 for(int j = 2; j<4; j++) {
-                    for(int i=5; i<10; i++){ 
+                    panel.fixFit[5][j][s].setSelected(false);
+                    for(int i=6; i<10; i++){ 
                         if(panel.fixFit[i][j][s].isSelected()==false) {
                             for(int si=0; si<s+1; si++) {
                                 panel.fixFit[i][j][si].setSelected(false);
@@ -355,9 +356,9 @@ public class FitPanel {
             this.refit(TvstrkdocasFitPars);
             this.reCook();
             panel.updateUI();
-            this.bfit(TvstrkdocasFitPars); //refit B-f pars
-            this.reCook();
-            panel.updateUI();
+            //this.bfit(TvstrkdocasFitPars); //refit B-f pars
+            //this.reCook();
+            //panel.updateUI();
         }
     }
     public void parscan(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
@@ -392,6 +393,13 @@ public class FitPanel {
                 }
             }
         }
+        for(int s=0; s<6; s++) {
+            for(int j = 2; j<4; j++) {
+                if(panel.fixFit[5][j][s].isSelected()==false)
+                    panel.fixFit[5][j][s].setSelected(true);
+            }
+        }
+        
         if(!panel.minRange.getText().isEmpty())this.range[0] = Double.parseDouble(panel.minRange.getText());
         else this.range[0] = 0.0;
         if(!panel.maxRange.getText().isEmpty())this.range[1] = Double.parseDouble(panel.maxRange.getText());
