@@ -70,6 +70,8 @@ public class T2DCalib extends AnalysisMonitor{
     public static int maxSec=7;
     public static boolean vocal= false;
     public static boolean debug= false;
+    public static String hitBank;
+    public static boolean runWithReducedCalibBank=false;
     
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
@@ -78,7 +80,11 @@ public class T2DCalib extends AnalysisMonitor{
                 "sector 1", "sector 2", "sector 3", "sector 4", "sector 5", "sector 6",
                 "Parameters", "Fit Function");
         this.init(false, "v0:vmid:R:tmax:distbeta:delBf:b1:b2:b3:b4");
-        
+        if(runWithReducedCalibBank) {
+            hitBank="DC::calib";
+        } else {
+            hitBank="TimeBasedTrkg::TBHits";
+        }
         String dir = ClasUtilsFile.getResourceDir("CLAS12DIR", "etc/bankdefs/hipo4");
         //init BBin Centers
         for (int i = 0; i < 2; i++) {
@@ -457,6 +463,8 @@ public class T2DCalib extends AnalysisMonitor{
     List<FittedHit> hitlist = new ArrayList<>();
     Refit rf = new Refit();
     public static boolean refitSegs = false;
+    public static int totHits=0;
+    public static int selHits=0; 
     @Override
     public void processEvent(DataEvent event) {
         
@@ -483,7 +491,7 @@ public class T2DCalib extends AnalysisMonitor{
             read.open(T2DViewer.theFile);
             schemaFactory = read.getSchemaFactory();
         
-            if(schemaFactory.hasSchema("TimeBasedTrkg::TBHits")) {
+            if(schemaFactory.hasSchema(hitBank)) {
                 System.out.println(" BANK FOUND........");
             } else {
                 System.out.println(" BANK NOT FOUND........");
@@ -510,8 +518,8 @@ public class T2DCalib extends AnalysisMonitor{
             TableLoader.t2dc=this;
             TableLoader.FillT0Tables(newRun, newVar);
             
-            TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/t2d_pressure"),
-                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"),
+            TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/v2/t2d_pressure"),
+                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/v2/ref_pressure"),
                     T2DViewer.ccdb.getConstants(newRun, "/hall/weather/pressure"));  
             System.out.println("Filling fit pars");
             try { 
@@ -532,7 +540,7 @@ public class T2DCalib extends AnalysisMonitor{
             	System.out.println(numberprocessedevents + " events will be processed!!!!");
             }
         }
-        if(!event.hasBank("TimeBasedTrkg::TBHits")) {
+        if(!event.hasBank(hitBank)) {
             return;
         } 
      
@@ -542,7 +550,7 @@ public class T2DCalib extends AnalysisMonitor{
         
         
         // get segment property     
-        DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
+        DataBank bnkHits = event.getBank(hitBank);
         bnkHits=HitUtility.FixDoubleHitsTFlight(event, bnkHits, this, segMap);
         
         HitUtility.getSegProperty(bnkHits,segPropMap,segMapTBHits);
@@ -568,15 +576,18 @@ public class T2DCalib extends AnalysisMonitor{
                 calhitlist.add(h);
             }
         }
+        totHits+=bnkHits.rows();
+        selHits+=calhits.size();
         if(!calhitlist.isEmpty()) {
+            DataBank hbank = HitUtility.fillTBHitsBank(event, calhitlist);
             calhipoEvent = (HipoDataEvent) calwriter.createEvent();
-            calhipoEvent.appendBank(HitUtility.fillTBHitsBank(event, calhitlist));
+            calhipoEvent.appendBank(hbank);
             calhipoEvent.appendBank(event.getBank("RUN::config"));
             calwriter.writeEvent(calhipoEvent);
-        }
-        if(!hitlist.isEmpty()) {
+        //}
+        //if(!hitlist.isEmpty()) {
             hipoEvent = (HipoDataEvent) writer.createEvent();
-            hipoEvent.appendBank(HitUtility.fillTBHitsBank(event, hitlist));
+            hipoEvent.appendBank(hbank);
             hipoEvent.appendBank(event.getBank("RUN::config"));
             writer.writeEvent(hipoEvent);
         }
@@ -588,7 +599,7 @@ public class T2DCalib extends AnalysisMonitor{
         
         calhitlist.clear();
         hitlist.clear();
-       
+        
     }
     
     private double[][][] resetPars = new double[7][6][11];

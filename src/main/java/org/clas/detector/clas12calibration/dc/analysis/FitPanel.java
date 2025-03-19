@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.plaf.metal.MetalButtonUI;
 import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
+import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 
 public class FitPanel {
@@ -319,7 +320,8 @@ public class FitPanel {
         this._pM.plotFits(fitted);
         this._pM.pw3.close();
     }
-    private int NumIter = 4;
+    private boolean floatdelBf=true;
+    private int NumIter = Integer.parseInt(T2DViewer.iterNum.getText());
     public void doAll(Map<Coordinate, MinuitPar> TvstrkdocasFitPars) throws FileNotFoundException{
         if(panel.vocal.isSelected()==true) {
             T2DCalib.vocal=true;
@@ -342,21 +344,30 @@ public class FitPanel {
             this.parscan(TvstrkdocasFitPars);
         }
         panel.useBprof.setSelected(true);
+        if(floatdelBf) { 
+            for(int s=0; s<6; s++){ 
+                for(int j=2; j<4; j++){ 
+                    if(panel.fixFit[5][j][s].isSelected()==true) {
+                            panel.fixFit[5][j][s].setSelected(false);
+                    }
+                }
+            }
+        }
         panel.updateUI();
         this.reCook();
         this.refit(TvstrkdocasFitPars);
         this.reCook(); // do a first pass with the B-f params fixed
         panel.updateUI();
-        for(int iter = 0; iter<NumIter; iter++) {
-            if(iter>0) { //run sector fits after fits averaging over all sectors
-                panel.runIndivSectors.setSelected(true);
+        for(int iter = 0; iter<NumIter-1; iter++) {
+            if(iter>0 && panel.runIndivSectors.isSelected()==true) { //run sector fits after fits averaging over all sectors
+               // panel.runIndivSectors.setSelected(true);
                 this.parscan(TvstrkdocasFitPars);
                 panel.updateUI();
             }
             this.refit(TvstrkdocasFitPars);
             this.reCook();
             panel.updateUI();
-            //this.bfit(TvstrkdocasFitPars); //refit B-f pars
+            this.bfit(TvstrkdocasFitPars); //refit B-f pars
             //this.reCook();
             //panel.updateUI();
         }

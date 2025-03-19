@@ -39,7 +39,12 @@ public class HistoUtility {
             Map<Integer, SegmentProperty> segPropMap) {
         
         int allSecIdx = 6;
-
+        boolean pass = false; // ensure there is a good electron to get the start time
+        if(event.getBank("REC::Particle").getInt("pid", 0)==11 && 
+                event.getBank("REC::Particle").getInt("status", 0)<0) {
+            pass=true;
+        }
+        if(!pass) return;
         for (int i = 0; i < bnkHits.rows(); i++) {
             // Pre-compute commonly used values
             double bFieldVal = bnkHits.getFloat("B", i);

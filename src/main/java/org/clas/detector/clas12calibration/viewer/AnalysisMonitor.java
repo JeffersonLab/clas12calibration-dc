@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.selHits;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.totHits;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.jlab.detector.calib.tasks.CalibrationEngine;
 import org.jlab.detector.calib.utils.CalibrationConstants;
@@ -87,7 +89,10 @@ public class AnalysisMonitor extends CalibrationEngine implements IDataEventList
             processEvent(event);
 	} else if (event.getType() == DataEventType.EVENT_STOP) {
             analyze();
+            System.out.println("TOTAL HITS "+totHits+" SELECTED HITS "+selHits+" Reduction % "+100*(float)((float)(totHits-selHits)/(float)totHits));
+       
 	}
+       
     }
 
     public void drawDetector() {

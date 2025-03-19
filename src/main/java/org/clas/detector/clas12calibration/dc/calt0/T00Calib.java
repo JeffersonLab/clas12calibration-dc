@@ -241,8 +241,8 @@ public class T00Calib extends AnalysisMonitor{
             //Constants.getInstance().initialize("DCCAL");
             Driver.init();
             TableLoader.FillT0Tables(newRun, "default");
-            TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/t2d_pressure"),
-                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/time_to_distance/ref_pressure"),
+            TableLoader.Fill(T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/v2/t2d_pressure"),
+                    T2DViewer.ccdb.getConstants(newRun, "/calibration/dc/v2/ref_pressure"),
                     T2DViewer.ccdb.getConstants(newRun, "/hall/weather/pressure")); 
             ReadTT.Load(newRun, "default"); 
             runNumber = newRun; 

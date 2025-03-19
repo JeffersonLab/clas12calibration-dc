@@ -9,7 +9,6 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BBins;
 import org.clas.detector.clas12calibration.dc.calt2d.FcnUtility;
 import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
-import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.DatabaseConstantProvider;
 import org.jlab.rec.dc.Constants;
 import org.jlab.rec.dc.timetodistance.TimeToDistanceEstimator;
@@ -34,7 +33,7 @@ public class TableLoader {
         if (T0LOADED) return;
         System.out.println(" T0 TABLE FILLED..... for Run "+run+" with VARIATION "+variation);
         DatabaseConstantProvider dbprovider = new DatabaseConstantProvider(run, variation);
-        dbprovider.loadTable("/calibration/dc/time_corrections/T0Corrections");
+        dbprovider.loadTable("/calibration/dc/v2/t0");
         //disconnect from database. Important to do this after loading tables.
         dbprovider.disconnect();
         // T0-subtraction
@@ -43,13 +42,13 @@ public class TableLoader {
         //T0s
         T0 = new double[6][6][7][6]; //nSec*nSL*nSlots*nCables
         T0ERR = new double[6][6][7][6]; //nSec*nSL*nSlots*nCables
-        for (int i = 0; i < dbprovider.length("/calibration/dc/time_corrections/T0Corrections/Sector"); i++) {
-            int iSec = dbprovider.getInteger("/calibration/dc/time_corrections/T0Corrections/Sector", i);
-            int iSly = dbprovider.getInteger("/calibration/dc/time_corrections/T0Corrections/Superlayer", i);
-            int iSlot = dbprovider.getInteger("/calibration/dc/time_corrections/T0Corrections/Slot", i);
-            int iCab = dbprovider.getInteger("/calibration/dc/time_corrections/T0Corrections/Cable", i);
-            double t0 = dbprovider.getDouble("/calibration/dc/time_corrections/T0Corrections/T0Correction", i);
-            double t0Error = dbprovider.getDouble("/calibration/dc/time_corrections/T0Corrections/T0Error", i);
+        for (int i = 0; i < dbprovider.length("/calibration/dc/v2/t0/sector"); i++) {
+            int iSec = dbprovider.getInteger("/calibration/dc/v2/t0/sector", i);
+            int iSly = dbprovider.getInteger("/calibration/dc/v2/t0/superlayer", i);
+            int iSlot = dbprovider.getInteger("/calibration/dc/v2/t0/slot", i);
+            int iCab = dbprovider.getInteger("/calibration/dc/v2/t0/cable", i);
+            double t0 = dbprovider.getDouble("/calibration/dc/v2/t0/t0correction", i);
+            double t0Error = dbprovider.getDouble("/calibration/dc/v2/t0/t0Error", i);
             T0[iSec - 1][iSly - 1][iSlot - 1][iCab - 1] = t0; 
             T0ERR[iSec - 1][iSly - 1][iSlot - 1][iCab - 1] = t0Error;
             setT0(T0);

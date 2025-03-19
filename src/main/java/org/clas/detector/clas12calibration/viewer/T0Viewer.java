@@ -212,9 +212,9 @@ public class T0Viewer implements IDataEventListener, DetectorListener, ActionLis
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
             "/geometry/dc/superlayer/wpdist",
-            "/calibration/dc/time_to_distance/t2d_pressure", 
+            "/calibration/dc/v2/t2d_pressure", 
             "/hall/weather/pressure",
-            "/calibration/dc/time_to_distance/ref_pressure",
+            "/calibration/dc/v2/ref_pressure",
             "/calibration/dc/time_jitter"}));
         ccdb.setVariation("default");
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");

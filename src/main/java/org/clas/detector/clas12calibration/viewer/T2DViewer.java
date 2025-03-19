@@ -110,7 +110,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     public static JTextField pid = new JTextField(3);
     public static JTextField usePressureTerm = new JTextField(3);
     public static JTextField enternofevents = new JTextField(3); 
-    public static JTextField sectorN = new JTextField(3);
+    public static JTextField iterNum = new JTextField(3);
     
     public static JTextField updatedBConstants = new JTextField(3);
     
@@ -232,9 +232,9 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
             "/geometry/dc/superlayer",
-            "/calibration/dc/time_to_distance/t2d_pressure", 
+            "/calibration/dc/v2/t2d_pressure", 
             "/hall/weather/pressure",
-            "/calibration/dc/time_to_distance/ref_pressure",
+            "/calibration/dc/v2/ref_pressure",
             "/calibration/dc/time_jitter"}));
         //ccdb.setVariation("default");
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
@@ -734,11 +734,11 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         y++;
         c.gridx = 0;
         c.gridy = y;
-        trPanel.add(new JLabel("Sector = ", JLabel.LEADING),c);
+        trPanel.add(new JLabel("Number of Iterations = ", JLabel.LEADING),c);
         tgmPanel = new JPanel();
-        sectorN.setText("-1");
-        sectorN.addActionListener(this);
-        tgmPanel.add(sectorN);
+        iterNum.setText("4");
+        iterNum.addActionListener(this);
+        tgmPanel.add(iterNum);
         c.gridx = 1;
         c.gridy = y;
         trPanel.add(tgmPanel,c);

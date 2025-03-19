@@ -5,6 +5,8 @@
  */
 package org.clas.detector.clas12calibration.dc.mctuning.viewer;
 
+import cnuphys.magfield.MagneticFieldInitializationException;
+import cnuphys.magfield.MagneticFields;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
@@ -13,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,6 +23,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
@@ -38,6 +43,8 @@ import javax.swing.event.ChangeListener;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.configButtonPanel;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.wireineff.WireIneffAnal;
 import org.jlab.clas.swimtools.MagFieldsEngine;
+import org.jlab.clas.swimtools.Swim;
+import org.jlab.clas.swimtools.Swimmer;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.base.GeometryFactory;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -48,6 +55,7 @@ import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.geom.base.ConstantProvider;
+import org.jlab.geom.prim.Point3D;
 import org.jlab.groot.base.GStyle;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.data.TDirectory;
@@ -178,9 +186,9 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
             "/geometry/dc/superlayer/wpdist",
-            "/calibration/dc/time_to_distance/t2d_pressure", 
+            "/calibration/dc/v2/t2d_pressure", 
             "/hall/weather/pressure",
-            "/calibration/dc/time_to_distance/ref_pressure",
+            "/calibration/dc/v2/ref_pressure",
             "/calibration/dc/time_jitter"}));
         ccdb.setVariation("default");
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
@@ -195,6 +203,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         System.out.println("Work directory set to " + this.Dir);
         
         enf.init();
+        
         //tm.init(); 
     }
     public static MagFieldsEngine enf = new MagFieldsEngine();
