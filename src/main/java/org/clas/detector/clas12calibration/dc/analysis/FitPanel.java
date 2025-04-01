@@ -336,38 +336,55 @@ public class FitPanel {
         if(panel.runIndivSectors.isSelected()==true) {
             panel.runIndivSectors.setSelected(false);
             this.parscan(TvstrkdocasFitPars);
-            panel.runIndivSectors.setSelected(true); //ensure scanning averaging over sectors at 1st pass
-        } else {
-            this.parscan(TvstrkdocasFitPars); 
-        }
-        if(panel.runIndivSectors.isSelected()==true) { //rescan for each sector
-            this.parscan(TvstrkdocasFitPars);
-        }
-        panel.useBprof.setSelected(true);
-        if(floatdelBf) { 
-            for(int s=0; s<6; s++){ 
-                for(int j=2; j<4; j++){ 
-                    if(panel.fixFit[5][j][s].isSelected()==true) {
-                            panel.fixFit[5][j][s].setSelected(false);
+            panel.updateUI();
+            panel.useBprof.setSelected(true);
+            this.reCook();
+            if(floatdelBf) { 
+                for(int s=0; s<6; s++){ 
+                    for(int j=2; j<4; j++){ 
+                        if(panel.fixFit[5][j][s].isSelected()==true) {
+                                panel.fixFit[5][j][s].setSelected(false);
+                        }
                     }
                 }
             }
+            this.refit(TvstrkdocasFitPars);
+            this.reCook(); // do a first pass with the B-f params fixed
+            panel.updateUI();
+            panel.runIndivSectors.setSelected(true); //ensure scanning averaging over sectors at 1st pass
+        } else {
+            this.parscan(TvstrkdocasFitPars); 
+            panel.updateUI();
+            panel.useBprof.setSelected(true);
+            this.reCook();
+            if(floatdelBf) { 
+                for(int s=0; s<6; s++){ 
+                    for(int j=2; j<4; j++){ 
+                        if(panel.fixFit[5][j][s].isSelected()==true) {
+                                panel.fixFit[5][j][s].setSelected(false);
+                        }
+                    }
+                }
+            }
+            this.refit(TvstrkdocasFitPars);
+            this.reCook(); 
+            panel.updateUI();
         }
-        panel.updateUI();
-        this.reCook();
-        this.refit(TvstrkdocasFitPars);
-        this.reCook(); // do a first pass with the B-f params fixed
-        panel.updateUI();
+        System.out.println("First iteration done!");
+       if(T2DCalib.vocal==true) voice.speak("First iteration done!");
         for(int iter = 0; iter<NumIter-1; iter++) {
-            if(iter>0 && panel.runIndivSectors.isSelected()==true) { //run sector fits after fits averaging over all sectors
+            System.out.println("Iteration "+(iter+2) +" started!");
+            if(T2DCalib.vocal==true) voice.speak("Iteration "+(iter+2) +" started!");
+            if(iter==1 && panel.runIndivSectors.isSelected()==true) { //run sector fits after fits averaging over all sectors
                // panel.runIndivSectors.setSelected(true);
                 this.parscan(TvstrkdocasFitPars);
+                this.reCook();
                 panel.updateUI();
             }
             this.refit(TvstrkdocasFitPars);
             this.reCook();
             panel.updateUI();
-            this.bfit(TvstrkdocasFitPars); //refit B-f pars
+            //this.bfit(TvstrkdocasFitPars); //refit B-f pars
             //this.reCook();
             //panel.updateUI();
         }

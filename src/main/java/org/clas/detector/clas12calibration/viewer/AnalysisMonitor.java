@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.numberprocessedevents;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.selHits;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.totHits;
-import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.jlab.detector.calib.tasks.CalibrationEngine;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.CalibrationConstantsListener;
@@ -75,10 +75,15 @@ public class AnalysisMonitor extends CalibrationEngine implements IDataEventList
     public void createHistos() {
         // initialize canvas and create histograms
     }
-    
+    int counter=0;
     @Override
     public void dataEventAction(DataEvent event) {
+        counter++;
         this.setNumberOfEvents(this.getNumberOfEvents()+1);
+        if(numberprocessedevents!=-1) { 
+            this.setNumberOfEvents(numberprocessedevents+1);
+            if(numberprocessedevents+1<counter) event.setType(DataEventType.EVENT_STOP);
+        }
         if (event.getType() == DataEventType.EVENT_START) {
 //            resetEventListener();
             processEvent(event);

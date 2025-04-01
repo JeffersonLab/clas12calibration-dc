@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -45,6 +44,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.clas.detector.clas12calibration.dc.analysis.configButtonPanel;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.numberprocessedevents;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.base.GeometryFactory;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -117,6 +117,10 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     String[] calVars = {"default", "dc_team_rga_fall2018", ""};
     public static JComboBox  calVariation ;
     
+    String[] hitBankNames = {"TimeBasedTrkg::TBHits", "DC::calib"};
+    public static JComboBox  hitBankName ;
+    
+    
      // detector monitors
     AnalysisMonitor[] monitors ; 
     
@@ -149,6 +153,10 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 
         calVariation = new JComboBox(calVars);
         calVariation.setEditable(true);
+        
+        hitBankName = new JComboBox(hitBankNames);
+        calVariation.setEditable(false);
+        
         //distBetaFCN = new JComboBox(distBetaFCNSelect);
         //distBetaFCN.setEditable(true);
         this.monitors = new AnalysisMonitor[]{new T2DCalib("Time to Distance",ccdb)};		
@@ -360,17 +368,32 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
     }
     
     public static String theFile;
+    /*
+     public static int counter=0;
     @Override
     public void dataEventAction(DataEvent event) {
-    	
+        counter++;
+        if(numberprocessedevents+1<counter) event.setType(DataEventType.EVENT_STOP);
+        this.setNumberOfEvents(this.getNumberOfEvents()+1);
+        if(numberprocessedevents!=-1) {
+            this.setNumberOfEvents(numberprocessedevents+1);
+        }
+    */
+    int counter=0;
+    @Override
+    public void dataEventAction(DataEvent event) {
+        counter++;
+        if(numberprocessedevents!=-1) {
+            if(counter>numberprocessedevents+1) event.setType(DataEventType.EVENT_STOP);
+            if(counter>numberprocessedevents+2) return;
+        }
        // EvioDataEvent decodedEvent = deco.DecodeEvent(event, decoder, table);
-        //decodedEvent.show();
-        theFile = this.processorPane.getDataFile().toString();		
-	if(event!=null ){
-            
+        //decodedEvent.show();	
+	if(event!=null){
 //            event.show();
             if (event.getType() == DataEventType.EVENT_START) {
-                this.runNumber = this.getRunNumber(event);
+                this.runNumber = this.getRunNumber(event);  
+                theFile = this.processorPane.getDataFile().toString();	
             }
             if(this.runNumber != this.getRunNumber(event)) {
 //                this.saveToFile("mon12_histo_run_" + runNumber + ".hipo");
@@ -569,10 +592,10 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 	c.gridy = y;
         trPanel.add(new JLabel(" "),c);
 
-        y++;
-        c.gridx = 1;
-	c.gridy = y;
-        trPanel.add(new JLabel(" "),c);
+//        y++;
+//        c.gridx = 1;
+//	c.gridy = y;
+//        trPanel.add(new JLabel(" "),c);
 
         y++;
         c.gridx = 1;
@@ -708,16 +731,16 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 	c.gridy = y;
         trPanel.add(tgmPanel,c);
         
-//        y++;
-//        c.gridx = 0;
-//        c.gridy = y;
-//        trPanel.add(new JLabel("distbeta", JLabel.LEADING),c);
-//        tgmPanel = new JPanel();
-//        distBetaFCN.addActionListener(this);
-//        tgmPanel.add(distBetaFCN);
-//        c.gridx = 1;
-//	c.gridy = y;
-//        trPanel.add(tgmPanel,c);
+        y++;
+        c.gridx = 0;
+        c.gridy = y;
+        trPanel.add(new JLabel("Hipo", JLabel.LEADING),c);
+        tgmPanel = new JPanel();
+        hitBankName.addActionListener(this);
+        tgmPanel.add(hitBankName);
+        c.gridx = 1;
+	c.gridy = y;
+        trPanel.add(tgmPanel,c);
     
         y++;
         c.gridx = 0;
@@ -736,7 +759,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         c.gridy = y;
         trPanel.add(new JLabel("Number of Iterations = ", JLabel.LEADING),c);
         tgmPanel = new JPanel();
-        iterNum.setText("4");
+        iterNum.setText("2");
         iterNum.addActionListener(this);
         tgmPanel.add(iterNum);
         c.gridx = 1;

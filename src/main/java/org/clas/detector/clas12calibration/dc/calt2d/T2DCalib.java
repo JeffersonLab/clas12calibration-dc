@@ -51,6 +51,7 @@ import org.jlab.utils.system.ClasUtilsFile;
 public class T2DCalib extends AnalysisMonitor{
 
     public static double DeltaTimeCut = 150;//differencce between the calculated time from trkDoca and the measured time in ns
+    static double CHI2PID = 5;
     public HipoDataSync calwriter = null;
     public HipoDataSync writer = null;
     private HipoDataEvent calhipoEvent = null;
@@ -63,15 +64,14 @@ public class T2DCalib extends AnalysisMonitor{
     File outfile = null;
     private int runNumber;
     public static FcnUtility util = new FcnUtility();
-    private int numberprocessedevents;
+    public static int numberprocessedevents=-1;
     private static double betaAve = 1;
     private T2DFitter t2df;
     public static int minSec=6;
     public static int maxSec=7;
     public static boolean vocal= false;
     public static boolean debug= false;
-    public static String hitBank;
-    public static boolean runWithReducedCalibBank=false;
+    public static String hitBank="TimeBasedTrkg::TBHits";
     
     public T2DCalib(String name, ConstantsManager ccdb) throws FileNotFoundException {
         super(name, ccdb);
@@ -80,11 +80,7 @@ public class T2DCalib extends AnalysisMonitor{
                 "sector 1", "sector 2", "sector 3", "sector 4", "sector 5", "sector 6",
                 "Parameters", "Fit Function");
         this.init(false, "v0:vmid:R:tmax:distbeta:delBf:b1:b2:b3:b4");
-        if(runWithReducedCalibBank) {
-            hitBank="DC::calib";
-        } else {
-            hitBank="TimeBasedTrkg::TBHits";
-        }
+        
         String dir = ClasUtilsFile.getResourceDir("CLAS12DIR", "etc/bankdefs/hipo4");
         //init BBin Centers
         for (int i = 0; i < 2; i++) {
@@ -514,6 +510,8 @@ public class T2DCalib extends AnalysisMonitor{
             System.out.println("Driver initialized");
             String newVar = String.valueOf(T2DViewer.calVariation.getSelectedItem());
             System.out.println("***************************************************************** VARIATION *"+newVar);
+            hitBank = String.valueOf(T2DViewer.hitBankName.getSelectedItem());
+            System.out.println("***************************************************************** RUNNING WITH  CALIBRATION BANK "+hitBank);
             ccdb.setVariation(newVar);
             TableLoader.t2dc=this;
             TableLoader.FillT0Tables(newRun, newVar);
@@ -548,11 +546,9 @@ public class T2DCalib extends AnalysisMonitor{
         	return;
         }
         
-        
         // get segment property     
         DataBank bnkHits = event.getBank(hitBank);
         bnkHits=HitUtility.FixDoubleHitsTFlight(event, bnkHits, this, segMap);
-        
         HitUtility.getSegProperty(bnkHits,segPropMap,segMapTBHits);
         HistoUtility.fill(event, bnkHits, hitmap, calhitmap, Tvstrkdocas, Tvscalcdocas, TvstrkdocasFits,
                 Tresvstrkdocas, timeResiFromFile, A, B, BSec, segPropMap);
@@ -580,6 +576,8 @@ public class T2DCalib extends AnalysisMonitor{
         selHits+=calhits.size();
         if(!calhitlist.isEmpty()) {
             DataBank hbank = HitUtility.fillTBHitsBank(event, calhitlist);
+            //DataBank hbank = HitUtility.fillTBHitsBankMutiThrd(event, calhitlist,4);
+            
             calhipoEvent = (HipoDataEvent) calwriter.createEvent();
             calhipoEvent.appendBank(hbank);
             calhipoEvent.appendBank(event.getBank("RUN::config"));

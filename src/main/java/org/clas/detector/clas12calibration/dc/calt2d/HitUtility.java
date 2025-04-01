@@ -14,6 +14,7 @@ import java.util.Set;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.avebeta;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.betacnt;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.hitBank;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.polarity;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import org.jlab.io.base.DataBank;
@@ -157,14 +158,10 @@ public class HitUtility {
         //double cos30minusalpha = Math.cos(Math.toRadians(30.-util.getReducedAngle(alpha)));
         return hit;
     }
-    public static DataBank fillTBHitsBank(DataEvent event, List<FittedHit> hitlist) {
-        //if(event.hasBank("TimeBasedTrkg::TBHits")) { // for second pass tracking
-        //     event.removeBank("TimeBasedTrkg::TBHits");
-        //}
-        DataBank bank = event.createBank("TimeBasedTrkg::TBHits", hitlist.size());
-
-        for (int i = 0; i < hitlist.size(); i++) {
+    private static void fillTBHitBank(DataBank bank, List<FittedHit> hitlist, int i) {
+        if (i < bank.rows()) {
             bank.setShort("id", i, (short) hitlist.get(i).get_Id());
+             bank.setShort("id", i, (short) hitlist.get(i).get_Id());
             bank.setShort("status", i, (short) hitlist.get(i).get_QualityFac());
             bank.setByte("superlayer", i, (byte) hitlist.get(i).get_Superlayer());
             bank.setByte("layer", i, (byte) hitlist.get(i).get_Layer());
@@ -195,6 +192,18 @@ public class HitUtility {
             bank.setFloat("TStart", i, (float) hitlist.get(i).getTStart());
             bank.setFloat("dDoca", i, (float) hitlist.get(i).get_DeltaDocaBeta());
             bank.setFloat("beta", i, (float) hitlist.get(i).get_Beta());
+        } else {
+            System.out.println("Index out of bounds for bank rows");
+        }
+    }
+    
+    
+    public static DataBank fillTBHitsBank(DataEvent event, List<FittedHit> hitlist) {
+        
+        DataBank bank = event.createBank(hitBank, hitlist.size());
+
+        for (int i = 0; i < hitlist.size(); i++) {
+           fillTBHitBank( bank, hitlist,  i);
             
         }
         //System.out.println(" Created Bank "); bank.show();
@@ -221,7 +230,7 @@ public class HitUtility {
                 if(bank2.getByte("charge", bank.getShort("pindex", i))!=0) {
                     pid = bank2.getInt("pid", bank.getShort("pindex", i));
                     double chi2pid = bank2.getFloat("chi2pid", bank.getShort("pindex", i));
-                    if(Math.abs(chi2pid)>10) pid =0;
+                    if(Math.abs(chi2pid)>T2DCalib.CHI2PID) pid =0;
                 }
             }
         }
@@ -312,6 +321,8 @@ public class HitUtility {
             bnkHits.add(entry.getValue().get(entry.getValue().size() - 1));
         }
         DataBank newHitsBank = fillTBHitsBank(event, bnkHits);
+        //DataBank newHitsBank = fillTBHitsBankMutiThrd(event, bnkHits,4);
+        
         return newHitsBank;
     }
 

@@ -6,6 +6,7 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.hitBank;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.ui.TCanvas;
 import org.jlab.io.base.DataBank;
@@ -31,8 +32,8 @@ public class Analysis {
             while (reader.hasEvent()) { 
                 counter++;
                 DataEvent event = reader.getNextEvent();
-                if(event.hasBank("TimeBasedTrkg::TBHits")) { 
-                    DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
+                if(event.hasBank(hitBank)) { 
+                    DataBank bnkHits = event.getBank(hitBank);
 
                     for (int i = 0; i < bnkHits.rows(); i++) {
                         int sly = bnkHits.getByte("superlayer", i);

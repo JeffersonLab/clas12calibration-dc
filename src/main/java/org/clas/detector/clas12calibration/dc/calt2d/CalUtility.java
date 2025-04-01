@@ -17,6 +17,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValue
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.BfieldValuesUpd;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.field;
+import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.hitBank;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
@@ -97,8 +98,9 @@ public class CalUtility {
             }
         }
         System.out.println("***********************************************");       
-        System.out.println("****** Reprocessing TestCalOutPut.hipo ********");
+        System.out.println("******  Reprocessing Calibration Hits  ********");
         System.out.println("***********************************************");
+       
         calreader = new HipoDataSource();
         calreader.open("TestCalOutPut.hipo");
         System.out.println("Events in hipofile " +  calreader.getSize() );  
@@ -111,8 +113,9 @@ public class CalUtility {
             //if ((eventcounter%10000 == 0) && (eventcounter < numberofeventsinfile) ) {
             // 	 System.out.println("Processed " + eventcounter + " events from " + numberofeventsinfile);  
             //}
-            if(event.hasBank("TimeBasedTrkg::TBHits")) { 
-                DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
+            
+            if(event.hasBank(hitBank)) { 
+                DataBank bnkHits = event.getBank(hitBank);
                 
                 for (int i = 0; i < bnkHits.rows(); i++) {
                     FittedHit h = HitUtility.getCalHit(bnkHits, i);
@@ -140,8 +143,8 @@ public class CalUtility {
         //System.out.println("*************************************************");       
         //System.out.println("*** Done Reprocessing with initial parameters ***");
         //System.out.println("*************************************************");
-        
-        
+        int quarter = Math.ceilDiv(eventcounter, 4);
+        int total = eventcounter;
         FitUtility.reLoadFitPars(ParsVsIter,TvstrkdocasFitPars);
         //Parameters are now fit values
         System.out.println("************  Fit Parameters Reloaded! ************");
@@ -152,8 +155,8 @@ public class CalUtility {
             DataEvent event = calreader.getNextEvent();
             eventcounter++;
             
-            if(event.hasBank("TimeBasedTrkg::TBHits")) {
-                DataBank bnkHits = event.getBank("TimeBasedTrkg::TBHits");
+            if(event.hasBank(hitBank)) {
+                DataBank bnkHits = event.getBank(hitBank);
                 
                 for (int i = 0; i < bnkHits.rows(); i++) {
                     FittedHit h = HitUtility.getCalHit(bnkHits, i);
@@ -261,7 +264,22 @@ public class CalUtility {
                     }
                 }
             }
+            if(eventcounter==quarter) {
+                System.out.println("Re-processed 1/4 of the events ");
+                if(T2DCalib.vocal==true) voice.speak("Re-processed one fourth of the events ");
+            }
+            if(eventcounter==2*quarter) {
+                System.out.println("Re-processed 1/2 of the events ");
+                if(T2DCalib.vocal==true) voice.speak("Re-processed half of the events ");
+            }
+            if(eventcounter==3*quarter) {
+                System.out.println("Re-processed 3/4 of the events ");
+                if(T2DCalib.vocal==true) voice.speak("Re-processed three fourth of the events ");
+            }
         }
+        System.out.println("Re-processed all the events ");
+        if(T2DCalib.vocal==true) voice.speak("Re-processed all the events ");
+        
         UpdateAlphaBinCenters(A);
         UpdateBBinCenters(B, BAlphaBins);
         System.out.println("REMAKING PROFILES");

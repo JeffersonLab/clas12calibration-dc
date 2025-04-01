@@ -84,7 +84,11 @@ public class Refit {
             // Resolve ambiguity once for the cluster
             FittedCluster LRresolvClus = this.LRAmbiguityResolver(clus, cf);
             if (LRresolvClus == null) {
-                System.out.println("LRresolvClus failed");
+                //flag hits
+                for(FittedHit h : clus) {
+                    h.set_LeftRightAmb(0);
+                }
+                System.out.println("LRresolvClus failed"); //remove hits that fail the LR ambiguity resolver
                 continue;
             }
             clus = LRresolvClus;
@@ -137,6 +141,14 @@ public class Refit {
             }
         }
         clusters.clear();
+        List<FittedHit> fhits = new ArrayList<>();
+        for (FittedHit h : hits) {
+            if(h.get_LeftRightAmb()!=0) {
+                fhits.add(h);
+            }
+        }
+        hits.clear();
+        hits.addAll(fhits);
     }
 
     // Helper method to update the original hit list

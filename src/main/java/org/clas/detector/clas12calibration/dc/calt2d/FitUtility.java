@@ -19,7 +19,6 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.alphaBins;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.errs;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.parNames;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
-import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.freehep.math.minuit.FCNBase;
 import org.freehep.math.minuit.MnMigrad;
