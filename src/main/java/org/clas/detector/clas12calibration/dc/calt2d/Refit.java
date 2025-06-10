@@ -88,7 +88,7 @@ public class Refit {
                 for(FittedHit h : clus) {
                     h.set_LeftRightAmb(0);
                 }
-                System.out.println("LRresolvClus failed"); //remove hits that fail the LR ambiguity resolver
+                if(T2DCalib.debug) System.out.println("LRresolvClus failed for "+clus.printInfo()); //remove hits that fail the LR ambiguity resolver
                 continue;
             }
             clus = LRresolvClus;

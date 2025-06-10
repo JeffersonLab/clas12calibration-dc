@@ -374,6 +374,8 @@ public class T2DCalib extends AnalysisMonitor{
         }
         
         fitUtil.initParsForFit(TvstrkdocasFitPars, fixFit);
+        if(T2DCalib.vocal==true) voice.speak("PARAMETERS INITIALIZED");
+        
         if(runParallel && T2DCalib.maxSec==6) {
             if(T2DCalib.vocal==true) voice.speak("Starting parallel processing");
             fitUtil.runParamScanParallel(fixFit, TvstrkdocasFitPars, TvstrkdocasFit, TvstrkdocasProf, numThreads);
@@ -461,6 +463,8 @@ public class T2DCalib extends AnalysisMonitor{
     public static boolean refitSegs = false;
     public static int totHits=0;
     public static int selHits=0; 
+    public static String StCl ;
+    public static String St ;
     @Override
     public void processEvent(DataEvent event) {
         
@@ -498,11 +502,13 @@ public class T2DCalib extends AnalysisMonitor{
             writer.setCompressionType(2);
             calhipoEvent = (HipoDataEvent) calwriter.createEvent();
             hipoEvent = (HipoDataEvent) writer.createEvent();
-            CalUtility.checkFile("TestCalOutPut.hipo");
-            CalUtility.checkFile("TestOutPut.hipo");
-            calwriter.open("TestCalOutPut.hipo");
+            StCl = "TestCalOutPut"+newRun+".hipo";
+            St = "TestOutPut"+newRun+".hipo";
+            CalUtility.checkFile(StCl);
+            CalUtility.checkFile(St);
+            calwriter.open(StCl);
             calwriter.writeEvent(calhipoEvent);
-            writer.open("TestOutPut.hipo");
+            writer.open(St);
             writer.writeEvent(hipoEvent);
             System.out.println("FILES READY......");
             //Constants.getInstance().initialize("DCCAL");

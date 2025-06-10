@@ -7,9 +7,11 @@ package org.clas.detector.clas12calibration.dc.calt2d;
 
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 import org.freehep.math.minuit.FunctionMinimum;
 import org.freehep.math.minuit.MnMigrad;
+import org.freehep.math.minuit.MnUserParameters;
 /**
  *
  * @author ziegler
@@ -43,32 +45,16 @@ public class T2DFitter  {
                 distbeta=T2DCalib.distbetalimits[0][0]+(double)di*errs4;
                 double[] c2=new double[3];
                 cnt++;
-                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta);
-                for(int i =0; i<2; i++) {
+                for(int i =0; i<6; i++) {
                     String s="";
                     s+=(" ***********************************************************≈***");
                     s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
                     s+=(" ***************************************************************");
                     fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
-                    c2[0]+= fm.getChi2();
+                    int ridx = (int) (i / 2);
+                    c2[ridx]+= fm.getChi2();
                 }
-                for(int i =2; i<4; i++) {
-                    String s="";
-                    s+=(" ***********************************************************≈***");
-                    s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
-                    s+=(" ***************************************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
-                    c2[1]+= fm.getChi2();
-                }
-                for(int i =4; i<6; i++) {
-                    String s="";
-                    s+=(" ***********************************************************≈***");
-                    s+=("   RUNNING THE PARAMETER SCAN FOR SUPERLAYER "+(i+1))+" SECTOR "+(sec+1);
-                    s+=(" ***************************************************************");
-                    fMin fm = getfMinFixedRDPars(sec, i, scanner[i], fitter[i], R, distbeta, true, s);
-                    c2[2]+= fm.getChi2();
-                }
-                //System.out.println(cnt+"] R "+R+" disbeta "+distbeta +" c2 "+c2[0]+" "+c2[1]+" "+c2[2]);
+                
                 for(int j = 0; j < 3; j++) {
                     if(c2[j]<bestchi2[j]) {
                         bestR[j] = R;
@@ -133,7 +119,9 @@ public class T2DFitter  {
     
     private static fMin getfMinFixedRDPars(int sec, int i,  MnMigrad scanner, MnMigrad fitter, 
             double R, double distbeta, boolean reset, String s) {
-        
+        if(T2DCalib.debug) {
+            System.out.println(s);
+        }
         if(reset) { 
             for (int p = 0; p < 10; p++) {
                 scanner.setValue(p, T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)).value(p));
@@ -175,19 +163,19 @@ public class T2DFitter  {
         for(int it = 0; it<maxIter; it++) {
             try {
                     min = scanner.minimize();
+                    checkErrors(min.userParameters(),scanner,
+                                T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)), i);
+                    itercnt++; 
+                    if(min.fval()<bestchi2) {
+                        bestchi2 = min.fval();
+                        bestmin = min;
+                    }
+                    if(edm-min.fval()<0.1 || min.fval()+10>edm) break;
+                    edm = min.fval();
                 } catch (Exception e) {
-                    // Handle the exception appropriately
-                    System.err.println("An error occurred during minimization: " + e.getMessage());
-                    // You may want to log the exception or take other actions depending on your application
+                   if(T2DCalib.debug)  System.err.println("An error occurred during minimization: " + e.getMessage());
                 }
-            itercnt++;
-            if(min.fval()<bestchi2) {
-                bestchi2 = min.fval();
-                bestmin = min;
-
-            }
-            if(edm-min.fval()<0.1 || min.fval()+10>edm) break;
-            edm = min.fval();
+            
         } 
         if(bestmin!=null) {
             for (int p = 0; p < 10; p++) {
@@ -200,19 +188,18 @@ public class T2DFitter  {
             
             try {
                     min2 = fitter.minimize();
+                    checkErrors(min2.userParameters(),fitter,
+                                T2DCalib.TvstrkdocasFitPars.get(new Coordinate(sec,i)), i);
+                    if(min2.fval()<bestMchi2) {
+                        bestMchi2 = min2.fval();
+                        bestmin2 = min2;
+                        if(edm2-min2.fval()<0.01) break;
+                        edm2 = min2.fval();
+                    }
                 } catch (Exception e) {
-                    // Handle the exception appropriately
-                    System.err.println("An error occurred during minimization: " + e.getMessage());
-                    // You may want to log the exception or take other actions depending on your application
+                    if(T2DCalib.debug) System.err.println("An error occurred during minimization: " + e.getMessage());
                 }
             itercnt2++;
-            
-            if(min2.fval()<bestMchi2) {
-                bestMchi2 = min2.fval();
-                bestmin2 = min2;
-                if(edm2-min2.fval()<0.01) break;
-                edm2 = min2.fval();
-            }
         }
         if(bestmin2==null || bestMchi2>bestchi2) {
             bestMchi2 = bestchi2;
@@ -241,6 +228,7 @@ public class T2DFitter  {
             String s2="";
             s2+=(" **************************************************\n");
             s2+=("   PARAMETER FIT FOR SECTOR "+(sec+1) +" SUPERLAYER "+(i0+1)+"\n");
+            s2+=("   R = "+pars[0]+" distbeta = "+pars[1]+"   *******\n");
             s2+=(" **************************************************\n");
             fMin fm2 = getfMinFixedRDPars(sec, i0, scanner[i0], fitter[i0], pars[0], pars[1], false, s2);
             FunctionMinimum fmin=null;
@@ -288,7 +276,21 @@ public class T2DFitter  {
             } 
         }
     }
-    
-    
+
+    private static void checkErrors(MnUserParameters userParameters, MnMigrad minimizer, 
+            MinuitPar par, int i) {
+        
+        double eps = 1.e-6; 
+        int fp[] = new int[] {0,1,3};
+        for(int ip =0; ip<fp.length; ip++) {
+            int p = fp[ip];
+            if(Math.abs(userParameters.value(p)-T2DCalib.limits[p][i][0])<eps ||
+                    Math.abs(userParameters.value(p)-T2DCalib.limits[p][i][1])<eps || 
+                            Double.isNaN(userParameters.error(p)) || 
+                            userParameters.error(p)<0) {
+                minimizer.setError(p, par.error(p));
+            }
+        }
+    }
     
 }

@@ -102,7 +102,7 @@ public class CalUtility {
         System.out.println("***********************************************");
        
         calreader = new HipoDataSource();
-        calreader.open("TestCalOutPut.hipo");
+        calreader.open(T2DCalib.StCl);
         System.out.println("Events in hipofile " +  calreader.getSize() );  
         int numberofeventsinfile = calreader.getSize();
         int eventcounter = 0;

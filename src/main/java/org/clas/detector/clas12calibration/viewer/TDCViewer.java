@@ -56,7 +56,9 @@ import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
-import org.jlab.io.task.DataSourceProcessorPane;
+//import org.jlab.io.task.DataSourceProcessorPane;
+import org.clas.detector.clas12calibration.dc.analysis.DataSourceProcessorPane;
+import org.clas.detector.clas12calibration.dc.analysis.TDCParamsPanel;
 import org.jlab.io.task.IDataEventListener;
 import org.jlab.rec.dc.Constants;
 /**
@@ -98,12 +100,16 @@ public class TDCViewer implements IDataEventListener, DetectorListener, ActionLi
     public static JTextField nWires = new JTextField(3);
     public static JTextField deltaWire = new JTextField(3);
     
-    
+   
      // detector monitors
     AnalysisMonitor[] monitors ; 
         
-    public TDCViewer() throws FileNotFoundException {    	
-        this.monitors = new AnalysisMonitor[]{new TDCCuts("TDC Cuts",ccdb)};		
+    public TDCViewer() throws FileNotFoundException {    
+        TDCCuts tc = new TDCCuts("TDC Cuts",ccdb);
+        this.monitors = new AnalysisMonitor[]{tc};	
+        TDCParamsPanel fp = new TDCParamsPanel(tc, this);
+        fp.openFitPanel("TDC cuts evaluator");
+        System.out.println("FIT PANEL OK");
 	// create menu bar
         menuBar = new JMenuBar();
         JMenuItem menuItem;
@@ -179,7 +185,6 @@ public class TDCViewer implements IDataEventListener, DetectorListener, ActionLi
         	this.monitors[k].getAnalysisView().getView().addDetectorListener(this);
         }
         this.processorPane.addEventListener(this);
-        
         this.setCanvasUpdate(canvasUpdateTime);
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
@@ -187,7 +192,9 @@ public class TDCViewer implements IDataEventListener, DetectorListener, ActionLi
             "/calibration/dc/v2/t2d_pressure", 
             "/hall/weather/pressure",
             "/calibration/dc/v2/ref_pressure",
-            "/calibration/dc/time_jitter"}));
+            "/calibration/dc/time_jitter",
+            "/calibration/dc/time_corrections/tdctimingcuts"
+        }));
         ccdb.setVariation("default");
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
         for(int l=0; l<6; l++) {

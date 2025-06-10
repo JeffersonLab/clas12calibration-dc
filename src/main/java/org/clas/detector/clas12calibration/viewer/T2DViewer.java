@@ -62,7 +62,8 @@ import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
-import org.jlab.io.task.DataSourceProcessorPane;
+//import org.jlab.io.task.DataSourceProcessorPane;
+import org.clas.detector.clas12calibration.dc.analysis.DataSourceProcessorPane;
 import org.jlab.io.task.IDataEventListener;
 import org.jlab.rec.dc.Constants;
 /**
@@ -211,6 +212,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
       	tabbedpane 	= new JTabbedPane();
 
         processorPane = new DataSourceProcessorPane();
+        processorPane.setVerbose(true);
         processorPane.setUpdateRate(analysisUpdateTime);
 
         mainPanel.add(splitpane);
@@ -607,7 +609,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 	c.gridy = y;
         trPanel.add(new JLabel("beta > "),c);
         tgmPanel = new JPanel();
-        betaCut.setText("0.9");
+        betaCut.setText("0.5");
         betaCut.addActionListener(this);
         tgmPanel.add(betaCut);
         c.gridx = 1;
@@ -643,7 +645,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
 	c.gridy = y;
         trPanel.add(new JLabel("PID "),c);
         tgmPanel = new JPanel();
-        pid.setText("11");
+        pid.setText("-1");
         pid.addActionListener(this);
         tgmPanel.add(pid);
         c.gridx = 1;
@@ -759,7 +761,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         c.gridy = y;
         trPanel.add(new JLabel("Number of Iterations = ", JLabel.LEADING),c);
         tgmPanel = new JPanel();
-        iterNum.setText("2");
+        iterNum.setText("3");
         iterNum.addActionListener(this);
         tgmPanel.add(iterNum);
         c.gridx = 1;

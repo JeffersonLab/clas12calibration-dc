@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.plaf.metal.MetalButtonUI;
 import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.dc.calt2d.T2DCalib;
+import org.clas.detector.clas12calibration.dc.t2d.ParameterParser;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import static org.clas.detector.clas12calibration.viewer.T2DViewer.voice;
 
@@ -366,6 +367,26 @@ public class FitPanel {
                     }
                 }
             }
+            
+            if(ParameterParser.parseRDPars()) {
+                System.out.println(" ... Reading average R and distbeta parameters from file....");
+                if(T2DCalib.vocal) voice.speak("Reading average R and distbeta parameters from file!");
+                for(int s = 0; s<6; s++) {
+                    panel.params[2][0][s].setText(String.format("%.5f",ParameterParser.R_1));
+                    panel.params[4][0][s].setText(String.format("%.5f",ParameterParser.distbeta_1));  
+                    panel.params[2][1][s].setText(String.format("%.5f",ParameterParser.R_1));
+                    panel.params[4][1][s].setText(String.format("%.5f",ParameterParser.distbeta_1));  
+                    panel.params[2][2][s].setText(String.format("%.5f",ParameterParser.R_2));
+                    panel.params[4][2][s].setText(String.format("%.5f",ParameterParser.distbeta_2));  
+                    panel.params[2][3][s].setText(String.format("%.5f",ParameterParser.R_2));
+                    panel.params[4][3][s].setText(String.format("%.5f",ParameterParser.distbeta_2));  
+                    panel.params[2][4][s].setText(String.format("%.5f",ParameterParser.R_3));
+                    panel.params[4][4][s].setText(String.format("%.5f",ParameterParser.distbeta_3));  
+                    panel.params[2][5][s].setText(String.format("%.5f",ParameterParser.R_3));
+                    panel.params[4][5][s].setText(String.format("%.5f",ParameterParser.distbeta_3));  
+                }
+            }
+            
             this.refit(TvstrkdocasFitPars);
             this.reCook(); 
             panel.updateUI();
@@ -394,6 +415,11 @@ public class FitPanel {
             T2DCalib.vocal=true;
         } else {
             T2DCalib.vocal=false;
+        }
+        if(panel.debug.isSelected()==true) {
+            T2DCalib.debug=true;
+        } else {
+            T2DCalib.debug=false;
         }
         if(this._pM.eventProcessingDone==false) {
             System.out.println(" ... WAIT UNTIL THE EVENT PROCESSING IS DONE....");

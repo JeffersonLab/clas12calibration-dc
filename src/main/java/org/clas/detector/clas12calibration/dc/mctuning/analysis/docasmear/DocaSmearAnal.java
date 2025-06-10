@@ -22,7 +22,6 @@ import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.fitter.DataFitter;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.math.F1D;
 import org.jlab.io.base.DataBank;
@@ -37,6 +36,7 @@ import org.jlab.utils.system.ClasUtilsFile;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.FitPanel;
 import org.clas.detector.clas12calibration.dc.mctuning.viewer.DocaSmearAnalViewer;
 import org.clas.detector.clas12calibration.viewer.Driver;
+import org.jlab.groot.fitter.DataFitter;
 import org.jlab.utils.groups.IndexedTable;
 /**
  *

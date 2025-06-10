@@ -376,7 +376,7 @@ public class FitUtility {
             double[] pars = new double[2];
             pars[0] = pars2[0][i];
             pars[1] = pars2[1][i];
-           // System.out.println(i+"] PARAMETERS R "+pars2[0][i]+" distbeta "+pars2[1][i]);
+            //System.out.println(i+"] PARAMETERS R "+pars2[0][i]+" distbeta "+pars2[1][i]);
             T2DFitter.fitWithFixedParsPerRegion(s, i,fixFit, pars, scanner, fitter, TvstrkdocasFitPars);
         }
         
