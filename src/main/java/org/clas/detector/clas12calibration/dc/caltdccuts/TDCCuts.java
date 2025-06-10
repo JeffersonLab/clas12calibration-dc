@@ -5,7 +5,6 @@
  */
 package org.clas.detector.clas12calibration.dc.caltdccuts;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,14 +83,17 @@ public class TDCCuts extends AnalysisMonitor {
     int count = 0;
     public static Map<Integer,DataLine[]> cuts = new HashMap<>();
     public static Map<Integer, double[]> cutParams = new HashMap<>();
-    private static double[] getR2Parameters(double X1, double Y1, double X2, double Y2, double wiremax) {
+    private static double[] getR2Parameters(double X1, double Y1, double X2, double Y2, double wiremax,
+            boolean oldfcn) {
         double Ca= wiremax;
+        if(!oldfcn) Ca/=56;
         double C = -56*(Y2-Y1)/(X2-X1);
         double Cb = (X2*Y1-X1*Y2)/(X2-X1);
-        double M = -Ca*C+Cb; System.out.println("C "+C+" M "+M);
+        double M = -Ca*C+Cb; 
         return new double[] {M, C};
     }
-    public static void readTDCCuts(IndexedTable tdccuts) {
+    public static void readTDCCuts(IndexedTable tdccuts,
+            boolean oldfcn) {
         double Bscale=1;
         if(field!=0) Bscale =field*field;
         for(int r =0; r<3; r++) {
@@ -125,13 +127,21 @@ public class TDCCuts extends AnalysisMonitor {
                 double R2Xi56[] = new double[] {56, 112};
                 double R2Yi56[] = new double[2] ;
                 for(int xi=0; xi<2; xi++) {
-                    R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] / (double) 56) * Bscale;
+                    if(oldfcn) {
+                        R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] / (double) 56) * Bscale;
+                    } else {
+                        R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] )/ (double) 56 * Bscale;
+                    } 
                 }
                 double R2Xi1[] = new double[] {1, 55};
                 double R2Yi1[] = new double[2] ;
                 for(int xi=0; xi<2; xi++) {
-                    R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] / (double) 56) * Bscale ;
-                    System.out.println("x "+R2Xi1[xi]+" y "+R2Yi1[xi] );
+                    if(oldfcn) {
+                        R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] / (double) 56) * Bscale ;
+                    } else {
+                        R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] )/ (double) 56 * Bscale ;
+                    }
+                    
                 }
                 DataLine r2w56U = new DataLine(R2Xi56[0], R2Yi56[0], R2Xi56[1], R2Yi56[1]);
                 DataLine r2w1U  = new DataLine(R2Xi1[0], R2Yi1[0], R2Xi1[1], R2Yi1[1]);
@@ -170,7 +180,7 @@ public class TDCCuts extends AnalysisMonitor {
             field = event.getBank("RUN::config").getFloat("torus",0);
             IndexedTable tab = TDCViewer.ccdb.getConstants(newRun, 
                     "/calibration/dc/time_corrections/tdctimingcuts");
-            readTDCCuts(tab);
+            readTDCCuts(tab, oldfcn);
         }
         
         // get hits property
@@ -266,12 +276,10 @@ public class TDCCuts extends AnalysisMonitor {
    
     @Override
     public void plotHistos() {
-        for(int i =0; i< analTabs.length; i++) {
-            this.getAnalysisCanvas().getCanvas(analTabs[i]).setGridX(false);
-            this.getAnalysisCanvas().getCanvas(analTabs[i]).setGridY(false);
-            this.getAnalysisCanvas().getCanvas(analTabs[i]).update();
-            
-        }
+        this.getAnalysisCanvas().getCanvas(analTabs[0]).setGridX(false);
+        this.getAnalysisCanvas().getCanvas(analTabs[0]).setGridY(false);
+        this.getAnalysisCanvas().getCanvas(analTabs[0]).update();
+
         
     }
     @Override
@@ -391,8 +399,8 @@ public class TDCCuts extends AnalysisMonitor {
         
        
         
-        double[] newPars1=getR2Parameters(R2X1u1, R2Y1u1, R2X2u1, R2Y2u1, 56);
-        double[] newPars56=getR2Parameters(R2X1u2, R2Y1u2, R2X2u2, R2Y2u2, 112);
+        double[] newPars1=getR2Parameters(R2X1u1, R2Y1u1, R2X2u1, R2Y2u1, 56, oldfcn);
+        double[] newPars56=getR2Parameters(R2X1u2, R2Y1u2, R2X2u2, R2Y2u2, 112, oldfcn);
          
         double timeCutMax1=newPars1[0];
         double timeCutLC1=newPars1[1];
@@ -407,12 +415,20 @@ public class TDCCuts extends AnalysisMonitor {
         double R2Xi56[] = new double[] {56, 112};
         double R2Yi56[] = new double[2] ;
         for(int xi=0; xi<2; xi++) {
-            R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] / (double) 56) * Bscale;
+         if(oldfcn) {
+                R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] / (double) 56) * Bscale;
+            } else {
+                R2Yi56[xi] = timeCutMax56 + timeCutLC56 * (double) (112 - (double)R2Xi56[xi] )/ (double) 56 * Bscale;
+            } 
         }
         double R2Xi1[] = new double[] {1, 55};
         double R2Yi1[] = new double[2] ;
         for(int xi=0; xi<2; xi++) {
-            R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] / (double) 56) * Bscale ;
+            if(oldfcn) {
+                R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] / (double) 56) * Bscale ;
+            } else {
+                R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] )/ (double) 56 * Bscale ;
+            } 
             System.out.println("x "+R2Xi1[xi]+" y "+R2Yi1[xi] );
         }
         DataLine r2w56U = new DataLine(R2Xi56[0], R2Yi56[0], R2Xi56[1], R2Yi56[1]);
@@ -430,8 +446,11 @@ public class TDCCuts extends AnalysisMonitor {
         }
         
         for(int i =0; i<3; i++) {
-           if(isLog)
+           if(isLog) {
                this.getAnalysisCanvas().getCanvas(analTabs[1]).getPad(i).getAxisZ().setLog(true);
+           } else {
+               this.getAnalysisCanvas().getCanvas(analTabs[1]).getPad(i).getAxisZ().setLog(false);
+           }
            this.getAnalysisCanvas().getCanvas(analTabs[1]).getPad(i).clear();
            this.getAnalysisCanvas().getCanvas(analTabs[1]).cd(i);
            this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(TDCvsWire.get(new Coordinate(i)));
@@ -452,4 +471,6 @@ public class TDCCuts extends AnalysisMonitor {
         this.getCalib().fireTableDataChanged(); 
     }
     public boolean isLog=true;
+    public boolean oldfcn = true;
+    
 }

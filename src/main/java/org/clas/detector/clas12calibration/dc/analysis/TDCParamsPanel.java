@@ -154,7 +154,7 @@ public class TDCParamsPanel {
         outputTable.add(new String[]{"0", "2", "56",Double.toString(cutParams.get(1)[3]), Double.toString(r2max56rnd), Double.toString(r2LC56rnd)});
         outputTable.add(new String[]{"0", "3", "0", Double.toString(cutParams.get(2)[0]), Double.toString(cutParams.get(2)[1]), "0"});
         
-        String filePath = "Files/ccdb_T00Corr_run" + _pM.runNumber + "time_" 
+        String filePath = "Files/ccdb_TDC_run" + _pM.runNumber + "time_" 
                 + df.format(new Date())  + ".txt";
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             // Write the header
@@ -185,6 +185,7 @@ public class TDCParamsPanel {
         JButton   saveToFileButton = null;
         JButton   calcParsButton = null;
         JToggleButton logScaleToggle = null;
+        JToggleButton fcn = null;
         
         String[] parNames = new String[] {"R1 Y lower bound", "R1 Y upper bound", 
                                           "R2 Y lower bound", "R2 Y upper bound",
@@ -245,7 +246,7 @@ public class TDCParamsPanel {
             
             JPanel buttonsPanel = new JPanel();
 
-            saveToFileButton = new JButton("SAVE PARAMETERS");
+            saveToFileButton = new JButton("SAVE");
             saveToFileButton.setUI(new MetalButtonUI());
             saveToFileButton.setBackground(Color.PINK);
             saveToFileButton.setContentAreaFilled(true);
@@ -261,7 +262,7 @@ public class TDCParamsPanel {
             });
             
             
-            calcParsButton = new JButton("COMPUTE BOUNDS PARAMS");
+            calcParsButton = new JButton("GET CUTS PARS");
             calcParsButton.setUI(new MetalButtonUI());
             calcParsButton.setBackground(Color.YELLOW);
             calcParsButton.setContentAreaFilled(false);
@@ -276,23 +277,47 @@ public class TDCParamsPanel {
             
             logScaleToggle = new JToggleButton("Log Scale: ON");
             logScaleToggle.setFont(bBold);
-            logScaleToggle.setBackground(Color.CYAN);
+            logScaleToggle.setBackground(Color.GRAY);
             logScaleToggle.setFocusPainted(false);
             logScaleToggle.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     boolean isLog = e.getStateChange() == ItemEvent.SELECTED;
-                    logScaleToggle.setText("Log Scale: " + (isLog ? "OFF" : "ON"));
+                    logScaleToggle.setText("Log Scale: " + (isLog ? "ON" : "OFF"));
                     handleLogScaleToggle(isLog);
                 }
 
                 private void handleLogScaleToggle(boolean log) {
-                    _pM.isLog=log;
+                    _pM.isLog=log; 
+                }
+            });
+            
+            fcn = new JToggleButton("R2 fcn lterm: C(wf-w/56)");
+            fcn.setUI(new MetalButtonUI());
+            fcn.setBackground(Color.ORANGE);
+            fcn.setFocusPainted(false);
+            fcn.setOpaque(true);
+            fcn.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    boolean isLog = e.getStateChange() == ItemEvent.SELECTED;
+                    fcn.setText("R2 fcn lterm: " + (isLog ? " C(wf-w/56)" : " C(wf-w)/56"));
+                    handleToggle(isLog);
+                    if(isLog) {
+                        fcn.setBackground(Color.ORANGE);
+                    } else {
+                        fcn.setBackground(Color.GREEN);
+                    }
+                    
+                }
+
+                private void handleToggle(boolean f) {
+                    _pM.oldfcn=f; System.out.println("OLD FCN "+f);
                 }
             });
             
             buttonsPanel.add(calcParsButton);
             buttonsPanel.add(logScaleToggle);
             buttonsPanel.add(saveToFileButton);
+            buttonsPanel.add(fcn);
             
             this.add(panel, BorderLayout.PAGE_START);
             this.add(buttonsPanel, BorderLayout.PAGE_END);
