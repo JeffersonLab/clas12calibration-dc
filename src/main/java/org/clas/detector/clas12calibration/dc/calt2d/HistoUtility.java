@@ -17,6 +17,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.maxy;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.nbinx;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.nbiny;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.timeBinWidth;
+import org.clas.detector.clas12calibration.viewer.T2DViewer;
 import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
@@ -59,7 +60,7 @@ public class HistoUtility {
             if (alphaBin == -1) continue;  // Skip if alphaBin is invalid
 
             // Create the current FittedHit
-            FittedHit theHit = HitUtility.getHit(bnkHits, i);
+            FittedHit theHit = HitUtility.getHit(bnkHits, i,T2DViewer.dcDetector);
 
             // First pass: Calibration hits (if not already processed)
             if (HitUtility.passCalibCuts(event, bnkHits, i, segPropMap)) {

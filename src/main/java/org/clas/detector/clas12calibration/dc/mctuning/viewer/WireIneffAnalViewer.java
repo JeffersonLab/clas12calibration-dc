@@ -5,8 +5,6 @@
  */
 package org.clas.detector.clas12calibration.dc.mctuning.viewer;
 
-import cnuphys.magfield.MagneticFieldInitializationException;
-import cnuphys.magfield.MagneticFields;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
@@ -15,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,9 +39,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.configButtonPanel;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.wireineff.WireIneffAnal;
-import org.jlab.clas.swimtools.MagFieldsEngine;
-import org.jlab.clas.swimtools.Swim;
-import org.jlab.clas.swimtools.Swimmer;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.base.GeometryFactory;
 import org.jlab.detector.calib.utils.ConstantsManager;
@@ -55,7 +49,6 @@ import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.geom.base.ConstantProvider;
-import org.jlab.geom.prim.Point3D;
 import org.jlab.groot.base.GStyle;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.data.TDirectory;
@@ -102,10 +95,13 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
     
      // detector monitors
     AnalysisMonitor[] monitors ; 
-    private WireIneffAnal _wireIneffAnal ;     
+    public static WireIneffAnal wireIneffAnal ;   
     public WireIneffAnalViewer() throws FileNotFoundException {  
-        this._wireIneffAnal = new WireIneffAnal("Wire Inefficiency Analysis",ccdb);
-        this.monitors = new AnalysisMonitor[]{this._wireIneffAnal};		
+        Logger.getLogger("javax.swing").setLevel(Level.OFF);
+        Logger.getLogger("java.awt").setLevel(Level.OFF);
+        Logger.getLogger("org.jlab.groot").setLevel(Level.OFF);
+        this.wireIneffAnal = new WireIneffAnal("Wire Inefficiency Analysis",ccdb);
+        this.monitors = new AnalysisMonitor[]{this.wireIneffAnal};		
 	// create menu bar
         menuBar = new JMenuBar();
         JMenuItem menuItem;
@@ -185,30 +181,23 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         this.setCanvasUpdate(canvasUpdateTime);
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
-            "/geometry/dc/superlayer/wpdist",
-            "/calibration/dc/v2/t2d_pressure", 
-            "/hall/weather/pressure",
-            "/calibration/dc/v2/ref_pressure",
-            "/calibration/dc/time_jitter"}));
-        ccdb.setVariation("default");
+            "/calibration/dc/signal_generation/inefficiency",
+            "/geometry/dc/superlayer/wpdist"}));
+        
+        ccdb.setVariation(WireIneffAnal.variation);
+        
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
         for(int l=0; l<6; l++) {
             Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
         }
-        Constants.getInstance().setT2D(1);
+        //Constants.getInstance().setT2D(1);
         dcDetector = new DCGeant4Factory(provider, true, true);
 
         // set directory to local
         this.Dir = System.getProperty("user.dir");
         System.out.println("Work directory set to " + this.Dir);
         
-        enf.init();
-        
-        //tm.init(); 
     }
-    public static MagFieldsEngine enf = new MagFieldsEngine();
-        
-    //public static LayerEfficiencyAnalyzer tm = new LayerEfficiencyAnalyzer();
         
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
@@ -237,7 +226,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
             this.printHistosToFile();
         }
         if(e.getActionCommand()=="Refit") {
-            this._wireIneffAnal.Refit();
+ //           this._wireIneffAnal.Refit();
         }
         if(e.getActionCommand()=="Save histograms to file...") {
             DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
@@ -467,11 +456,10 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         //configPane.add("Previous calibration values", confOuterPanel);
 
 
-	}
+    }
     
     
     public static void main(String[] args) throws FileNotFoundException {
-        
         JFrame frame = new JFrame("DC Calibration");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         WireIneffAnalViewer viewer = new WireIneffAnalViewer();

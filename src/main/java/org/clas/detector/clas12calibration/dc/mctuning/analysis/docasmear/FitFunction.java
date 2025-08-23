@@ -6,7 +6,7 @@
 package org.clas.detector.clas12calibration.dc.mctuning.analysis.docasmear;
 
 import java.util.Map;
-import org.clas.detector.clas12calibration.dc.mctuning.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.freehep.math.minuit.FCNBase;
 import org.jlab.groot.data.GraphErrors;
 

@@ -5,7 +5,7 @@
  */
 package org.clas.detector.clas12calibration.dc.mctuning.analysis.docasmear;
 
-import org.clas.detector.clas12calibration.dc.mctuning.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.freehep.math.minuit.MnUserParameters;
 import org.jlab.groot.math.Func1D;
 /**

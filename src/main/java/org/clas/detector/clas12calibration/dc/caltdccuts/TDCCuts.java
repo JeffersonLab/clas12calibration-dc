@@ -5,18 +5,25 @@
  */
 package org.clas.detector.clas12calibration.dc.caltdccuts;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.clas.detector.clas12calibration.dc.analysis.TDCParamsPanel;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.field;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
-import org.clas.detector.clas12calibration.viewer.TDCViewer;
 import org.jlab.detector.calib.utils.CalibrationConstants;
 import org.jlab.detector.calib.utils.ConstantsManager;
 import org.jlab.groot.data.DataLine;
+import org.jlab.groot.data.GraphErrors;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
@@ -36,12 +43,13 @@ public class TDCCuts extends AnalysisMonitor {
     public TDCCuts(String name, ConstantsManager ccdb) {
         super(name, ccdb);
         this.setAnalysisTabNames(analTabs[0], analTabs[1]);
-        this.init(false, "TDC");
+        this.init(false, "TDC upper cut");
        
     }
     
     public static Map<Coordinate, H1F> TDCHis          = new HashMap<Coordinate, H1F>(); 
-    public static Map<Coordinate, H2F> TDCvsWire          = new HashMap<Coordinate, H2F>(); 
+    public static Map<Coordinate, H1F> TDCHisCoarse    = new HashMap<Coordinate, H1F>(); 
+    public static Map<Coordinate, H2F> TDCvsWire       = new HashMap<Coordinate, H2F>(); 
     int nwir  = 112;
     int reg = 3;
     public static final double[] tLow4T0Fits  = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -60,22 +68,21 @@ public class TDCCuts extends AnalysisMonitor {
         int ijk=-1;
         for (int i = 0; i < reg; i++) {
             TDCvsWire.put(new Coordinate(i), new H2F("h2", "TDC vs wire", 112, 0.5, 112.5, (int)tHigh4T0Fits[i]/histRebinFac, tLow4T0Fits[i], tHigh4T0Fits[i]) );
-           
+            TDCHis.put(new Coordinate(i,0), new H1F("h", (int)tHigh4T0Fits[i]/histRebinFac/10, tLow4T0Fits[i], tHigh4T0Fits[i])); 
+                
             for (int j = 0; j < this.getWireMax(i); j++) {
-               hNm = String.format("tdcS%dS%d", i + 1, j + 1);
-
-                TDCHis.put(new Coordinate(i,j), new H1F(hNm, (int)tHigh4T0Fits[i]/histRebinFac, tLow4T0Fits[i], tHigh4T0Fits[i])); 
-                hgrps.addDataSet(TDCHis.get(new Coordinate(i, j)), 0);
+                hNm = String.format("tdcS%dS%d", i + 1, j + 1);
+                TDCHisCoarse.put(new Coordinate(i,j), new H1F(hNm, (int)tHigh4T0Fits[i]/histRebinFac/10, tLow4T0Fits[i], tHigh4T0Fits[i])); 
+                hgrps.addDataSet(TDCHisCoarse.get(new Coordinate(i, j)), 0);
                 this.getDataGroup().add(hgrps, 0, i+1, j+1);
             }
         }
         
         
         this.getDataGroup().add(hgrps,0,0,0);
-            for (int i = 0; i < reg; i++) {
-                for (int j = 0; j < this.getWireMax(i); j++) {
-                    this.getCalib().addEntry(0,i+1,j+1);
-
+        for (int i = 0; i < reg; i++) {
+            for (int j = 0; j < this.getWireMax(i); j++) {
+                this.getCalib().addEntry(0,i+1,j+1);
             }
         }    
         this.getCalib().fireTableDataChanged();
@@ -178,9 +185,9 @@ public class TDCCuts extends AnalysisMonitor {
             
             runNumber = newRun; 
             field = event.getBank("RUN::config").getFloat("torus",0);
-            IndexedTable tab = TDCViewer.ccdb.getConstants(newRun, 
-                    "/calibration/dc/time_corrections/tdctimingcuts");
-            readTDCCuts(tab, oldfcn);
+            //IndexedTable tab = TDCViewer.ccdb.getConstants(newRun, 
+            //        "/calibration/dc/time_corrections/tdctimingcuts");
+            //readTDCCuts(tab, oldfcn);
         }
         
         // get hits property
@@ -199,11 +206,13 @@ public class TDCCuts extends AnalysisMonitor {
                 //int sec = bnkHits.getInt("sector", j);
                 int region = (sl + 1) / 2;
                 TDCvsWire.get(new Coordinate(region-1)).fill(wire, (float) tdc);
+                this.TDCHis.get(new Coordinate(region-1,0))
+                        .fill((float)tdc); 
                 if(sl<3 || sl>4) {
-                    this.TDCHis.get(new Coordinate(region-1,0))
+                    this.TDCHisCoarse.get(new Coordinate(region-1,0))
                         .fill((float)tdc); 
                 } else {
-                    this.TDCHis.get(new Coordinate(region-1,wire-1))
+                    this.TDCHisCoarse.get(new Coordinate(region-1,wire-1))
                         .fill((float)tdc);
                 }
             } 
@@ -219,52 +228,72 @@ public class TDCCuts extends AnalysisMonitor {
                 //int sec = bnkHits.getInt("sector", j);
                 int region = (sl + 1) / 2;
                 TDCvsWire.get(new Coordinate(region-1)).fill(wire, (float) tdc);
+                this.TDCHis.get(new Coordinate(region-1,0))
+                        .fill((float)tdc); 
                 if(sl<3 || sl>4) {
-                    this.TDCHis.get(new Coordinate(region-1,0))
+                    this.TDCHisCoarse.get(new Coordinate(region-1,0))
                         .fill((float)tdc); 
                 } else {
-                    this.TDCHis.get(new Coordinate(region-1,wire-1))
+                    this.TDCHisCoarse.get(new Coordinate(region-1,wire-1))
                         .fill((float)tdc);
                 }
             } 
         }
     }
-    
+    public void FillCCDBTable(int i, int j, PrintWriter writer) {
+        H1F h = this.TDCHisCoarse.get(new Coordinate(i, j));
+        double cbound = getCorrectedBound(i,j);
+        double obound = getLowBound(i, j);
+        
+        if(i==0 || i==2) {
+            highbound[i]=cbound;
+            for(int k = 0; k<112; k++) {
+                writer.printf("%d\t %d\t %d\t %.0f\t %.0f\n",
+                              0, i+1, k+1, obound, cbound);
+            }
+        } else {
+            writer.printf("%d\t %d\t %d\t %.0f\t %.0f\n",
+                              0, i+1, j+1, obound, cbound);
+        }
+         
+    }
     public void Plot(int i , int j) {
         this.getAnalysisCanvas().getCanvas(analTabs[0]).cd(0);
         this.getAnalysisCanvas().getCanvas(analTabs[0]).clear();
         this.getAnalysisCanvas().getCanvas(analTabs[0])
-                .draw(this.TDCHis.get(new Coordinate(i, j)));
-        
-        double[] bounds = new double[2];
-        if(cuts.containsKey(i)) {
-            if(i!=1) {
-                bounds[0] = cuts.get(i)[0].getOriginY();
-                bounds[1] = cuts.get(i)[1].getOriginY();
-            } else {
-                bounds[0] = cuts.get(i)[0].getOriginY();
-                
-                if(j<56) {
-                    bounds[1] = getBound(j, cuts.get(i)[2].getOriginX(),cuts.get(i)[2].getOriginY(),
-                                   cuts.get(i)[2].getEndX(),cuts.get(i)[2].getEndY());
-                } else {
-                    bounds[1] = getBound(j, cuts.get(i)[3].getOriginX(),cuts.get(i)[3].getOriginY(), 
-                                   cuts.get(i)[3].getEndX(),cuts.get(i)[3].getEndY());
-                }
-            }
-        }
-        
-        if(bounds==null) return;
-        double max = this.TDCHis.get(new Coordinate(i, j)).getMax()/4;
-        DataLine ll = new DataLine(bounds[0],0, bounds[0], max);
+                .draw(this.TDCHisCoarse.get(new Coordinate(i, j)));
+//        double[] bounds = new double[2];
+//        if(cuts.containsKey(i)) {
+//            if(i!=1) {
+//                bounds[0] = cuts.get(i)[0].getOriginY();
+//                bounds[1] = cuts.get(i)[1].getOriginY();
+//            } else {
+//                bounds[0] = cuts.get(i)[0].getOriginY();
+//                
+//                if(j<56) {
+//                    bounds[1] = getBound(j, cuts.get(i)[2].getOriginX(),cuts.get(i)[2].getOriginY(),
+//                                   cuts.get(i)[2].getEndX(),cuts.get(i)[2].getEndY());
+//                } else {
+//                    bounds[1] = getBound(j, cuts.get(i)[3].getOriginX(),cuts.get(i)[3].getOriginY(), 
+//                                   cuts.get(i)[3].getEndX(),cuts.get(i)[3].getEndY());
+//                }
+//            }
+//        }
+        //H1F h = this.TDCHisCoarse.get(new Coordinate(i, j));
+        double max = this.TDCHisCoarse.get(new Coordinate(i, j)).getMax()/4; 
+        double cbound = getCorrectedBound(i,j);
+        DataLine lhc = new DataLine(cbound,0, cbound, max);
+        lhc.setLineColor(2);
+        this.getAnalysisCanvas().getCanvas(analTabs[0])
+                .draw(lhc);
+        double obound = getLowBound(i, j);
+         DataLine ll = new DataLine(obound,0, obound, max);
         ll.setLineColor(2);
-        DataLine lh = new DataLine(bounds[1],0, bounds[1], max);
-        lh.setLineColor(2);
-        
         this.getAnalysisCanvas().getCanvas(analTabs[0])
                 .draw(ll);
-        this.getAnalysisCanvas().getCanvas(analTabs[0])
-                .draw(lh);
+        
+        this.getCalib().setDoubleValue(cbound, "TDC upper cut", 0, i+1, j+1);
+        this.getCalib().fireTableDataChanged();
         
     }
     static double getBound(int j, double originX, double originY, double endX, double endY) {
@@ -273,7 +302,31 @@ public class TDCCuts extends AnalysisMonitor {
         
         return (double) j *sl +i;
     }
-   
+    
+    
+    public static int R1NSigs=4;
+    private double getCorrectedBound(int i, int ji) {
+        if(i==0) 
+            return CutFinderTool.findR1UpperEdge(this.TDCHisCoarse.get(new Coordinate(i, ji)), R1NSigs);
+        int j = ji;
+        if(i==1 && j<2) j=2;
+        H1F h = this.TDCHisCoarse.get(new Coordinate(i, j));
+        double binWidth = h.getDataX(1)-h.getDataX(0);
+        
+        int g1 = this.getLargestGradiant(h,binWidth);
+        return h.getDataX(g1+3)+binWidth/2;
+    }
+    
+    private void setLowBound(int i) {
+        H1F h = this.TDCHis.get(new Coordinate(i, 0));
+        lowbound[i]= CutFinderTool.findLowerEdge(h, 3);
+    }
+    
+    double[] lowbound = new double[3];
+    private double getLowBound(int i, int j) {
+        return lowbound[i];
+    }
+    double[] highbound = new double[3];
     @Override
     public void plotHistos() {
         this.getAnalysisCanvas().getCanvas(analTabs[0]).setGridX(false);
@@ -285,14 +338,46 @@ public class TDCCuts extends AnalysisMonitor {
     @Override
     public void timerUpdate() {
     }
-    
     @Override
     public void analysis() {
+        String filePath = "Files/ccdb_TDC_run" + this.runNumber  + ".txt";
+        File file = new File(filePath);
+        if (file.exists()) {
+            // Delete the file
+            if (file.delete()) {
+                System.out.println("File deleted successfully.");
+            } else {
+                System.out.println("Failed to delete the file.");
+            }
+        } else {
+            System.out.println("File does not exist.");
+        }
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            // Write the header
+            writer.printf("#& sector\t region\t component\t min\t max\n");
+            
+            for (int i = 0; i < reg; i++) {
+                this.setLowBound(i);
+                for (int j = 0; j < this.getWireMax(i); j++) {
+                    this.FillCCDBTable(i, j, writer);
+                }
+            }
+            writer.close();
+        } catch (IOException ex) { 
+            Logger.getLogger(TDCCuts.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        GraphErrors g = new GraphErrors();
+        g.setMarkerSize(4);
         for (int i = 0; i < reg; i++) {
             for (int j = 0; j < this.getWireMax(i); j++) {
                 this.Plot(i, j);
+                if(i==1) {
+                    double cbound = getCorrectedBound(i, j);
+                    g.addPoint(j+1, cbound, 0, 0);
+                }
             }
         }
+       System.out.println("Output successfully written to: " + filePath); 
        this.getAnalysisCanvas().getCanvas(analTabs[1]).divide(3, 1);
       
        
@@ -300,9 +385,9 @@ public class TDCCuts extends AnalysisMonitor {
            this.getAnalysisCanvas().getCanvas(analTabs[1]).getPad(i).getAxisZ().setLog(true);
            this.getAnalysisCanvas().getCanvas(analTabs[1]).cd(i);
            this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(TDCvsWire.get(new Coordinate(i)));
-           for(int j=0; j<cuts.get(i).length; j++) { System.out.println(cuts.get(i)[j].getEndY());
-                this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(cuts.get(i)[j]);
-           }
+           //for(int j=0; j<cuts.get(i).length; j++) { System.out.println(cuts.get(i)[j].getEndY());
+            //    this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(cuts.get(i)[j]);
+           //}
         }
         double minY = 0;
         double maxY = tHigh4T0Fits[1];
@@ -311,9 +396,30 @@ public class TDCCuts extends AnalysisMonitor {
         l.setLineColor(1);
         l.setLineStyle(1);
         l.setArrowSizeOrigin(10);
+        DataLine l1 = new DataLine(minY,lowbound[1], maxY, lowbound[1] );
+        l1.setLineWidth(2);
+        l1.setLineColor(1);
+        l1.setLineStyle(4);
         this.getAnalysisCanvas().getCanvas(analTabs[1]).cd(1);
         this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(l);
-      
+        this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(l1);
+        this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(g, "same");
+        
+        int[] c = new int[]{0,2};
+        for(int k =0; k<c.length; k++) {
+            int kk = c[k];
+            DataLine l0 = new DataLine(minY,lowbound[kk], maxY, lowbound[kk] );
+            l0.setLineWidth(2);
+            l0.setLineColor(1);
+            l0.setLineStyle(4);
+            DataLine h0 = new DataLine(minY,highbound[kk], maxY, highbound[kk] );
+            l0.setLineWidth(2);
+            l0.setLineColor(1);
+            l0.setLineStyle(4);
+            this.getAnalysisCanvas().getCanvas(analTabs[1]).cd(kk);
+            this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(l0);
+            this.getAnalysisCanvas().getCanvas(analTabs[1]).draw(h0);
+        }
         this.getCalib().fireTableDataChanged();  
        
        analysisDone=true;
@@ -329,6 +435,7 @@ public class TDCCuts extends AnalysisMonitor {
 
        if(group.hasItem(0,region,wire)==true){
            this.Plot(region-1, wire-1);
+           
        } else {
            System.out.println(" ERROR: can not find the data group");
        }
@@ -429,7 +536,6 @@ public class TDCCuts extends AnalysisMonitor {
             } else {
                 R2Yi1[xi] = timeCutMax1 + timeCutLC1 * (double) (56 - (double) R2Xi1[xi] )/ (double) 56 * Bscale ;
             } 
-            System.out.println("x "+R2Xi1[xi]+" y "+R2Yi1[xi] );
         }
         DataLine r2w56U = new DataLine(R2Xi56[0], R2Yi56[0], R2Xi56[1], R2Yi56[1]);
         DataLine r2w1U  = new DataLine(R2Xi1[0], R2Yi1[0], R2Xi1[1], R2Yi1[1]);
@@ -472,5 +578,55 @@ public class TDCCuts extends AnalysisMonitor {
     }
     public boolean isLog=true;
     public boolean oldfcn = true;
+
+    private int getLargestGradiant(H1F h, double binWidth) {
+    
+        return this.getLargestGradiant(h, binWidth, h.getDataSize(0));
+    }
+    
+    private int getLargestGradiant(H1F h, double binWidth, int maxBin) {
+        int maxGradiantBin = 0;
+        double mgrd=Double.NEGATIVE_INFINITY;
+        int min = CutFinderTool.findPlateau(h)[1]; 
+        for(int ii =min; ii<maxBin-1; ii++) {
+            double bingrd = (h.getDataY(ii)-h.getDataY(ii+1))/binWidth;
+            if(bingrd>mgrd) {
+                mgrd=bingrd;
+                maxGradiantBin=ii+1;
+            }
+        }
+        return maxGradiantBin;
+    }
+    
+    private int getLowEdgeBin(H1F h, double binWidth, int maxBin) {
+        List<Integer> bins = new ArrayList<>();
+        int maxGradiantBin = 0;
+        double mgrd=Double.NEGATIVE_INFINITY;
+        
+        for(int ii =0; ii<maxBin; ii++) {
+            double bingrd = Math.abs(h.getDataY(ii)-h.getDataY(ii+1))/binWidth;
+            if(bingrd>mgrd) {
+                mgrd=bingrd;
+                maxGradiantBin=ii+1;
+                //bins.add(ii+1);
+            }
+        }
+        bins.add(maxGradiantBin); System.out.println(maxGradiantBin);
+        maxGradiantBin = 0;
+        mgrd=Double.NEGATIVE_INFINITY;
+        
+        for(int ii =0; ii<bins.get(0)-1; ii++) {
+            double bingrd = Math.abs(h.getDataY(ii)-h.getDataY(ii+1))/binWidth;
+            if(bingrd>mgrd) {
+                mgrd=bingrd;
+                maxGradiantBin=ii+1;
+                //bins.add(ii+1);
+            }
+        }
+        bins.add(maxGradiantBin);
+        bins.sort(Comparator.naturalOrder());
+        
+        return bins.get(0);
+    }
     
 }

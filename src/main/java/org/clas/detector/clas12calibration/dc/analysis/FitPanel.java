@@ -645,7 +645,7 @@ public class FitPanel {
             settings.add(debug);
             settings.add(new JLabel("    "));
             vocal = new JCheckBox(" Vocal mode");
-            vocal.setSelected(true);
+            vocal.setSelected(false);
             settings.add(vocal);
             
             JPanel buttonsPanel = new JPanel();

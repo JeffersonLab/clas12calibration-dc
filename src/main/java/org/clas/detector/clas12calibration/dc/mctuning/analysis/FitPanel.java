@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 import org.freehep.math.minuit.MnUserParameters;
 
 

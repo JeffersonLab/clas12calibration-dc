@@ -17,6 +17,7 @@ import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.betacnt;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.hitBank;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.polarity;
 import org.clas.detector.clas12calibration.viewer.T2DViewer;
+import org.jlab.detector.geant4.v2.DCGeant4Factory;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.rec.dc.hit.FittedHit;
@@ -96,8 +97,7 @@ public class HitUtility {
         //    return null;
         //}
     }
-    public static FittedHit getHit(DataBank bnkHits, int i) {
-        
+    public static FittedHit getHit(DataBank bnkHits, int i, DCGeant4Factory dcDetector) {
         int id = bnkHits.getShort("id", i);
         int sector = bnkHits.getByte("sector", i);
         int superlayer = bnkHits.getByte("superlayer", i);
@@ -138,10 +138,10 @@ public class HitUtility {
         hit.set_Beta(beta);
         hit.setTFlight(TFlight);
         hit.set_LeftRightAmb(LR);
-        hit.calc_CellSize(T2DViewer.dcDetector);
+        hit.calc_CellSize(dcDetector);
         hit.set_X(X);
         hit.set_Z(Z);
-        hit.calc_GeomCorr(T2DViewer.dcDetector, 0);
+        hit.calc_GeomCorr(dcDetector, 0);
         hit.set_ClusFitDoca(trkDoca);
         hit.set_DeltaTimeBeta(tBeta);
         hit.set_Doca(doca);
@@ -161,7 +161,6 @@ public class HitUtility {
     private static void fillTBHitBank(DataBank bank, List<FittedHit> hitlist, int i) {
         if (i < bank.rows()) {
             bank.setShort("id", i, (short) hitlist.get(i).get_Id());
-             bank.setShort("id", i, (short) hitlist.get(i).get_Id());
             bank.setShort("status", i, (short) hitlist.get(i).get_QualityFac());
             bank.setByte("superlayer", i, (byte) hitlist.get(i).get_Superlayer());
             bank.setByte("layer", i, (byte) hitlist.get(i).get_Layer());
@@ -289,7 +288,7 @@ public class HitUtility {
             Map<Integer, ArrayList<FittedHit>> segMap) {
         List<FittedHit> bnkHits = new ArrayList<>();
         for (int i = 0; i < HitsBank.rows(); i++) {
-            bnkHits.add(getHit(HitsBank, i));
+            bnkHits.add(getHit(HitsBank, i,T2DViewer.dcDetector));
         }
         segMap.clear();
         for (int j = 0; j < bnkHits.size(); j++) {
@@ -518,6 +517,8 @@ public class HitUtility {
         } 
 
     }
+
+   
     public static class CalHit {
 
         public int wire;

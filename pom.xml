@@ -6,52 +6,6 @@
     <version>4.0</version>
     <packaging>jar</packaging>
     <dependencies>
-        <dependency>
-            <groupId>org.jlab.coat</groupId>
-            <artifactId>coat-libs</artifactId>
-            <version>11.0.2-SNAPSHOT</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.aha.compression</groupId>
-                    <artifactId>AHACompressionAPI</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.jpountz.lz4</groupId>
-                    <artifactId>lz4-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.lmax</groupId>
-                    <artifactId>disruptor</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>proguard</groupId>
-                    <artifactId>proguard</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.jlab.coda</groupId>
-          <artifactId>jclara</artifactId>
-          <version>4.3-SNAPSHOT</version>
-       </dependency>
-        <dependency>
-            <groupId>org.jlab</groupId>
-            <artifactId>groot</artifactId>
-            <version>4.0.4-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.jpountz</groupId>
-                    <artifactId>lz4</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jlab.clas12.detector</groupId>
-            <artifactId>clas12detector-dc</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
         
         <dependency>
             <groupId>com.sun.speech</groupId>
@@ -94,7 +48,16 @@
             <artifactId>cmudict04</artifactId>
             <version>1.2.3-SNAPSHOT</version>
         </dependency>
-        
+        <dependency>
+            <groupId>org.jlab.clas12.detector</groupId>
+            <artifactId>clas12detector-dc</artifactId>
+            <version>13.2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jlab.coat</groupId>
+            <artifactId>coat-libs</artifactId>
+            <version>13.2.0-SNAPSHOT</version>
+        </dependency>
     </dependencies> 
     <repositories>
     <repository>

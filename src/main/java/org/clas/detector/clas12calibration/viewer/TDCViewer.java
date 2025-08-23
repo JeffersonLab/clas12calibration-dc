@@ -106,9 +106,9 @@ public class TDCViewer implements IDataEventListener, DetectorListener, ActionLi
     public TDCViewer() throws FileNotFoundException {    
         TDCCuts tc = new TDCCuts("TDC Cuts",ccdb);
         this.monitors = new AnalysisMonitor[]{tc};	
-        TDCParamsPanel fp = new TDCParamsPanel(tc, this);
-        fp.openFitPanel("TDC cuts evaluator");
-        System.out.println("FIT PANEL OK");
+        //TDCParamsPanel fp = new TDCParamsPanel(tc, this);
+        //fp.openFitPanel("TDC cuts evaluator");
+        //System.out.println("FIT PANEL OK");
 	// create menu bar
         menuBar = new JMenuBar();
         JMenuItem menuItem;

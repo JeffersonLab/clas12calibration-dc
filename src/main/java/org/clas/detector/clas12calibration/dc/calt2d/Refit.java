@@ -25,7 +25,7 @@ public class Refit {
     
     public Refit() {
     }
-    public List<FittedCluster> recomposeClusters(List<FittedHit> fhits, boolean rejectOT) {
+    public static List<FittedCluster> recomposeClusters(List<FittedHit> fhits, boolean rejectOT) {
         Map<Integer, ArrayList<FittedHit>> grpHits = new HashMap<Integer, ArrayList<FittedHit>>();
         List<FittedCluster> clusters = new ArrayList<FittedCluster>();
         for (FittedHit hit : fhits) { 

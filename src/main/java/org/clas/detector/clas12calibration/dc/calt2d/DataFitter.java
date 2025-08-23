@@ -12,12 +12,9 @@ import org.freehep.math.minuit.FunctionMinimum;
 import org.freehep.math.minuit.MnMigrad;
 import org.freehep.math.minuit.MnScan;
 import org.freehep.math.minuit.MnUserParameters;
-import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.IDataSet;
 import org.jlab.groot.fitter.FitterFunction;
-import org.jlab.groot.math.F1D;
 import org.jlab.groot.math.Func1D;
-import org.jlab.groot.math.FunctionFactory;
 import org.jlab.groot.math.UserParameter;
 
 
