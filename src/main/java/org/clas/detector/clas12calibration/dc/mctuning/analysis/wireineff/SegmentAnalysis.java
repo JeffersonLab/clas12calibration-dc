@@ -17,8 +17,9 @@ import org.jlab.rec.dc.cluster.ClusterFitter;
 import org.jlab.rec.dc.cluster.FittedCluster;
 import org.jlab.rec.dc.hit.FittedHit;
 import org.jlab.rec.dc.segment.Segment;
-import org.jlab.rec.dc.trajectory.SegmentTrajectory;
+//import org.jlab.rec.dc.trajectory.SegmentTrajectory;
 import org.clas.detector.clas12calibration.dc.calt2d.HitUtility;
+import static org.clas.detector.clas12calibration.dc.mctuning.analysis.wireineff.EventProcessor.swim;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.rec.dc.Constants;
@@ -32,12 +33,12 @@ import org.jlab.rec.dc.Constants;
 public class SegmentAnalysis {
 
     private static FittedHit getHit(DataBank bnkHits, int i) {
+  
         FittedHit hit = HitUtility.getHit(bnkHits, i,WireIneffAnalViewer.dcDetector);
-        if (bnkHits.getInt("trkID", i) >0) {            
+        if (bnkHits.getInt("trkID", i) >0) {  
             return hit;
-        } else {
-            return null;
         }
+        return null;
     }
     
     private static List<FittedCluster> recomposeClusters(List<FittedHit> fhits) {
@@ -77,8 +78,8 @@ public class SegmentAnalysis {
         }
         return clusters;
     }
-
-    public static List<Segment> getSegments(List<FittedCluster> allClusters, DataEvent event, DCGeant4Factory DcDetector) {
+    
+    public static List<Segment> getSegments(int run, List<FittedCluster> allClusters, DataEvent event, DCGeant4Factory DcDetector) {
         List<Segment> segList = new ArrayList<>();
 
         for (FittedCluster fClus : allClusters) {
@@ -87,10 +88,10 @@ public class SegmentAnalysis {
             Segment seg = new Segment(fClus);
             seg.set_fitPlane(DcDetector);
 
-            boolean hasTDCBank = event.hasBank("DC::tdc");
+            boolean hasTDCBank = event.hasBank("DC::tdc"); 
             Map<Integer, List<int[]>> map = getWireMap(event, hasTDCBank);
 
-            getLayerEfficiencies(seg, map, DcDetector);
+            getLayerEfficiencies(run, seg, map, DcDetector);
 
             if (seg.get_Status() != -1) {
                 double sumRes = 0, sumTime = 0;
@@ -105,7 +106,7 @@ public class SegmentAnalysis {
         }
         return segList;
     }
-
+    public static double[] cellSizes=new double[6];
     private static WireTrajectoryResult getWireOnTrajectory(Segment seg, int layer, double trkX, DCGeant4Factory DcDetector) {
         int sector = seg.get_Sector();
         int superlayer = seg.get_Superlayer();
@@ -115,6 +116,8 @@ public class SegmentAnalysis {
         double x0 = DcDetector.getWireMidpoint(sector - 1, superlayer - 1, layer - 1, 0).x;
         double deltaX = Math.abs(x1 - x0);
         double cellSize = (deltaX / 2);
+        if(cellSizes[superlayer-1]==0)
+            cellSizes[superlayer-1]=cellSize;
         
         double xFirstCell = x0;
         int nearestWire = (int) Math.ceil((trkX - xFirstCell + deltaX / 2.0) / deltaX);
@@ -183,16 +186,17 @@ public class SegmentAnalysis {
     private static int getSectorSuperlayer(int sector, int superlayer) {
         return (sector - 1) * 6 + superlayer;
     }
-
-    private static void getLayerEfficiencies(Segment seg, Map<Integer, List<int[]>> map, DCGeant4Factory DcDetector) {
+    
+    private static void getLayerEfficiencies(int run, Segment seg, Map<Integer, List<int[]>> map, DCGeant4Factory DcDetector) {
         if (seg == null) return;
-
-        SegmentTrajectory trj = new SegmentTrajectory();
+        float[] result = new float[3];
+        CalSegmentTrajectory trj = new CalSegmentTrajectory();
         trj.set_SegmentId(seg.get_Id());
         trj.set_Superlayer(seg.get_Superlayer());
         trj.set_Sector(seg.get_Sector());
 
         double[] trkDocas = new double[6];
+        double[] trkBfield = new double[6];
         int[] matchHits   = new int[6];
 
         int[][] matchedHits   = new int[3][6];
@@ -205,7 +209,8 @@ public class SegmentAnalysis {
             double z = DcDetector.getWireMidpoint(seg.get_Sector() - 1, seg.get_Superlayer() - 1, l, 0).z;
             double trkX = seg.get_fittedCluster().get_clusterLineFitSlope() * z
                         + seg.get_fittedCluster().get_clusterLineFitIntercept();
-
+            
+            
             if (trkX == 0) continue;
             WireTrajectoryResult wtr = getWireOnTrajectory(seg, l + 1, trkX, DcDetector);
             int[] trjWire = wtr.intValues;
@@ -230,22 +235,36 @@ public class SegmentAnalysis {
                 }
             }
             if (matchHits[l] == -1) {
+                int trjW=-1;
                 if(trjDocas[0]<trjDocas[1]) {
                     trkDocas[l] = trjDocas[0]; 
+                    trjW=trjWire[0];
                 } else {
                     trkDocas[l] = trjDocas[1];
+                    trjW=trjWire[1];
                 }
+                boolean statusOK = EventProcessor.getWireStatus(run, seg.get_Sector(), seg.get_Superlayer(), l+1, trjW);
+                if(!statusOK) return;
             }
+            double B = 0;
+            if(seg.get_Region()==2) {
+                swim.Bfield(seg.get_Sector(), trkX, 0, z, result);
+                B = Math.sqrt(result[0]*result[0]+result[1]*result[1]+result[2]*result[2]);
+            }
+            trkBfield[l]=B;
         }
 
         trj.setTrkDoca(trkDocas);
+        trj.setTrkBfield(trkBfield);
         trj.setMatchedHitId(matchHits);
         seg.set_Trajectory(trj);
     }
 
     
     
-    public static DataBank getLayIneffBank(DataEvent event, int count, int runNumber) {
+    public static List<SegmentTrajectoryRecord> getLayIneffBank(DataEvent event, int count, int runNumber) {
+        DataBank bank = event.getBank("RUN::config");
+        int run = bank.getInt("run", 0);
         List<FittedHit> hits = new ArrayList<>();
         List<FittedCluster> clusters = new ArrayList<>();
         List<Segment> segments = new ArrayList<>();
@@ -258,34 +277,33 @@ public class SegmentAnalysis {
                 hits.add(hit);
         }
         clusters = recomposeClusters(hits);
-        segments =  getSegments(clusters, event, WireIneffAnalViewer.dcDetector);
-        DataBank bankE = null;
-        if(segments!=null && !segments.isEmpty()) {
-            bankE = event.createBank("TimeBasedTrkg::TBSegmentTrajectory", segments.size() * 6);  
-            int index = 0;
-            for (Segment aSeglist : segments) {
-                if (aSeglist.get_Id() == -1) {
-                    continue;
-                }
-                SegmentTrajectory trj = aSeglist.get_Trajectory();
-                for (int l = 0; l < 6; l++) {
-                    bankE.setShort("segmentID", index, (short) trj.get_SegmentId());
-                    bankE.setByte("sector", index, (byte) trj.get_Sector());
-                    bankE.setByte("superlayer", index, (byte) trj.get_Superlayer());
-                    bankE.setByte("layer", index, (byte) (l + 1));
-                    bankE.setShort("matchedHitID", index, (short) trj.getMatchedHitId()[l]);
-                    bankE.setFloat("trkDoca", index, (float) trj.getTrkDoca()[l]);
-                    index++;
-                }
+        segments =  getSegments(run, clusters, event, WireIneffAnalViewer.dcDetector);
+        List<SegmentTrajectoryRecord> trajectoryRecords = new ArrayList<>();
+
+        for (Segment aSeglist : segments) {
+            if (aSeglist.get_Id() == -1) continue;
+            CalSegmentTrajectory trj = (CalSegmentTrajectory) aSeglist.get_Trajectory();
+
+            for (int l = 0; l < 6; l++) {
+                trajectoryRecords.add(new SegmentTrajectoryRecord(
+                    trj.get_SegmentId(),
+                    trj.get_Sector(),
+                    trj.get_Superlayer(),
+                    (l+1),
+                    trj.getMatchedHitId()[l],
+                    trj.getTrkDoca()[l],
+                    trj.getTrkBfield()[l]
+                ));
             }
         }
-        //bankE.show();
-        return bankE;
+
+        return trajectoryRecords;
     }
 
     private static double getNormalizedDoca(double trkX, double xn, double cellSize) {
         return Math.abs(trkX - xn) / cellSize;
     }
+
     
     public static class WireTrajectoryResult {
         public final int[] intValues;

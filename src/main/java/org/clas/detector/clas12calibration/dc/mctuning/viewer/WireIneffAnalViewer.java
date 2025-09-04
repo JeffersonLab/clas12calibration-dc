@@ -182,6 +182,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         // init constants manager
         ccdb.init(Arrays.asList(new String[]{
             "/calibration/dc/signal_generation/inefficiency",
+            "/calibration/dc/tracking/wire_status",
             "/geometry/dc/superlayer/wpdist"}));
         
         ccdb.setVariation(WireIneffAnal.variation);
@@ -189,6 +190,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         ConstantProvider provider = GeometryFactory.getConstants(DetectorType.DC, 11, "default");
         for(int l=0; l<6; l++) {
             Constants.getInstance().wpdist[l] = provider.getDouble("/geometry/dc/superlayer/wpdist", l);
+            System.out.println(l+".cellsize "+Constants.getInstance().wpdist[l]);
         }
         //Constants.getInstance().setT2D(1);
         dcDetector = new DCGeant4Factory(provider, true, true);
@@ -198,7 +200,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         System.out.println("Work directory set to " + this.Dir);
         
     }
-        
+    
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
         if(e.getActionCommand()=="Set GUI update interval...") {
@@ -309,7 +311,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         }
         return rNum;
     }
-    
+    public static String theFile;
     @Override
     public void dataEventAction(DataEvent event) {
     	
@@ -317,6 +319,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
 //            event.show();
             if (event.getType() == DataEventType.EVENT_START) {
                 this.runNumber = this.getRunNumber(event);
+                theFile = this.processorPane.getDataFile().toString();	
             }
             if(this.runNumber != this.getRunNumber(event)) {
 //                this.saveToFile("mon12_histo_run_" + runNumber + ".hipo");
@@ -463,6 +466,7 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         JFrame frame = new JFrame("DC Calibration");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         WireIneffAnalViewer viewer = new WireIneffAnalViewer();
+        
         frame.add(viewer.mainPanel);
         frame.setJMenuBar(viewer.menuBar);
         frame.setSize(1400, 800);

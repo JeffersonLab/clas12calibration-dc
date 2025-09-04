@@ -364,6 +364,12 @@ public class CalUtility {
         if(filledBspectra) return;
         TCanvas can1 = new TCanvas("superlayer3 B", 800, 800);
         TCanvas can2 = new TCanvas("superlayer4 B", 800, 800);
+        TCanvas can1f = new TCanvas("superlayer3 B", 800, 800);
+        TCanvas can2f = new TCanvas("superlayer4 B", 800, 800);
+        H1F h3= new H1F("B - SL3" , 100, 0.0, 3.0);
+        h3.setTitleX("B (T.)");
+        H1F h4= new H1F("B - SL4" , 100, 0.0, 3.0);
+        h4.setTitleX("B (T.)");
         System.out.println("***********************************************UpdateBBinCenters");
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < alphaBins; j++) {
@@ -392,15 +398,22 @@ public class CalUtility {
                 if(i==0) {
                         can1.cd(can1idx);
                         can1.draw(BAlphaBins.get(new Coordinate(i,j)));
+                        h3.add(BAlphaBins.get(new Coordinate(i,j)));
                         can1idx++;
                 }
                 if(i==1) {
                     can2.cd(can2idx);
                     can2.draw(BAlphaBins.get(new Coordinate(i,j)));
+                    h4.add(BAlphaBins.get(new Coordinate(i,j)));
                     can2idx++;
                 }
             }
         }
+        can1f.cd(0);
+        can1f.draw(h3);
+        can2f.cd(0);
+        can2f.draw(h4);
+        
         filledBspectra=true;
     }
 
