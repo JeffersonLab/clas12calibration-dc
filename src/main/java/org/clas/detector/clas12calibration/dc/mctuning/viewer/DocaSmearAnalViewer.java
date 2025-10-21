@@ -101,8 +101,10 @@ public class DocaSmearAnalViewer implements IDataEventListener, DetectorListener
      // detector monitors
     AnalysisMonitor[] monitors ; 
         
-    public DocaSmearAnalViewer() throws FileNotFoundException {    	
-        this.monitors = new AnalysisMonitor[]{new DocaSmearAnal("Doca Smearing Analysis",ccdb)};		
+    public DocaSmearAnalViewer() throws FileNotFoundException {  
+        DocaSmearAnal DSA = new DocaSmearAnal("Doca Smearing Analysis",ccdb);
+        
+        this.monitors = new AnalysisMonitor[]{DSA};		
 	// create menu bar
         menuBar = new JMenuBar();
         JMenuItem menuItem;
@@ -186,7 +188,7 @@ public class DocaSmearAnalViewer implements IDataEventListener, DetectorListener
         }
         Constants.getInstance().setT2D(1);
         dcDetector = new DCGeant4Factory(provider, true, true);
-
+        DSA.DcDetector = dcDetector;
         // set directory to local
         this.Dir = System.getProperty("user.dir");
         System.out.println("Work directory set to " + this.Dir);

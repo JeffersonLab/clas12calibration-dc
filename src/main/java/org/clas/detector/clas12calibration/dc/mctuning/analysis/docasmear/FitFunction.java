@@ -33,7 +33,7 @@ public class FitFunction implements FCNBase{
          
     public double eval(double x, double[] par) {
         double beta = DocaSmearAnal.Beta.get(new Coordinate(this.i,this.j)).getMean();
-        
+        beta=1;
         if(this.fcn.equalsIgnoreCase("fc1")) {
             return smearFcn(x, par, beta);
         } else {
@@ -95,7 +95,7 @@ public class FitFunction implements FCNBase{
                 double x = gr.getDataX(ix);
                 double res = gr.getDataY(ix);
                 double err = gr.getDataEY(ix);
-                if(err>0) {
+                if(err>0 && x> 0.1) {
                     double smear = this.eval(x, par);
                     delta = (res - smear) / err; 
                     chisq += delta * delta;

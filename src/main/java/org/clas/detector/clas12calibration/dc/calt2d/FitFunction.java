@@ -120,6 +120,60 @@ public class FitFunction implements FCNBase{
                      3*Bb3*Math.pow(ihatalpha, 3)*x*x+4*Bb4*Math.pow(ihatalpha, 4)*x*x*x);
         return deltatime_bfield_der;
     } 
+    
+    public static double T2DDerivative(double x, double alpha, double bfield, double v_0, double vm, double R,
+            double tmax, double dmax, double delBf, double Bb1, double Bb2, double Bb3, double Bb4, double beta, double distbeta, int superlayer) {
+       
+        if(v_0==0) return Double.NaN;
+        double time = 0;
+        // alpha correction
+        double cos30minusalpha=Math.cos(Math.toRadians(30.-alpha));
+        double dmaxalpha = dmax*cos30minusalpha;
+        //if(x>dmaxalpha)
+        //    x=dmaxalpha;
+        if(x>dmax)
+            x=dmax;
+        double xhatalpha = x/dmaxalpha;
+        //   rcapital is an intermediate parameter
+        double rcapital = R*dmax;
+        //   delt is another intermediate parameter
+        double delt=tmax-dmax/v_0;
+        double delv=1./vm-1./v_0;
+        //   now calculate the primary parameters a, b, c, d
+       
+        double c = ((3.*delv)/(R*dmax)+(12*R*R*delt)/(2.*(1-2*R)*
+            (dmax*dmax)));
+        c = c /(4.-(1.-6.*R*R)/(1.-2.*R));
+        double b = delv/(rcapital*rcapital) - 4.*c/(3.*rcapital);
+        double d = 1/v_0;
+        double a = (tmax -  b*dmaxalpha*dmaxalpha*dmaxalpha -
+                c*dmaxalpha*dmaxalpha - d*dmaxalpha)/(dmaxalpha*dmaxalpha*dmaxalpha*dmaxalpha) ;      
+        time = 4*a*x*x*x + 3*b*x*x + 2*c*x + d ;
+        if(Double.isNaN(time) && v_0>0) System.out.println("Function derivative error at x= "+x +", alpha "+ alpha+", xhatalpha "+  xhatalpha+", v_0"+  v_0+", vm "+  vm+", R "+  R+", tmax "+
+            tmax+", dmax "+  dmax);
+       
+        //B correction
+        //------------
+        if(superlayer==3 || superlayer==4) {
+           
+            time += deltaTimeBfDerivative(x, alpha, bfield,
+             tmax, dmax, delBf, Bb1, Bb2, Bb3, Bb4);
+        }
+        //beta dependence
+        double beta2 = beta * beta;
+        double A = Math.pow(beta2 * distbeta, 3);
+ 
+        // Compute numerator: 0.5 * A * (A - 2 * x^3)
+        double numerator = 0.5 * A * (A - 2 * Math.pow(x, 3));
+ 
+        // Compute denominator: v0 * (A + x^3)^2
+        double denominator = v_0 * Math.pow(A + Math.pow(x, 3), 2);
+ 
+        // add this derivative
+        time+= numerator / denominator;
+       
+        return time;
+    }
     @Override
     public double valueOf(double[] par) {
         for(int ii =0; ii<par.length; ii++) {
