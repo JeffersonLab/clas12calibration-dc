@@ -22,7 +22,6 @@ import org.clas.detector.clas12calibration.dc.calt2d.HitUtility;
 import static org.clas.detector.clas12calibration.dc.mctuning.analysis.wireineff.EventProcessor.swim;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.rec.dc.Constants;
 /**
  *
  * @author veronique

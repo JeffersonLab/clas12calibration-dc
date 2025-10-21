@@ -37,6 +37,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.clas.detector.clas12calibration.dc.mctuning.analysis.DataSourceProcessorPane;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.configButtonPanel;
 import org.clas.detector.clas12calibration.dc.mctuning.analysis.wireineff.WireIneffAnal;
 import org.jlab.detector.base.DetectorType;
@@ -56,7 +57,7 @@ import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
-import org.jlab.io.task.DataSourceProcessorPane;
+//import org.jlab.io.task.DataSourceProcessorPane;
 import org.jlab.io.task.IDataEventListener;
 import org.jlab.rec.dc.Constants;
 /**
@@ -312,10 +313,18 @@ public class WireIneffAnalViewer implements IDataEventListener, DetectorListener
         return rNum;
     }
     public static String theFile;
+    
+    int counter=0;
+    //int numberprocessedevents=100000;
     @Override
     public void dataEventAction(DataEvent event) {
-    	
+        
 	if(event!=null ){
+            counter++;
+            //if(numberprocessedevents!=-1) {
+            //    if(counter>numberprocessedevents+1) event.setType(DataEventType.EVENT_STOP);
+            //    if(counter>numberprocessedevents+2) return;
+            //}
 //            event.show();
             if (event.getType() == DataEventType.EVENT_START) {
                 this.runNumber = this.getRunNumber(event);

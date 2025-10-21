@@ -72,10 +72,8 @@ public class AnalysisMonitor extends CalibrationEngine implements IDataEventList
     public void createHistos() {
         // initialize canvas and create histograms
     }
-    
     @Override
     public void dataEventAction(DataEvent event) {
-        
         this.setNumberOfEvents(this.getNumberOfEvents()+1);
         if (event.getType() == DataEventType.EVENT_START) {
 //            resetEventListener();

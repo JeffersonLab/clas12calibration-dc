@@ -25,7 +25,7 @@ import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
 
 
 public class EventProcessor {
-    private int runNumber = -1;
+    public static int runNumber = -1;
     private int invocationCount = 0;
     public static Swim   swim     = null;
        
