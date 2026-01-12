@@ -6,7 +6,7 @@
 package org.clas.detector.clas12calibration.viewer;
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
-import org.jlab.logging.DefaultLogger;
+//import org.jlab.logging.DefaultLogger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -803,7 +803,7 @@ public class T2DViewer implements IDataEventListener, DetectorListener, ActionLi
         frame.setSize(1400, 900);
         frame.setVisible(true);
         viewer.configFrame.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        DefaultLogger.debug();
+//        DefaultLogger.debug();
 	viewer.configure();
 
     }
