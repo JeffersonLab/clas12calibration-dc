@@ -10,43 +10,43 @@
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>freetts</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
 
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>cmu_time_awb</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         
          <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>cmu_us_kal</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>en_us</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>cmulex</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>cmutimelex</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         
         <dependency>
             <groupId>com.sun.speech</groupId>
             <artifactId>cmudict04</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.jlab.clas12.detector</groupId>
@@ -64,10 +64,10 @@
         <id>local-repo</id>
         <url>file://${basedir}/lib</url>
         <releases>
-            <enabled>false</enabled>
+            <enabled>true</enabled>
         </releases>
         <snapshots>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
         </snapshots>
     </repository>    
      <repository>
