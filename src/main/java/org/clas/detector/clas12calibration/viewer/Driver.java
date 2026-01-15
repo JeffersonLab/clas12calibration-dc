@@ -51,6 +51,16 @@ public class Driver {
                 
     }
     public static void main(String[] args) throws FileNotFoundException {
+        // Create Files/ directory if it does not exist
+        File dir = new File("Files");
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                System.out.println("Directory Files/ created successfully");
+            } else {
+                System.out.println("Failed to create directory Files/");
+            }
+        }
+        
         File file
             = new File("TestCalOutPut.hipo");
  
