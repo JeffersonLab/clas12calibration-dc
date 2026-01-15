@@ -52,6 +52,7 @@ public class Driver {
     }
     public static void main(String[] args) throws FileNotFoundException {
         // Create Files/ directory if it does not exist
+        
         File dir = new File("Files");
         if (!dir.exists()) {
             if (dir.mkdirs()) {
@@ -80,7 +81,7 @@ public class Driver {
         else {
             System.out.println("Failed to delete file TestOutPut.hipo");
         }
-        System.out.println(System.getenv());
+        System.out.println("CHECKING ENVS "+System.getenv());
         JFrame    frame    = new JFrame();
         JButton   T2DButton = null;
         JButton   T0Button = null;
