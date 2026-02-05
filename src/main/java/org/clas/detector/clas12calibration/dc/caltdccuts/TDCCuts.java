@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.dc.analysis.TDCParamsPanel;
 import static org.clas.detector.clas12calibration.dc.calt2d.T2DCalib.field;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
@@ -340,6 +341,7 @@ public class TDCCuts extends AnalysisMonitor {
     }
     @Override
     public void analysis() {
+        CreateDirectory.create("Files");
         String filePath = "Files/ccdb_TDC_run" + this.runNumber  + ".txt";
         File file = new File(filePath);
         if (file.exists()) {

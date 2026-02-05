@@ -28,7 +28,6 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.groot.ui.TCanvas;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.base.DataEventType;
 import org.jlab.utils.groups.IndexedList;
 
 /**
@@ -46,11 +45,15 @@ public class WireIneffAnal extends AnalysisMonitor {
     private OutputManager outputMgr;
     private int[][][] totLayA;   // Total layer hits
     private int[][][] effLayA;   // Effective layer hits
+    private int[][][] totLayB;   // Total layer hits
+    private int[][][] effLayB;   // Effective layer hits
     public static String variation = "default";
     
     public WireIneffAnal(String name, ConstantsManager ccdb) {
         super(name, ccdb);
-        this.setAnalysisTabNames("Inefficiency vs TrackDoca");
+        this.setAnalysisTabNames("Inefficiency vs TrackDoca", 
+                "Sector1 Efficiency / Layer","Sector2 Efficiency / Layer","Sector3 Efficiency / Layer",
+                "Sector4 Efficiency / Layer","Sector5 Efficiency / Layer","Sector6 Efficiency / Layer");
         this.init(false, "p0:p1:p2:p3:p4:p5:p6:p7:p8:p9:p10:p11"); 
         fitMgr = new FitManager(this);
     }
@@ -61,6 +64,8 @@ public class WireIneffAnal extends AnalysisMonitor {
         histogramMgr.initialize(6, nBins); // 6 superlayers, nBins bins
         totLayA = new int[6][nBins][Bsq.length];  // Initialize total layer hits array
         effLayA = new int[6][nBins][Bsq.length];  // Initialize effective layer hits array
+        totLayB = new int[6][6][6];  // Initialize  hits array
+        effLayB = new int[6][6][6];  // Initialize effective  hits array
         DataGroup tr = new DataGroup(6,2);
         for(int i =0; i<6; i++) {
             tr.addDataSet(histogramMgr.getNormalizedHistogram(i), 0);
@@ -78,13 +83,14 @@ public class WireIneffAnal extends AnalysisMonitor {
     
     @Override
     public void processEvent(DataEvent ev) {
-        eventProc.processEvent(ev, totLayA, effLayA,nBins,this.fitMgr);
+        eventProc.processEvent(ev, totLayA, effLayA,nBins,this.fitMgr, 
+                totLayB, effLayB);
     }
     final Map<Coordinate, FitLine2D> fitLines2d = new HashMap<>();
     final Map<Coordinate, FitLine2D> fitLines2dcolor = new HashMap<>();
     @Override
     public void analysis() {
-        histogramMgr.fillFromArrays(totLayA, effLayA);
+        histogramMgr.fillFromArrays(totLayA, effLayA, totLayB, effLayB);
         
         // Fit and profile each superlayer
         for (int sl = 0; sl < 2; sl++) {
@@ -149,6 +155,20 @@ public class WireIneffAnal extends AnalysisMonitor {
         }  
         */
         fitMgr.updateTable();
+        for(int s =0; s< 6; s++){
+            String stg="Sector"+(s+1)+" Efficiency / Layer";
+            getAnalysisCanvas().getCanvas(stg).divide(2, 3);
+            for(int sl =0; sl< 6; sl++){
+                getAnalysisCanvas().getCanvas(stg).cd(sl);
+                double min = histogramMgr.getN1dhistograms().get(new Coordinate(s,sl)).getMin()-5;
+                double max = histogramMgr.getN1dhistograms().get(new Coordinate(s,sl)).getMax()+5;
+                if(max>103)
+                    max =103;
+                getAnalysisCanvas().getCanvas(stg).getPad(sl).getAxisY().setRange(min, max);
+                getAnalysisCanvas().getCanvas(stg).draw(histogramMgr.getN1dhistograms().get(new Coordinate(s,sl)), "E");
+                        
+            }
+        }
     }
     
     private boolean reRunFit(int sl, int[] fixedPar) {

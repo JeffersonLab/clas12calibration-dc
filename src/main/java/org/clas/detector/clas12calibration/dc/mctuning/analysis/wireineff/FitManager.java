@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.dc.analysis.TDCParamsPanel;
 import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.freehep.math.minuit.FunctionMinimum;
@@ -107,7 +108,7 @@ public class FitManager {
         }
         
         _wia.getCalib().fireTableDataChanged(); 
-        
+        CreateDirectory.create("Files");
         String filePath = "Files/ccdb_IntrIneff_run" + EventProcessor.runNumber + "time_" 
                 + df.format(new Date())  + ".txt";
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {

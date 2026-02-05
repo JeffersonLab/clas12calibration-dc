@@ -38,6 +38,7 @@ import org.jlab.utils.system.ClasUtilsFile;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.BufferedWriter;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.viewer.Driver;
 import org.jlab.groot.data.DataLine;
 /**
@@ -62,6 +63,7 @@ public class T0Calib extends AnalysisMonitor{
         super(name, ccdb);
         this.setAnalysisTabNames(analTabs);
         this.init(false, "T0");
+        CreateDirectory.create("Files");
         outfile = new File("Files/ccdbConstantst0.txt");
         outfile2 = new File("Files/ccdbConstantst00.txt");
         outfile3 = new File("Files/ccdbConstantst00todb.txt");

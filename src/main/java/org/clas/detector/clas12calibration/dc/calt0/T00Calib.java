@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.dc.calt2d.SegmentProperty;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
 import org.clas.detector.clas12calibration.viewer.AnalysisMonitor;
@@ -54,6 +55,7 @@ public class T00Calib extends AnalysisMonitor{
         this.setAnalysisTabNames(analTabs);
         this.init(false, "T00");
         T00Array = new double[nsec][nsl];
+        CreateDirectory.create("Files");
         outfile = new File("Files/ccdbConstantstT00.txt");
         pw = new PrintWriter(outfile);
         pw.printf("#& Sector Superlayer T0Correction T0Error\n");

@@ -31,12 +31,26 @@ public class HistogramManager {
     private final Map<Coordinate, H2F> n2dhistograms = new HashMap<>();
     private final Map<Coordinate, H2F> n2dhistogramserrs = new HashMap<>();
     public static Map<Coordinate, H1F> Bhists = new HashMap<>();
+    private final Map<Coordinate, H1F> n1dhistograms = new HashMap<>();
     // Initializes histograms and profiles for each superlayer.
     public void initialize(int superlayers, int nBins) {
         //2d histos:
         int NBbins = Bsq.length;
         double BSqbinWidth = Bsq[0];
         double Bmax = Bsq[NBbins-1]+BSqbinWidth;
+        
+        for (int s = 0; s < 6; s++) { //sector
+            for(int sl =0; sl<6; sl++) { //superlayer
+                    Coordinate coord = new Coordinate(s, sl);
+                    H1F hsl = new H1F("s"+(s+1)+"sl"+(sl+1), "superlayer"+(sl+1), 6, 0.5, 6.5);
+                    hsl.setOptStat(0);
+                    hsl.setTitleX("Layer");
+                    hsl.setTitleY("Efficiency [%]");
+                    hsl.setLineColor(sl+2);
+                    hsl.setLineWidth(3);
+                    n1dhistograms.put(coord, hsl);
+                }
+            }
         
         for (int s = 0; s < 2; s++) { //regions 2, rsl 1 and 2
             for(int b =0; b<NBbins; b++) {
@@ -108,7 +122,24 @@ public class HistogramManager {
     }
 
     // Fills histograms based on the arrays of total and effective layer hits.
-    public void fillFromArrays(int[][][] totLayA, int[][][] effLayA) {
+    public void fillFromArrays(int[][][] totLayA, int[][][] effLayA,
+            int[][][] totLayB, int[][][] effLayB) {
+        for (int s = 0; s < 6; s++) {
+            for (int sl = 0; sl < 6; sl++) {
+                for (int l = 0; l < 6; l++) {
+                    if( totLayB[s][sl][l] >0 ) {
+                        double beff = (effLayB[s][sl][l] / (double) totLayB[s][sl][l]) * 100.0;
+                        double berr = 100*(effLayB[s][sl][l]/(double)totLayB[s][sl][l])*
+                              Math.sqrt(1/(double)effLayB[s][sl][l] +1/(double)totLayB[s][sl][l]);
+                        getN1dhistograms().get(new Coordinate(s, sl)).setBinContent(l, beff);
+                        getN1dhistograms().get(new Coordinate(s, sl)).setBinError(l, berr);
+                        
+                     
+                    }
+                }
+            }
+             
+         }
         for (int sl = 0; sl < 6; sl++) {
             for (int bin = 0; bin < nBins; bin++) {
                 double efficiency=0;
@@ -269,4 +300,12 @@ public class HistogramManager {
     public Map<Coordinate, H2F> getN2dhistogramserrs() {
         return n2dhistogramserrs;
     }
+    
+    /**
+     * @return the n1dhistograms
+     */
+    public Map<Coordinate, H1F> getN1dhistograms() {
+        return n1dhistograms;
+    }
+
 }

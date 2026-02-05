@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.dc.analysis.FitPanel;
 import org.clas.detector.clas12calibration.dc.calt2d.FitUtility.MinuitPar;
 import org.clas.detector.clas12calibration.dc.t2d.TableLoader;
@@ -312,6 +313,7 @@ public class T2DCalib extends AnalysisMonitor{
     public void plotFits(boolean fitted) throws FileNotFoundException {
         if(fitted==true) {
             DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
+            CreateDirectory.create("Files");
             String fileName = "Files/ccdb_run" + this.runNumber + "time_" 
                     + df.format(new Date())+ "iteration_"+this.iterationNum  + ".txt";
            

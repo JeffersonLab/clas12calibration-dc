@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap; 
 import java.util.Map;
 import org.clas.detector.clas12calibration.dc.analysis.Coordinate;
+import org.clas.detector.clas12calibration.dc.analysis.CreateDirectory;
 import org.clas.detector.clas12calibration.dc.mctuning.viewer.AnalysisMonitor;
 import org.freehep.math.minuit.FCNBase;
 import org.freehep.math.minuit.FunctionMinimum;
@@ -55,6 +56,7 @@ public class DocaSmearAnal extends AnalysisMonitor{
         super(name, ccdb);
         this.setAnalysisTabNames("Time Resi vs TrackDoca","Time Resi vs TrackDoca Graphs", "Time Smearing vs TrackDoca", "Time Smearing vs TrackDoca Graphs");
         this.init(false, "p0:p1:p2:p3:p4");
+        CreateDirectory.create("Files");
         outfile = new File("Files/docasmearConstants.txt");
         pw = new PrintWriter(outfile);
         pw.printf("#& superlayer p0 p1 p2 p3 p4\n");

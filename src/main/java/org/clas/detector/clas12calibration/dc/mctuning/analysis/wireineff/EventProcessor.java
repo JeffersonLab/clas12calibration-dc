@@ -66,11 +66,12 @@ public class EventProcessor {
     // Processes the event to populate total and effective hit arrays.
     
     public void processEvent(DataEvent event, int[][][] totLayA, int[][][] effLayA, int nBins, 
-            FitManager fm) {
+            FitManager fm, int[][][] totLayB, int[][][] effLayB) {
         if (!event.hasBank("RUN::config")) {
             return ;
         }
-        
+        //int[][][] effLayA =int[n_superlayer][n_trkDocaBins][n_BBins] 
+        //int[][][] effLayB =int[n_sector][n_superlayer][n_layer] 
         DataBank bank = event.getBank("RUN::config");
         int newRun = bank.getInt("run", 0);
         if (newRun == 0) {
@@ -99,7 +100,15 @@ public class EventProcessor {
         int nrows =  trjrecs.size();
         //Bank.show(); System.out.println(" NUMBER OF ENTRIES IN BANK = "+nrows);
         for (int i = 0; i < nrows; i++) {
-            
+            //efficiency per layer
+            int sec = trjrecs.get(i).getSector();
+            int slyr = trjrecs.get(i).getSuperlayer();
+            int lyr = trjrecs.get(i).getLayer();
+            totLayB[sec-1][slyr-1][lyr-1]++;
+            int matchd = trjrecs.get(i).getMatchedHitID();
+            if(matchd!=-1)
+                effLayB[sec-1][slyr-1][lyr-1]++;
+           
             int tb = this.getTrkDocBin(trjrecs.get(i).getTrkDoca(), nBins); //normalized docas
             int bb = getBBin(trjrecs.get(i).getTrkBfield());
             if(trjrecs.get(i).getSuperlayer()==3 || trjrecs.get(i).getSuperlayer()==4)
